@@ -14,9 +14,9 @@ using TeamCloud.Model.Commands;
 
 namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
 {
-    public static class ProjectCreateActivity
+    public static class ProjectUpdateActivity
     {
-        [FunctionName(nameof(ProjectCreateActivity))]
+        [FunctionName(nameof(ProjectUpdateActivity))]
         public static async Task<Result> RunOrchestration(
             [ActivityTrigger] ProjectCreateCommand command,
             ILogger logger)

@@ -4,30 +4,49 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using TeamCloud.Model.Commands;
-using TeamCloud.Model.Context;
-using TeamCloud.Model.Data;
-
+using TeamCloud.Providers.Azure.DevTestLabs.Activities;
 
 namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
 {
     public static class ProjectUpdateOrchestration
     {
-
         [FunctionName(nameof(ProjectUpdateOrchestration))]
-        public static async Task RunOrchestration(
+        public static async Task<ProjectUpdateActivity.Result> RunOrchestration(
             [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
             ILogger log)
         {
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
+            var request = functionContext.GetInput<Request>();
+
+            var commandResult = await functionContext
+                .CallActivityAsync<ProjectUpdateActivity.Result>(nameof(ProjectUpdateActivity), request.Command)
+                .ConfigureAwait(true);
+
+            if (!string.IsNullOrEmpty(request.CallbackUrl))
+            {
+                functionContext.StartNewOrchestration(nameof(SendCommandResultOrchestration), new SendCommandResultOrchestration.Request
+                {
+                    InstanceId = functionContext.InstanceId,
+                    CallbackUrl = request.CallbackUrl
+                });
+            }
+
+            return commandResult;
+        }
+
+
+        public class Request
+        {
+            public ProjectUpdateCommand Command { get; set; }
+
+            public string CallbackUrl { get; set; }
         }
     }
 }

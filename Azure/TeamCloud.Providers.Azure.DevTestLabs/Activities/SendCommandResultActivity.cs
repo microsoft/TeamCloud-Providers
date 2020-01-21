@@ -10,12 +10,10 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using TeamCloud.Model.Commands;
 
-
 namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
 {
     public static class SendCommandResultActivity
     {
-
         [FunctionName(nameof(SendCommandResultActivity))]
         public static async Task<ICommandResult> RunOrchestration(
             [ActivityTrigger] string instanceId,

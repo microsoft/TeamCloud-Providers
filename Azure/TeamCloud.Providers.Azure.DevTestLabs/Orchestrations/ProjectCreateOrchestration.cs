@@ -15,7 +15,6 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
 {
     public static class ProjectCreateOrchestration
     {
-
         [FunctionName(nameof(ProjectCreateOrchestration))]
         public static async Task<ProjectCreateActivity.Result> RunOrchestration(
             [OrchestrationTrigger] IDurableOrchestrationContext functionContext,

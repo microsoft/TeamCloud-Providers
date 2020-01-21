@@ -18,7 +18,7 @@ namespace TeamCloud.Providers.Azure.DevOps
     {
         [FunctionName(nameof(CommandTrigger))]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest httpRequest,
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "command")] HttpRequest httpRequest,
             [DurableClient] IDurableClient durableClient,
             ILogger logger)
         {

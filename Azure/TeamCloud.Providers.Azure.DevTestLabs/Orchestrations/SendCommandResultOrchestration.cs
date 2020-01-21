@@ -18,7 +18,6 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
 {
     public static class SendCommandResultOrchestration
     {
-
         [FunctionName(nameof(SendCommandResultOrchestration))]
         public static async Task RunOrchestration(
             [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
@@ -48,6 +47,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
                     .ConfigureAwait(true);
             }
         }
+
 
         public class Request
         {
