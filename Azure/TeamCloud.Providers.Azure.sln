@@ -1,0 +1,35 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TeamCloud.Providers.Azure.DevTestLabs", "TeamCloud.Providers.Azure.DevTestLabs\TeamCloud.Providers.Azure.DevTestLabs.csproj", "{FF6E3989-700A-481D-8256-D2C9BFEA5172}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TeamCloud.Providers.Azure.DevOps", "TeamCloud.Providers.Azure.DevOps\TeamCloud.Providers.Azure.DevOps.csproj", "{CDE0A2D2-A40E-4202-BA36-3A90D0E71B93}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TeamCloud.Providers.Azure.AppInsights", "TeamCloud.Providers.Azure.AppInsights\TeamCloud.Providers.Azure.AppInsights.csproj", "{21BA4A5A-17F8-4FAF-8D56-2712C09B0E84}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FF6E3989-700A-481D-8256-D2C9BFEA5172}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF6E3989-700A-481D-8256-D2C9BFEA5172}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF6E3989-700A-481D-8256-D2C9BFEA5172}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF6E3989-700A-481D-8256-D2C9BFEA5172}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDE0A2D2-A40E-4202-BA36-3A90D0E71B93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDE0A2D2-A40E-4202-BA36-3A90D0E71B93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDE0A2D2-A40E-4202-BA36-3A90D0E71B93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDE0A2D2-A40E-4202-BA36-3A90D0E71B93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21BA4A5A-17F8-4FAF-8D56-2712C09B0E84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21BA4A5A-17F8-4FAF-8D56-2712C09B0E84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21BA4A5A-17F8-4FAF-8D56-2712C09B0E84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21BA4A5A-17F8-4FAF-8D56-2712C09B0E84}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		Policies = $0
+		$0.StandardHeader = $1
+		$1.Text = FIXME Needs Header
+	EndGlobalSection
+EndGlobal

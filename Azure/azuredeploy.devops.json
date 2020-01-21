@@ -1,0 +1,163 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "functionAppName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the function app acting as a TeamCloud Provider that you wish to create. This will also be used as the subdomain of your Provider endpoint (i.e. myteamcloudprovider.azurewebsites.net)."
+            }
+        },
+        "deployTeamCloudSource": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Select true to the Azure Resources and the TeamCloud source code from GitHub.  Select false to only deploy the Azure Resources."
+            }
+        }
+    },
+    "variables": {
+        "functionAppNameLower":  "[toLower(parameters('functionAppName'))]",
+        "webjobsStorageAccountName": "[concat('wjstorage', uniqueString(resourceGroup().id))]",
+        "taskhubStorageAccountName": "[concat('thstorage', uniqueString(resourceGroup().id))]",
+        "sourceRepoUrl": "https://github.com/microsoft/TeamCloud-Providers.git",
+        "sourceBranch": "master"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "kind": "functionapp",
+            "name": "[variables('functionAppNameLower')]",
+            "apiVersion": "2018-02-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "name": "[variables('functionAppNameLower')]",
+                "computeMode": "Dynamic"
+            },
+            "sku": {
+                "name": "Y1",
+                "tier": "Dynamic"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "kind": "functionapp",
+            "name": "[variables('functionAppNameLower')]",
+            "apiVersion": "2018-02-01",
+            "location": "[resourceGroup().location]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "name": "[variables('functionAppNameLower')]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('functionAppNameLower'))]",
+                "siteConfig": {
+                    "phpVersion": "off",
+                    "clientAffinityEnabled": false
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('functionAppNameLower'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('webjobsStorageAccountName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('taskhubStorageAccountName'))]"
+            ],
+            "resources": [
+                {
+                    "type": "config",
+                    "name": "appsettings",
+                    "apiVersion": "2018-02-01",
+                    "properties": {
+                        "PROJECT": "Azure/TeamCloud.Providers.Azure.DevOps/TeamCloud.Providers.Azure.DevOps.csproj",
+                        "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('webjobsStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('webjobsStorageAccountName')), '2017-06-01').keys[0].value)]",
+                        "DurableFunctionsHubStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('taskhubStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('taskhubStorageAccountName')), '2017-06-01').keys[0].value)]",
+                        "FUNCTION_APP_EDIT_MODE": "readonly",
+                        "FUNCTIONS_EXTENSION_VERSION": "~3",
+                        "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('webjobsStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('webjobsStorageAccountName')), '2017-06-01').keys[0].value)]",
+                        "WEBSITE_CONTENTSHARE": "[variables('functionAppNameLower')]",
+                        "WEBSITE_NODE_DEFAULT_VERSION": "~12",
+                        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('functionAppNameLower')), '2015-05-01').InstrumentationKey]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', variables('functionAppNameLower'))]"
+                    ]
+                },
+                {
+                    "condition": "[parameters('deployTeamCloudSource')]",
+                    "type": "sourcecontrols",
+                    "name": "web",
+                    "apiVersion": "2019-08-01",
+                     "properties": {
+                        "repoUrl": "[variables('sourceRepoUrl')]",
+                        "branch": "[variables('sourceBranch')]",
+                        "isManualIntegration": true,
+                        "deploymentRollbackEnabled": false,
+                        "isMercurial": false
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', variables('functionAppNameLower'))]",
+                        "[resourceId('Microsoft.Web/sites/config', variables('functionAppNameLower'), 'appsettings')]"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.Insights/components",
+            "kind": "web",
+            "name": "[variables('functionAppNameLower')]",
+            "apiVersion": "2014-04-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "ApplicationId": "[variables('functionAppNameLower')]"
+            },
+            "tags": {
+                "[concat('hidden-link:', resourceId('Microsoft.Web/sites', variables('functionAppNameLower')))]": "Resource"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('functionAppNameLower'))]",
+                "[resourceId('Microsoft.Web/serverfarms', variables('functionAppNameLower'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('webjobsStorageAccountName')]",
+            "apiVersion": "2019-04-01",
+            "kind": "Storage",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard_GRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "name": "[variables('webjobsStorageAccountName')]"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('taskhubStorageAccountName')]",
+            "apiVersion": "2019-04-01",
+            "kind": "Storage",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard_GRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "name": "[variables('taskhubStorageAccountName')]"
+            }
+        }
+    ],
+    "outputs": {
+        "location": {
+            "type": "string",
+            "value": "[concat('https://', variables('functionAppNameLower'), '.azurewebsites.net')]"
+        },
+        "url": {
+            "type": "string",
+            "value": "[concat('https://', variables('functionAppNameLower'), '.azurewebsites.net')]"
+        },
+        "authCode": {
+            "type": "string",
+            "value": "[listkeys(concat(resourceId('Microsoft.Web/sites', variables('functionAppNameLower')), '/host/default/'),'2016-08-01').functionKeys.default]"
+        }
+    }
+}

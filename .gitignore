@@ -334,6 +334,7 @@ docs/local/
 
 *.DS_Store
 
+# Azure Functions localsettings file
 local.settings.json
 appsettings.json
 
