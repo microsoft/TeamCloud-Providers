@@ -1,4 +1,4 @@
 {
     "version": "2.0",
-    "watchDirectories": [ "Orchestrations" ]
+    "watchDirectories": [ "Activities", "Orchestrations" ]
 }

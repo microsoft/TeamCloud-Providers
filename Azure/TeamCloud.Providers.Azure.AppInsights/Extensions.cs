@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using TeamCloud.Model.Commands;
 
-namespace TeamCloud.Providers.Azure.DevTestLabs
+namespace TeamCloud.Providers.Azure.AppInsights
 {
     internal static class Extensions
     {

@@ -17,7 +17,7 @@ namespace TeamCloud.Providers.Azure.AppInsights
     public class CommandTrigger
     {
         [FunctionName(nameof(CommandTrigger))]
-        public async Task<IActionResult> Run(
+        public /* async */ Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "command")] HttpRequest httpRequest,
             [DurableClient] IDurableClient durableClient,
             ILogger logger)
