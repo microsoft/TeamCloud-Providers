@@ -1,4 +1,12 @@
 {
     "version": "2.0",
-    "watchDirectories": [ "Activities", "Orchestrations" ]
+    "watchDirectories": [ "Activities", "Orchestrations" ],
+    "extensions": {
+        "durableTask": {
+            "hubName": "DevTestLabs",
+            "storageProvider": {
+                "connectionStringName": "DurableFunctionsHubStorage"
+            }
+        }
+    }
 }

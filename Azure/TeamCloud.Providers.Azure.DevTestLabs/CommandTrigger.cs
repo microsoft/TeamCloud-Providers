@@ -25,11 +25,9 @@ namespace TeamCloud.Providers.Azure.DevTestLabs
             [DurableClient] IDurableClient durableClient,
             ILogger logger)
         {
-            if (httpRequest is null)
-                throw new ArgumentNullException(nameof(httpRequest));
+            if (httpRequest is null) throw new ArgumentNullException(nameof(httpRequest));
 
-            if (durableClient is null)
-                throw new ArgumentNullException(nameof(durableClient));
+            if (durableClient is null) throw new ArgumentNullException(nameof(durableClient));
 
 
             var commandJson = await httpRequest.ReadAsStringAsync().ConfigureAwait(false);

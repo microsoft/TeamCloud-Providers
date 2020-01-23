@@ -13,7 +13,7 @@
       "type": "process",
       "problemMatcher": "$msCompile",
       "presentation": {
-        "group": "providers"
+        "group": "functions"
       }
     },
     {
@@ -34,7 +34,7 @@
       },
       "problemMatcher": "$msCompile",
       "presentation": {
-        "group": "providers"
+        "group": "functions"
       }
     },
     {
@@ -47,7 +47,7 @@
       "isBackground": true,
       "problemMatcher": "$func-watch",
       "presentation": {
-        "group": "providers"
+        "group": "functions"
       }
     },
     {
