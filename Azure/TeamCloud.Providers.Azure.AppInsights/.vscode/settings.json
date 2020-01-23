@@ -1,5 +1,5 @@
 {
-    "azureFunctions.deploySubpath": "Azure/TeamCloud.Providers.Azure.DevTestLabs/bin/Release/netcoreapp3.1/publish",
+    "azureFunctions.deploySubpath": "/bin/Release/netcoreapp3.1/publish",
     "azureFunctions.projectLanguage": "C#",
     "azureFunctions.projectRuntime": "~3",
     "azureFunctions.preDeployTask": "publish",
