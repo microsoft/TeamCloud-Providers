@@ -12,13 +12,13 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using TeamCloud.Model.Commands;
 
-namespace TeamCloud.Providers.Azure.AppInsights.Activities
+namespace TeamCloud.Providers.Azure.DevOps.Activities
 {
-    public static class ProjectUpdateActivity
+    public static class ProjectDeleteActivity
     {
-        [FunctionName(nameof(ProjectUpdateActivity))]
+        [FunctionName(nameof(ProjectDeleteActivity))]
         public static async Task<Result> RunOrchestration(
-            [ActivityTrigger] ProjectUpdateCommand command,
+            [ActivityTrigger] ProjectDeleteCommand command,
             ILogger logger)
         {
             logger.LogInformation($"Processing Command: {JsonConvert.SerializeObject(command)}");
@@ -29,7 +29,7 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
             await Task.Delay(2 * 60 * 1000);
 
             var randomResult = new Result();
-            randomResult.Variables.Add(nameof(ProjectUpdateActivity), command.ProjectId?.ToString());
+            randomResult.Variables.Add(nameof(ProjectDeleteActivity), command.ProjectId?.ToString());
 
             return randomResult;
         }

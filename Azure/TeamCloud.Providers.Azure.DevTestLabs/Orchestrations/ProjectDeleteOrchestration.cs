@@ -1,0 +1,52 @@
+﻿/**
+ *  Copyright (c) Microsoft Corporation.
+ *  Licensed under the MIT License.
+ */
+
+using System;
+using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Extensions.Logging;
+using TeamCloud.Model.Commands;
+using TeamCloud.Providers.Azure.DevTestLabs.Activities;
+
+namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
+{
+    public static class ProjectDeleteOrchestration
+    {
+        [FunctionName(nameof(ProjectDeleteOrchestration))]
+        public static async Task<ProjectDeleteActivity.Result> RunOrchestration(
+            [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
+            ILogger log)
+        {
+            if (functionContext is null)
+                throw new ArgumentNullException(nameof(functionContext));
+
+            var request = functionContext.GetInput<Request>();
+
+            var commandResult = await functionContext
+                .CallActivityAsync<ProjectDeleteActivity.Result>(nameof(ProjectDeleteActivity), request.Command)
+                .ConfigureAwait(true);
+
+            if (!string.IsNullOrEmpty(request.CallbackUrl))
+            {
+                functionContext.StartNewOrchestration(nameof(SendCommandResultOrchestration), new SendCommandResultOrchestration.Request
+                {
+                    InstanceId = functionContext.InstanceId,
+                    CallbackUrl = request.CallbackUrl
+                });
+            }
+
+            return commandResult;
+        }
+
+
+        public class Request
+        {
+            public ProjectDeleteCommand Command { get; set; }
+
+            public string CallbackUrl { get; set; }
+        }
+    }
+}

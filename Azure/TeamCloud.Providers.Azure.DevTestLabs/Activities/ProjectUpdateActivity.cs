@@ -18,7 +18,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
     {
         [FunctionName(nameof(ProjectUpdateActivity))]
         public static async Task<Result> RunOrchestration(
-            [ActivityTrigger] ProjectCreateCommand command,
+            [ActivityTrigger] ProjectUpdateCommand command,
             ILogger logger)
         {
             logger.LogInformation($"Processing Command: {JsonConvert.SerializeObject(command)}");
@@ -29,9 +29,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
             await Task.Delay(2 * 60 * 1000);
 
             var randomResult = new Result();
-
-            randomResult.Variables.Add("fooKey", "fooValue");
-            randomResult.Variables.Add("barKey", "barValue");
+            randomResult.Variables.Add(nameof(ProjectUpdateActivity), command.ProjectId?.ToString());
 
             return randomResult;
         }
