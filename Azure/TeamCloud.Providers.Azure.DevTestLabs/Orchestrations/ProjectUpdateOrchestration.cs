@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
-using TeamCloud.Model.Commands;
 using TeamCloud.Providers.Azure.DevTestLabs.Activities;
 
 namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
@@ -23,7 +22,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var request = functionContext.GetInput<Request>();
+            var request = functionContext.GetInput<OrchestrationRequest>();
 
             var commandResult = await functionContext
                 .CallActivityAsync<ProjectUpdateActivity.Result>(nameof(ProjectUpdateActivity), request.Command)
@@ -39,14 +38,6 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
             }
 
             return commandResult;
-        }
-
-
-        public class Request
-        {
-            public ProjectUpdateCommand Command { get; set; }
-
-            public string CallbackUrl { get; set; }
         }
     }
 }

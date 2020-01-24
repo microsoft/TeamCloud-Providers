@@ -26,20 +26,31 @@ namespace TeamCloud.Providers.Azure.DevTestLabs
             ILogger logger)
         {
             if (httpRequest is null) throw new ArgumentNullException(nameof(httpRequest));
-
             if (durableClient is null) throw new ArgumentNullException(nameof(durableClient));
 
-
             var commandJson = await httpRequest.ReadAsStringAsync().ConfigureAwait(false);
-
             logger.LogInformation($"Received: {commandJson}");
-
             var callbackUrl = httpRequest.Headers.GetCallbackUrl();
 
-            var command = JsonConvert.DeserializeObject<ProjectCreateCommand>(commandJson);
+            var command = JsonConvert.DeserializeObject<ICommand>(commandJson);
+            string orchestrationName = null;
+            switch (command)
+            {
+                case ProjectCreateCommand projectCreateCommand:
+                    orchestrationName = nameof(ProjectCreateOrchestration);
+                    break;
+                case ProjectUpdateCommand projectCreateCommand:
+                    orchestrationName = nameof(ProjectUpdateOrchestration);
+                    break;
+                case ProjectDeleteCommand projectCreateCommand:
+                    orchestrationName = nameof(ProjectDeleteOrchestration);
+                    break;
+                default:
+                    throw new ArgumentException("Unknown command was provided as input.");
+            }
 
             var instanceId = await durableClient
-                .StartNewAsync<ProjectCreateOrchestration.Request>(nameof(ProjectCreateOrchestration), command.CommandId.ToString(), new ProjectCreateOrchestration.Request { Command = command, CallbackUrl = callbackUrl })
+                .StartNewAsync<OrchestrationRequest>(orchestrationName, command.CommandId.ToString(), new OrchestrationRequest { Command = command, CallbackUrl = callbackUrl })
                 .ConfigureAwait(false);
 
             var status = await durableClient

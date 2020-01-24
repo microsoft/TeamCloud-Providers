@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
-using TeamCloud.Model.Commands;
 using TeamCloud.Providers.Azure.AppInsights.Activities;
 
 namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
@@ -23,7 +22,7 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var request = functionContext.GetInput<Request>();
+            var request = functionContext.GetInput<OrchestrationRequest>();
 
             var commandResult = await functionContext
                 .CallActivityAsync<ProjectCreateActivity.Result>(nameof(ProjectCreateActivity), request.Command)
@@ -39,14 +38,6 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
             }
 
             return commandResult;
-        }
-
-
-        public class Request
-        {
-            public ProjectCreateCommand Command { get; set; }
-
-            public string CallbackUrl { get; set; }
         }
     }
 }
