@@ -4,7 +4,7 @@
     "parameters": {
         "functionAppName": {
             "type": "string",
-            "defaultValue": "[concat('devops-', uniqueString(resourceGroup().id))]",
+            "defaultValue": "[concat('appinsights-', uniqueString(resourceGroup().id))]",
             "metadata": {
                 "description": "The name of the function app acting as a TeamCloud Provider that you wish to create. This will also be used as the subdomain of your Provider endpoint (i.e. myteamcloudprovider.azurewebsites.net)."
             }
@@ -68,7 +68,7 @@
                     "name": "appsettings",
                     "apiVersion": "2018-02-01",
                     "properties": {
-                        "PROJECT": "Azure/TeamCloud.Providers.Azure.DevOps/TeamCloud.Providers.Azure.DevOps.csproj",
+                        "PROJECT": "Azure/TeamCloud.Providers.Azure.AppInsights/TeamCloud.Providers.Azure.AppInsights.csproj",
                         "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('webjobsStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('webjobsStorageAccountName')), '2017-06-01').keys[0].value)]",
                         "DurableFunctionsHubStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('taskhubStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('taskhubStorageAccountName')), '2017-06-01').keys[0].value)]",
                         "FUNCTION_APP_EDIT_MODE": "readonly",

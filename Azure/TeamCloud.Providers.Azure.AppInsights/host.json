@@ -1,6 +1,5 @@
 {
     "version": "2.0",
-    "watchDirectories": [ "Activities", "Orchestrations" ],
     "extensions": {
         "durableTask": {
             "hubName": "AppInsights",
@@ -8,5 +7,9 @@
                 "connectionStringName": "DurableFunctionsHubStorage"
             }
         }
-    }
+    },
+    "watchDirectories": [
+        "Activities",
+        "Orchestrations"
+    ]
 }
