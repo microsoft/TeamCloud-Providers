@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "TeamCloud.Providers.Azure.AppInsights": {
+      "commandName": "Executable",
+      "executablePath": "%USERPROFILE%\\AppData\\Roaming\\npm\\func.cmd",
+      "commandLineArgs": "start --pause-on-error",
+      "workingDirectory": "$(ProjectDir)"
+    }
+  }
+}
