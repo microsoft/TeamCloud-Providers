@@ -17,7 +17,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
     public static class ProjectCreateActivity
     {
         [FunctionName(nameof(ProjectCreateActivity))]
-        public static async Task<Result> RunOrchestration(
+        public static async Task<Dictionary<string, string>> RunActivity(
             [ActivityTrigger] ProjectCreateCommand command,
             ILogger logger)
         {
@@ -28,17 +28,10 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
 
             await Task.Delay(2 * 60 * 1000);
 
-            var randomResult = new Result();
-
-            randomResult.Variables.Add("fooKey", "fooValue");
-            randomResult.Variables.Add("barKey", "barValue");
+            var randomResult = new Dictionary<string, string>();
+            randomResult.Add(nameof(ProjectCreateActivity), command.ProjectId?.ToString());
 
             return randomResult;
-        }
-
-        public class Result
-        {
-            public Dictionary<string, string> Variables { get; set; } = new Dictionary<string, string>();
         }
     }
 }

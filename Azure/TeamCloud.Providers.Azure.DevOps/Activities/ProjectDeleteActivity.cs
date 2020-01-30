@@ -17,7 +17,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
     public static class ProjectDeleteActivity
     {
         [FunctionName(nameof(ProjectDeleteActivity))]
-        public static async Task<Result> RunOrchestration(
+        public static async Task<Dictionary<string, string>> RunActivity(
             [ActivityTrigger] ProjectDeleteCommand command,
             ILogger logger)
         {
@@ -28,15 +28,10 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
 
             await Task.Delay(2 * 60 * 1000);
 
-            var randomResult = new Result();
-            randomResult.Variables.Add(nameof(ProjectDeleteActivity), command.ProjectId?.ToString());
+            var randomResult = new Dictionary<string, string>();
+            randomResult.Add(nameof(ProjectDeleteActivity), command.ProjectId?.ToString());
 
             return randomResult;
-        }
-
-        public class Result
-        {
-            public Dictionary<string, string> Variables { get; set; } = new Dictionary<string, string>();
         }
     }
 }

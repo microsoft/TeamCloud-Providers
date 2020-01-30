@@ -21,34 +21,35 @@ namespace TeamCloud.Providers.Azure.DevTestLabs
     {
         [FunctionName(nameof(CommandTrigger))]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "command")] HttpRequest httpRequest,
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "command")] ProviderCommand providerCommand,
             [DurableClient] IDurableClient durableClient,
             ILogger logger)
         {
-            if (httpRequest is null) throw new ArgumentNullException(nameof(httpRequest));
-            if (durableClient is null) throw new ArgumentNullException(nameof(durableClient));
+            if (providerCommand is null)
+                throw new ArgumentNullException(nameof(providerCommand));
 
-            var commandJson = await httpRequest.ReadAsStringAsync().ConfigureAwait(false);
+            if (durableClient is null)
+                throw new ArgumentNullException(nameof(durableClient));
 
-            logger.LogInformation($"Received: {commandJson}");
+            var orchestrationName = OrchestrationName(providerCommand.Command);
 
-            var callbackUrl = httpRequest.Headers.GetCallbackUrl();
-
-            var command = JsonConvert.DeserializeObject<ICommand>(commandJson);
-
-            var instanceId = await durableClient
-                .StartNewAsync<OrchestrationRequest>(OrchestrationName(command), command.CommandId.ToString(), new OrchestrationRequest { Command = command, CallbackUrl = callbackUrl })
+            _ = await durableClient
+                .StartNewAsync<object>(orchestrationName, providerCommand.CommandId.ToString(), providerCommand)
                 .ConfigureAwait(false);
 
             var status = await durableClient
-                .GetStatusAsync(command.CommandId.ToString())
+                .GetStatusAsync(providerCommand.CommandId.ToString())
                 .ConfigureAwait(false);
 
-            var result = status.GetResult();
+            var providerCommandResult = providerCommand.CreateResult(status);
 
-            return new AcceptedResult(string.Empty, result);
+            if (providerCommandResult.RuntimeStatus.IsFinal())
+            {
+                return new OkObjectResult(providerCommandResult);
+            }
+
+            return new AcceptedResult(string.Empty, providerCommandResult);
         }
-
         private static string OrchestrationName(ICommand command) => (command) switch
         {
             ProjectCreateCommand projectCreateCommand => nameof(ProjectCreateOrchestration),

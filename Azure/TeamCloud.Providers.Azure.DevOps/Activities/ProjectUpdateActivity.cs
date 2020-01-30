@@ -17,7 +17,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
     public static class ProjectUpdateActivity
     {
         [FunctionName(nameof(ProjectUpdateActivity))]
-        public static async Task<Result> RunOrchestration(
+        public static async Task<Dictionary<string, string>> RunActivity(
             [ActivityTrigger] ProjectUpdateCommand command,
             ILogger logger)
         {
@@ -28,15 +28,10 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
 
             await Task.Delay(2 * 60 * 1000);
 
-            var randomResult = new Result();
-            randomResult.Variables.Add(nameof(ProjectUpdateActivity), command.ProjectId?.ToString());
+            var randomResult = new Dictionary<string, string>();
+            randomResult.Add(nameof(ProjectUpdateActivity), command.ProjectId?.ToString());
 
             return randomResult;
-        }
-
-        public class Result
-        {
-            public Dictionary<string, string> Variables { get; set; } = new Dictionary<string, string>();
         }
     }
 }

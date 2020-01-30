@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -32,39 +33,21 @@ namespace TeamCloud.Providers.Azure.DevOps
             return headerDictionary.TryGetValue("x-functions-callback", out var value) ? value.FirstOrDefault() : null;
         }
 
-        internal static ICommandResult<TResult> GetResult<TResult>(this DurableOrchestrationStatus orchestrationStatus)
-            where TResult : new()
+        internal static ProviderCommandResult CreateResult(this ProviderCommand providerCommand, DurableOrchestrationStatus orchestrationStatus)
         {
-            var result = new CommandResult<TResult>(Guid.Parse(orchestrationStatus.InstanceId))
-            {
-                CreatedTime = orchestrationStatus.CreatedTime,
-                LastUpdatedTime = orchestrationStatus.LastUpdatedTime,
-                RuntimeStatus = (CommandRuntimeStatus)orchestrationStatus.RuntimeStatus,
-                CustomStatus = orchestrationStatus.CustomStatus?.ToString(),
-            };
+            var result = new ProviderCommandResult(providerCommand);
+
+            result.CreatedTime = orchestrationStatus.CreatedTime;
+            result.LastUpdatedTime = orchestrationStatus.LastUpdatedTime;
+            result.RuntimeStatus = (CommandRuntimeStatus)orchestrationStatus.RuntimeStatus;
+            result.CustomStatus = orchestrationStatus.CustomStatus?.ToString();
 
             if (orchestrationStatus.Output?.HasValues ?? false)
             {
-                result.Result = orchestrationStatus.Output.ToObject<TResult>();
+                result.Result = orchestrationStatus.Output.ToObject<Dictionary<string, string>>();
             }
 
-            return result;
-        }
-
-        internal static ICommandResult GetResult(this DurableOrchestrationStatus orchestrationStatus)
-        {
-            var result = new CommandResult(Guid.Parse(orchestrationStatus.InstanceId))
-            {
-                CreatedTime = orchestrationStatus.CreatedTime,
-                LastUpdatedTime = orchestrationStatus.LastUpdatedTime,
-                RuntimeStatus = (CommandRuntimeStatus)orchestrationStatus.RuntimeStatus,
-                CustomStatus = orchestrationStatus.CustomStatus?.ToString(),
-            };
-
-            //if (orchestrationStatus.Output?.HasValues ?? false)
-            //{
-            //    result.Result = orchestrationStatus.Output.ToObject<TResult>();
-            //}
+            result.Result ??= new Dictionary<string, string>();
 
             return result;
         }

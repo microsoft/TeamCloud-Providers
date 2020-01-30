@@ -4,10 +4,12 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
+using TeamCloud.Model.Commands;
 using TeamCloud.Providers.Azure.AppInsights.Activities;
 
 namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
@@ -15,29 +17,22 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
     public static class ProjectUpdateOrchestration
     {
         [FunctionName(nameof(ProjectUpdateOrchestration))]
-        public static async Task<ProjectUpdateActivity.Result> RunOrchestration(
+        public static async Task RunOrchestration(
             [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
             ILogger log)
         {
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var request = functionContext.GetInput<OrchestrationRequest>();
+            var providerCommand = functionContext.GetInput<ProviderCommand>();
 
-            var commandResult = await functionContext
-                .CallActivityAsync<ProjectUpdateActivity.Result>(nameof(ProjectUpdateActivity), request.Command)
+            var providerVariables = await functionContext
+                .CallActivityAsync<Dictionary<string, string>>(nameof(ProjectUpdateActivity), providerCommand.Command)
                 .ConfigureAwait(true);
 
-            if (!string.IsNullOrEmpty(request.CallbackUrl))
-            {
-                functionContext.StartNewOrchestration(nameof(SendCommandResultOrchestration), new SendCommandResultOrchestration.Request
-                {
-                    InstanceId = functionContext.InstanceId,
-                    CallbackUrl = request.CallbackUrl
-                });
-            }
+            functionContext.SetOutput(providerVariables);
 
-            return commandResult;
+            functionContext.StartNewOrchestration(nameof(SendCommandResultOrchestration), providerCommand);
         }
     }
 }
