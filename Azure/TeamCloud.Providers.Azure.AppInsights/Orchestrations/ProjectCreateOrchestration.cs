@@ -4,12 +4,12 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using TeamCloud.Model.Commands;
+using TeamCloud.Model.Data;
 using TeamCloud.Providers.Azure.AppInsights.Activities;
 
 namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
@@ -24,15 +24,20 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var providerCommand = functionContext.GetInput<ProviderCommand>();
+            var providerCommandMessage = functionContext.GetInput<ProviderCommandMessage>();
 
-            var providerVariables = await functionContext
-                .CallActivityAsync<Dictionary<string, string>>(nameof(ProjectCreateActivity), providerCommand.Command)
+            var command = providerCommandMessage.Command as ProjectCreateCommand;
+
+            var project = await functionContext
+                .CallActivityAsync<Project>(nameof(ProjectCreateActivity), command)
                 .ConfigureAwait(true);
 
-            functionContext.SetOutput(providerVariables);
+            var commandResult = command.CreateResult();
+            commandResult.Result = project;
 
-            functionContext.StartNewOrchestration(nameof(SendCommandResultOrchestration), providerCommand);
+            functionContext.SetOutput(commandResult);
+
+            functionContext.StartNewOrchestration(nameof(SendCommandResultOrchestration), providerCommandMessage);
         }
     }
 }

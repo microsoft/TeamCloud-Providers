@@ -18,12 +18,12 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
     {
         [FunctionName(nameof(SendCommandResultActivity))]
         public static async Task<bool> RunActivity(
-            [ActivityTrigger] ProviderCommand providerCommand,
+            [ActivityTrigger] ProviderCommandMessage providerCommandMessage,
             [DurableClient] IDurableClient durableClient,
             ILogger log)
         {
-            if (providerCommand is null)
-                throw new ArgumentNullException(nameof(providerCommand));
+            if (providerCommandMessage is null)
+                throw new ArgumentNullException(nameof(providerCommandMessage));
 
             if (durableClient is null)
                 throw new ArgumentNullException(nameof(durableClient));
@@ -31,14 +31,14 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
             try
             {
                 var status = await durableClient
-                    .GetStatusAsync(providerCommand.CommandId.ToString(), showHistory: false, showHistoryOutput: false, showInput: false)
+                    .GetStatusAsync(providerCommandMessage.CommandId.ToString(), showHistory: false, showHistoryOutput: false, showInput: false)
                     .ConfigureAwait(false);
 
-                var providerCommandResult = providerCommand.CreateResult(status);
+                var providerCommandResult = providerCommandMessage.Command.CreateResult(status);
 
                 if (providerCommandResult.RuntimeStatus.IsFinal())
                 {
-                    var response = await providerCommand.CallbackUrl
+                    var response = await providerCommandMessage.CallbackUrl
                         .PostJsonAsync(providerCommandResult)
                         .ConfigureAwait(false);
 

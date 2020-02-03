@@ -26,7 +26,7 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var providerCommand = functionContext.GetInput<ProviderCommand>();
+            var providerCommandMessage = functionContext.GetInput<ProviderCommandMessage>();
 
             // this orchestration is being called from the same orchestration
             // that we're sending the result for.  thus the calling orchestration
@@ -40,17 +40,13 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
             var retryOptions = new RetryOptions(TimeSpan.FromSeconds(5), 10);
 
             var success = await functionContext
-                .CallActivityWithRetryAsync<bool>(nameof(SendCommandResultActivity), retryOptions, providerCommand)
+                .CallActivityWithRetryAsync<bool>(nameof(SendCommandResultActivity), retryOptions, providerCommandMessage)
                 .ConfigureAwait(true);
 
             // calling orchestraiton isn't in a final state (finished)
             if (!success)
             {
-                await functionContext
-                    .CreateTimer(functionContext.CurrentUtcDateTime.AddSeconds(1), CancellationToken.None)
-                    .ConfigureAwait(true);
-
-                functionContext.ContinueAsNew(providerCommand);
+                functionContext.ContinueAsNew(providerCommandMessage);
             }
         }
     }

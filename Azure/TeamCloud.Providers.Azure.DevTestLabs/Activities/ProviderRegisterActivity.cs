@@ -1,4 +1,4 @@
-﻿/**
+/**
  *  Copyright (c) Microsoft Corporation.
  *  Licensed under the MIT License.
  */
@@ -13,11 +13,11 @@ using TeamCloud.Model.Data;
 
 namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
 {
-    public static class ProjectDeleteActivity
+    public static class ProviderRegisterActivity
     {
-        [FunctionName(nameof(ProjectDeleteActivity))]
-        public static async Task<Project> RunActivity(
-            [ActivityTrigger] ProjectDeleteCommand command,
+        [FunctionName(nameof(ProviderRegisterActivity))]
+        public static async Task<ProviderRegistration> RunActivity(
+            [ActivityTrigger] ProviderRegisterCommand command,
             ILogger logger)
         {
             if (command is null)
@@ -25,7 +25,14 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
 
             await Task.Delay(30 * 1000);
 
-            return command.Payload;
+            var registration = new ProviderRegistration
+            {
+                PricipalId = Guid.NewGuid()
+            };
+
+            registration.Variables.Add(nameof(ProviderRegisterActivity), command.CommandId.ToString());
+
+            return registration;
         }
     }
 }

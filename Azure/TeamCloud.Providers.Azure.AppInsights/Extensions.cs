@@ -33,23 +33,39 @@ namespace TeamCloud.Providers.Azure.AppInsights
             return headerDictionary.TryGetValue("x-functions-callback", out var value) ? value.FirstOrDefault() : null;
         }
 
-        internal static ProviderCommandResult CreateResult(this ProviderCommand providerCommand, DurableOrchestrationStatus orchestrationStatus)
+        internal static ICommandResult CreateResult(this ICommand command, DurableOrchestrationStatus orchestrationStatus)
         {
-            var result = new ProviderCommandResult(providerCommand);
+            var result = (orchestrationStatus.Output?.HasValues ?? false) ? orchestrationStatus.Output.ToObject<ICommandResult>() : command.CreateResult();
 
             result.CreatedTime = orchestrationStatus.CreatedTime;
             result.LastUpdatedTime = orchestrationStatus.LastUpdatedTime;
             result.RuntimeStatus = (CommandRuntimeStatus)orchestrationStatus.RuntimeStatus;
             result.CustomStatus = orchestrationStatus.CustomStatus?.ToString();
 
+            return result;
+        }
+
+        internal static ICommandResult GetCommandResult(this DurableOrchestrationStatus orchestrationStatus)
+        {
             if (orchestrationStatus.Output?.HasValues ?? false)
             {
-                result.Result = orchestrationStatus.Output.ToObject<Dictionary<string, string>>();
+                var result = orchestrationStatus.Output.ToObject<ICommandResult>();
+
+                result.CreatedTime = orchestrationStatus.CreatedTime;
+                result.LastUpdatedTime = orchestrationStatus.LastUpdatedTime;
+                result.RuntimeStatus = (CommandRuntimeStatus)orchestrationStatus.RuntimeStatus;
+                result.CustomStatus = orchestrationStatus.CustomStatus?.ToString();
+
+                return result;
+            }
+            else if (orchestrationStatus.Input?.HasValues ?? false)
+            {
+                var command = orchestrationStatus.Input.ToObject<ProviderCommandMessage>()?.Command;
+
+                return command?.CreateResult(orchestrationStatus);
             }
 
-            result.Result ??= new Dictionary<string, string>();
-
-            return result;
+            return null;
         }
     }
 }

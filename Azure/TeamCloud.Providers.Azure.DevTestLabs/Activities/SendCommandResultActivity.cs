@@ -5,7 +5,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Flurl;
 using Flurl.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -18,7 +17,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
     {
         [FunctionName(nameof(SendCommandResultActivity))]
         public static async Task<bool> RunActivity(
-            [ActivityTrigger] ProviderCommand providerCommand,
+            [ActivityTrigger] ProviderCommandMessage providerCommand,
             [DurableClient] IDurableClient durableClient,
             ILogger log)
         {
@@ -34,7 +33,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
                     .GetStatusAsync(providerCommand.CommandId.ToString(), showHistory: false, showHistoryOutput: false, showInput: false)
                     .ConfigureAwait(false);
 
-                var providerCommandResult = providerCommand.CreateResult(status);
+                var providerCommandResult = providerCommand.Command.CreateResult(status);
 
                 if (providerCommandResult.RuntimeStatus.IsFinal())
                 {
