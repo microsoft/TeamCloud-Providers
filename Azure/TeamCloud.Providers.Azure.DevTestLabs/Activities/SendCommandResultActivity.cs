@@ -33,7 +33,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
                     .GetStatusAsync(providerCommand.CommandId.ToString(), showHistory: false, showHistoryOutput: false, showInput: false)
                     .ConfigureAwait(false);
 
-                var providerCommandResult = providerCommand.Command.CreateResult(status);
+                var providerCommandResult = providerCommand.Command.CreateResult();
 
                 if (providerCommandResult.RuntimeStatus.IsFinal())
                 {

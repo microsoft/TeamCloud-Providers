@@ -34,7 +34,7 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
                     .GetStatusAsync(providerCommandMessage.CommandId.ToString(), showHistory: false, showHistoryOutput: false, showInput: false)
                     .ConfigureAwait(false);
 
-                var providerCommandResult = providerCommandMessage.Command.CreateResult(status);
+                var providerCommandResult = providerCommandMessage.Command.CreateResult();
 
                 if (providerCommandResult.RuntimeStatus.IsFinal())
                 {

@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using TeamCloud.Model.Commands;
 using TeamCloud.Providers.Azure.AppInsights.Orchestrations;
+using Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers;
 
 namespace TeamCloud.Providers.Azure.AppInsights
 {
@@ -41,7 +42,7 @@ namespace TeamCloud.Providers.Azure.AppInsights
                 .GetStatusAsync(providerCommandMessage.CommandId.ToString())
                 .ConfigureAwait(false);
 
-            var providerCommandResult = providerCommandMessage.Command.CreateResult(status);
+            var providerCommandResult = providerCommandMessage.Command.CreateResult();
 
             if (providerCommandResult.RuntimeStatus.IsFinal())
             {

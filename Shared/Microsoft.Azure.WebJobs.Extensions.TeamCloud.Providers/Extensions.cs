@@ -8,10 +8,17 @@ using System.Linq;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using TeamCloud.Model.Commands;
 
-namespace TeamCloud.Providers
+namespace Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers
 {
     public static class Extensions
     {
+        private static readonly int[] FinalRuntimeStatus = new int[]
+        {
+            (int) OrchestrationRuntimeStatus.Canceled,
+            (int) OrchestrationRuntimeStatus.Completed,
+            (int) OrchestrationRuntimeStatus.Terminated
+        };
+
         public static ICommandResult GetResult(this DurableOrchestrationStatus orchestrationStatus)
         {
             var command = orchestrationStatus.Input.ToObject<ICommand>();
@@ -29,7 +36,7 @@ namespace TeamCloud.Providers
             commandResult.RuntimeStatus = (CommandRuntimeStatus)orchestrationStatus.RuntimeStatus;
             commandResult.CustomStatus = orchestrationStatus.CustomStatus?.ToString();
 
-            if (orchestrationStatus.Output?.HasValues ?? false)
+            if (FinalRuntimeStatus.Contains((int)orchestrationStatus.RuntimeStatus) && (orchestrationStatus.Output?.HasValues ?? false))
             {
                 var orchstrationResultType = commandResult.GetType()
                     .GetInterfaces()

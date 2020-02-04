@@ -41,7 +41,7 @@ namespace TeamCloud.Providers.Azure.DevOps
                 .GetStatusAsync(providerCommandMessage.CommandId.ToString())
                 .ConfigureAwait(false);
 
-            var providerCommandResult = providerCommandMessage.Command.CreateResult(status);
+            var providerCommandResult = providerCommandMessage.Command.CreateResult();
 
             if (providerCommandResult.RuntimeStatus.IsFinal())
             {

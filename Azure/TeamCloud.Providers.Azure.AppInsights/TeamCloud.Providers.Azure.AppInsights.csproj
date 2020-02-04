@@ -25,6 +25,6 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Shared\TeamCloud.Providers.SDK\TeamCloud.Providers.SDK.csproj" />
+    <ProjectReference Include="..\..\Shared\Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers\Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers.csproj" />
   </ItemGroup>
 </Project>
