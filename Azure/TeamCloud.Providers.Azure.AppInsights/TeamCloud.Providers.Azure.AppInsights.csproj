@@ -20,11 +20,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Shared\TeamCloud.Model\TeamCloud.Model.csproj">
-      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
-    </ProjectReference>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Properties\" />
+    <ProjectReference Include="..\..\Shared\TeamCloud.Providers.SDK\TeamCloud.Providers.SDK.csproj" />
   </ItemGroup>
 </Project>

@@ -7,7 +7,6 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using TeamCloud.Model.Commands;
 
 namespace TeamCloud.Providers.Azure.DevTestLabs
 {
@@ -32,41 +31,5 @@ namespace TeamCloud.Providers.Azure.DevTestLabs
             return headerDictionary.TryGetValue("x-functions-callback", out var value) ? value.FirstOrDefault() : null;
         }
 
-        internal static ICommandResult<TResult> GetResult<TResult>(this DurableOrchestrationStatus orchestrationStatus)
-            where TResult : new()
-        {
-            var result = new CommandResult<TResult>(Guid.Parse(orchestrationStatus.InstanceId))
-            {
-                CreatedTime = orchestrationStatus.CreatedTime,
-                LastUpdatedTime = orchestrationStatus.LastUpdatedTime,
-                RuntimeStatus = (CommandRuntimeStatus)orchestrationStatus.RuntimeStatus,
-                CustomStatus = orchestrationStatus.CustomStatus?.ToString(),
-            };
-
-            if (orchestrationStatus.Output?.HasValues ?? false)
-            {
-                result.Result = orchestrationStatus.Output.ToObject<TResult>();
-            }
-
-            return result;
-        }
-
-        internal static ICommandResult GetResult(this DurableOrchestrationStatus orchestrationStatus)
-        {
-            var result = new CommandResult(Guid.Parse(orchestrationStatus.InstanceId))
-            {
-                CreatedTime = orchestrationStatus.CreatedTime,
-                LastUpdatedTime = orchestrationStatus.LastUpdatedTime,
-                RuntimeStatus = (CommandRuntimeStatus)orchestrationStatus.RuntimeStatus,
-                CustomStatus = orchestrationStatus.CustomStatus?.ToString(),
-            };
-
-            //if (orchestrationStatus.Output?.HasValues ?? false)
-            //{
-            //    result.Result = orchestrationStatus.Output.ToObject<TResult>();
-            //}
-
-            return result;
-        }
     }
 }
