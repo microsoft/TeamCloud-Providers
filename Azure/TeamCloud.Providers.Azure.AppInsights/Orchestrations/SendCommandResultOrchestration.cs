@@ -26,34 +26,28 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var request = functionContext.GetInput<Request>();
+            var providerCommandMessage = functionContext.GetInput<ProviderCommandMessage>();
 
-            var result = await functionContext
-                .CallActivityAsync<ICommandResult>(nameof(SendCommandResultActivity), request.InstanceId)
+            // this orchestration is being called from the same orchestration
+            // that we're sending the result for.  thus the calling orchestration
+            // needs to be finished.  to ensure this we wait for a second before
+            // calling the activity, and try again if the activity returns false
+
+            await functionContext
+                .CreateTimer(functionContext.CurrentUtcDateTime.AddSeconds(1), CancellationToken.None)
                 .ConfigureAwait(true);
 
-            if (result is null)
+            var retryOptions = new RetryOptions(TimeSpan.FromSeconds(5), 10);
+
+            var success = await functionContext
+                .CallActivityWithRetryAsync<bool>(nameof(SendCommandResultActivity), retryOptions, providerCommandMessage)
+                .ConfigureAwait(true);
+
+            // calling orchestraiton isn't in a final state (finished)
+            if (!success)
             {
-                await functionContext
-                    .CreateTimer(functionContext.CurrentUtcDateTime.AddSeconds(1), CancellationToken.None)
-                    .ConfigureAwait(true);
-
-                functionContext.ContinueAsNew(request);
+                functionContext.ContinueAsNew(providerCommandMessage);
             }
-            else
-            {
-                var response = await functionContext
-                    .CallHttpAsync(HttpMethod.Post, new Uri(request.CallbackUrl), JsonConvert.SerializeObject(result))
-                    .ConfigureAwait(true);
-            }
-        }
-
-
-        public class Request
-        {
-            public string InstanceId { get; set; }
-
-            public string CallbackUrl { get; set; }
         }
     }
 }

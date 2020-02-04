@@ -5,6 +5,8 @@
 
 using System;
 using System.Threading.Tasks;
+using Flurl;
+using Flurl.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
@@ -15,29 +17,43 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
     public static class SendCommandResultActivity
     {
         [FunctionName(nameof(SendCommandResultActivity))]
-        public static async Task<ICommandResult> RunOrchestration(
-            [ActivityTrigger] string instanceId,
+        public static async Task<bool> RunActivity(
+            [ActivityTrigger] ProviderCommandMessage providerCommandMessage,
             [DurableClient] IDurableClient durableClient,
             ILogger log)
         {
-            if (instanceId is null)
-                throw new ArgumentNullException(nameof(instanceId));
+            if (providerCommandMessage is null)
+                throw new ArgumentNullException(nameof(providerCommandMessage));
 
             if (durableClient is null)
                 throw new ArgumentNullException(nameof(durableClient));
 
-            var status = await durableClient
-               .GetStatusAsync(instanceId)
-               .ConfigureAwait(false);
-
-            ICommandResult result = null;
-
-            if (status.IsFinalRuntimeStatus())
+            try
             {
-                result = status.GetResult();
-            }
+                var status = await durableClient
+                    .GetStatusAsync(providerCommandMessage.CommandId.ToString(), showHistory: false, showHistoryOutput: false, showInput: false)
+                    .ConfigureAwait(false);
 
-            return result;
+                var providerCommandResult = providerCommandMessage.Command.CreateResult(status);
+
+                if (providerCommandResult.RuntimeStatus.IsFinal())
+                {
+                    var response = await providerCommandMessage.CallbackUrl
+                        .PostJsonAsync(providerCommandResult)
+                        .ConfigureAwait(false);
+
+                    response.EnsureSuccessStatusCode();
+
+                    return true;
+                }
+
+                return false;
+            }
+            catch (System.Exception ex)
+            {
+                log.LogError(ex, "SendCommandResultActivity Failed");
+                throw;
+            }
         }
     }
 }

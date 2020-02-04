@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
+using TeamCloud.Model.Commands;
+using TeamCloud.Model.Data;
 using TeamCloud.Providers.Azure.DevOps.Activities;
 
 namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
@@ -15,29 +17,27 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
     public static class ProjectCreateOrchestration
     {
         [FunctionName(nameof(ProjectCreateOrchestration))]
-        public static async Task<ProjectCreateActivity.Result> RunOrchestration(
+        public static async Task RunOrchestration(
             [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
             ILogger log)
         {
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var request = functionContext.GetInput<OrchestrationRequest>();
+            var providerCommandMessage = functionContext.GetInput<ProviderCommandMessage>();
 
-            var commandResult = await functionContext
-                .CallActivityAsync<ProjectCreateActivity.Result>(nameof(ProjectCreateActivity), request.Command)
+            var command = providerCommandMessage.Command as ProjectCreateCommand;
+
+            var project = await functionContext
+                .CallActivityAsync<Project>(nameof(ProjectCreateActivity), command)
                 .ConfigureAwait(true);
 
-            if (!string.IsNullOrEmpty(request.CallbackUrl))
-            {
-                functionContext.StartNewOrchestration(nameof(SendCommandResultOrchestration), new SendCommandResultOrchestration.Request
-                {
-                    InstanceId = functionContext.InstanceId,
-                    CallbackUrl = request.CallbackUrl
-                });
-            }
+            var commandResult = command.CreateResult();
+            commandResult.Result = project;
 
-            return commandResult;
+            functionContext.SetOutput(commandResult);
+
+            functionContext.StartNewOrchestration(nameof(SendCommandResultOrchestration), providerCommandMessage);
         }
     }
 }
