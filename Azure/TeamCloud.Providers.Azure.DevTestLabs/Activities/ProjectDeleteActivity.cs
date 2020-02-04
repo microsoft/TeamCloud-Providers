@@ -18,7 +18,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
         [FunctionName(nameof(ProjectDeleteActivity))]
         public static async Task<Project> RunActivity(
             [ActivityTrigger] ProjectDeleteCommand command,
-            ILogger logger)
+            ILogger log)
         {
             if (command is null)
                 throw new ArgumentNullException(nameof(command));
