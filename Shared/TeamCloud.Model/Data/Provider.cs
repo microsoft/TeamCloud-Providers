@@ -3,6 +3,7 @@
  *  Licensed under the MIT License.
  */
 
+using System;
 using System.Collections.Generic;
 using FluentValidation;
 using Newtonsoft.Json;
@@ -19,13 +20,15 @@ namespace TeamCloud.Model.Data
 
         public string AuthCode { get; set; }
 
+        public Guid PricipalId { get; set; }
+
         public bool Optional { get; set; }
 
         public ProviderDependencies Dependencies { get; set; }
 
         public List<string> Events { get; set; } = new List<string>();
 
-        public Dictionary<string, string> Variables { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
     }
 
     public sealed class ProviderValidator : AbstractValidator<Provider>

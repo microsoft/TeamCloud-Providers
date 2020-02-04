@@ -18,7 +18,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
         [FunctionName(nameof(ProjectUpdateActivity))]
         public static async Task<Project> RunActivity(
             [ActivityTrigger] ProjectUpdateCommand command,
-            ILogger logger)
+            ILogger log)
         {
             if (command is null)
                 throw new ArgumentNullException(nameof(command));

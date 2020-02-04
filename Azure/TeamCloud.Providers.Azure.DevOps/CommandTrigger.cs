@@ -23,7 +23,7 @@ namespace TeamCloud.Providers.Azure.DevOps
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "command")] ProviderCommandMessage providerCommandMessage,
             [DurableClient] IDurableClient durableClient,
-            ILogger logger)
+            ILogger log)
         {
             if (providerCommandMessage is null)
                 throw new ArgumentNullException(nameof(providerCommandMessage));

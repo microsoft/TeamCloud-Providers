@@ -22,7 +22,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\TeamCloud\src\TeamCloud.Model\TeamCloud.Model.csproj">
+    <!-- <ProjectReference Include="..\..\..\TeamCloud\src\TeamCloud.Model\TeamCloud.Model.csproj"> -->
+    <ProjectReference Include="..\..\Shared\TeamCloud.Model\TeamCloud.Model.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
   </ItemGroup>

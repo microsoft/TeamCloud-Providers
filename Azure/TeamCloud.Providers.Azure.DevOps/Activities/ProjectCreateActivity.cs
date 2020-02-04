@@ -19,7 +19,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
         [FunctionName(nameof(ProjectCreateActivity))]
         public static async Task<Project> RunActivity(
             [ActivityTrigger] ProjectCreateCommand command,
-            ILogger logger)
+            ILogger log)
         {
             if (command is null)
                 throw new ArgumentNullException(nameof(command));

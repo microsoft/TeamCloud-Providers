@@ -18,7 +18,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
         [FunctionName(nameof(ProviderRegisterActivity))]
         public static async Task<ProviderRegistration> RunActivity(
             [ActivityTrigger] ProviderRegisterCommand command,
-            ILogger logger)
+            ILogger log)
         {
             if (command is null)
                 throw new ArgumentNullException(nameof(command));
@@ -30,7 +30,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
                 PricipalId = Guid.NewGuid()
             };
 
-            registration.Variables.Add(nameof(ProviderRegisterActivity), command.CommandId.ToString());
+            registration.Properties.Add(nameof(ProviderRegisterActivity), command.CommandId.ToString());
 
             return registration;
         }
