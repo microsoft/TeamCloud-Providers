@@ -13,7 +13,8 @@
       "type": "process",
       "problemMatcher": "$msCompile",
       "presentation": {
-        "group": "functions"
+        "group": "teamcloudBuild",
+        "showReuseMessage": false
       }
     },
     {
@@ -22,7 +23,7 @@
       "args": [
         "build",
         "${workspaceFolder}",
-        // "--no-dependencies",
+        "--no-dependencies",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
@@ -34,7 +35,8 @@
       },
       "problemMatcher": "$msCompile",
       "presentation": {
-        "group": "functions"
+        "group": "teamcloudBuild",
+        "showReuseMessage": false
       }
     },
     {
@@ -47,37 +49,8 @@
       "isBackground": true,
       "problemMatcher": "$func-watch",
       "presentation": {
-        "group": "functions"
+        "group": "teamcloud"
       }
-    },
-    {
-      "label": "clean release",
-      "command": "dotnet",
-      "args": [
-        "clean",
-        "${workspaceFolder}",
-        "--configuration",
-        "Release",
-        "/property:GenerateFullPaths=true",
-        "/consoleloggerparameters:NoSummary"
-      ],
-      "type": "process",
-      "problemMatcher": "$msCompile"
-    },
-    {
-      "label": "publish",
-      "command": "dotnet",
-      "args": [
-        "publish",
-        "${workspaceFolder}",
-        "--configuration",
-        "Release",
-        "/property:GenerateFullPaths=true",
-        "/consoleloggerparameters:NoSummary"
-      ],
-      "type": "process",
-      "dependsOn": "clean release",
-      "problemMatcher": "$msCompile"
     }
   ]
 }
