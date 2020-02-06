@@ -7,25 +7,29 @@ using System;
 using System.Collections.Generic;
 using TeamCloud.Model.Commands;
 
-namespace Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers
+namespace TeamCloud.Providers.Core
 {
     public interface IConfiguration
     {
         string ConnectionString { get; }
 
         IReadOnlyDictionary<Type, string> Orchestrations { get; }
+
+        IReadOnlyCollection<Type> Ignored { get; }
     }
 
     public sealed class Configuration : IConfiguration
     {
         private readonly Dictionary<Type, string> orchestrations = new Dictionary<Type, string>();
 
+        private readonly HashSet<Type> ignores = new HashSet<Type>();
+
         internal Configuration() { }
 
         public string ConnectionString { get; set; }
             = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
 
-        public void Map<T>(string orchestrationName)
+        public void MapCommand<T>(string orchestrationName)
             where T : ICommand
         {
             if (string.IsNullOrEmpty(orchestrationName))
@@ -34,7 +38,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers
             orchestrations[typeof(T)] = orchestrationName;
         }
 
+        public void IgnoreCommand<T>()
+            where T : ICommand
+            => ignores.Add(typeof(T));
+
         IReadOnlyDictionary<Type, string> IConfiguration.Orchestrations
             => orchestrations;
+
+        IReadOnlyCollection<Type> IConfiguration.Ignored
+            => ignores;
     }
 }

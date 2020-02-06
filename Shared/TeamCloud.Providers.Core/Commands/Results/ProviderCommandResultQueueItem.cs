@@ -7,15 +7,15 @@ using Microsoft.WindowsAzure.Storage.Queue;
 using Newtonsoft.Json;
 using TeamCloud.Model.Commands;
 
-namespace Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers.Commands.Results
+namespace TeamCloud.Providers.Core.Commands.Results
 {
-    public class ProviderCommandResultMessageQueueItem
+    public sealed class ProviderCommandResultQueueItem
     {
         public string CallbackUrl { get; set; }
 
-        public ProviderCommandResultMessage Payload { get; set; }
-
         public string PayloadUrl { get; set; }
+
+        public ICommandResult Payload { get; set; }
 
         public CloudQueueMessage ToCloudQueueMessage()
             => new CloudQueueMessage(ToString());

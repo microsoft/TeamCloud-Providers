@@ -5,21 +5,22 @@
 
 using System.Threading.Tasks;
 using Flurl.Http;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers.Commands.Results
+namespace TeamCloud.Providers.Core.Commands.Results
 {
-    public class ProviderCommandResultMessageQueueProcessor
+    public sealed class ProviderCommandResultQueueProcessor
     {
-        [FunctionName(nameof(ProviderCommandResultMessageQueueProcessor))]
+        [FunctionName(nameof(ProviderCommandResultQueueProcessor))]
         public async Task Run(
-            [QueueTrigger(Constants.Queues.ProviderCommandResults)] ProviderCommandResultMessageQueueItem providerCommandResultMessageQueueItem,
+            [QueueTrigger(Constants.Queues.ProviderCommandResults)] ProviderCommandResultQueueItem providerCommandResultMessageQueueItem,
             ILogger log)
         {
             if (!string.IsNullOrEmpty(providerCommandResultMessageQueueItem.PayloadUrl))
             {
                 providerCommandResultMessageQueueItem = await providerCommandResultMessageQueueItem.PayloadUrl
-                    .GetJsonAsync<ProviderCommandResultMessageQueueItem>()
+                    .GetJsonAsync<ProviderCommandResultQueueItem>()
                     .ConfigureAwait(false);
             }
 

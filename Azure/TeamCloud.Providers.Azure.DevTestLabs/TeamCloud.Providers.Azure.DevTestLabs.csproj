@@ -15,7 +15,7 @@
     <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.3.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Shared\Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers\Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers.csproj" />
+    <ProjectReference Include="..\..\Shared\TeamCloud.Providers.Core\TeamCloud.Providers.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">

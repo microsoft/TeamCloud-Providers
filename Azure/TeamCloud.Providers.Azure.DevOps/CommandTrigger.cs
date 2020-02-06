@@ -5,16 +5,13 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using TeamCloud.Model.Commands;
-using TeamCloud.Providers.Azure.DevOps.Orchestrations;
+using TeamCloud.Providers.Core;
 
 namespace TeamCloud.Providers.Azure.DevOps
 {

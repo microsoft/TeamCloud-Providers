@@ -7,12 +7,12 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers.Commands.Orchestrations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TeamCloud.Model.Commands;
+using TeamCloud.Providers.Core.Commands.Orchestrations;
 
-namespace Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers
+namespace TeamCloud.Providers.Core
 {
     public static class Extensions
     {

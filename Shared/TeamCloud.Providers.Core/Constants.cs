@@ -1,11 +1,10 @@
 ﻿/**
- *  Copyright (c) Microsoft Corporation.
- *  Licensed under the MIT License.
- */
-
-namespace Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers
+*  Copyright (c) Microsoft Corporation.
+*  Licensed under the MIT License.
+*/
+namespace TeamCloud.Providers.Core
 {
-    public static class Constants
+    internal static class Constants
     {
         public static class Queues
         {

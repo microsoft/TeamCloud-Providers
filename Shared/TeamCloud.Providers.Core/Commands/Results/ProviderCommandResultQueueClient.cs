@@ -9,20 +9,20 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Queue;
 
-namespace Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers.Commands.Results
+namespace TeamCloud.Providers.Core.Commands.Results
 {
-    public interface IProviderCommandResultMessageQueueClient
+    public interface IProviderCommandResultQueueClient
     {
-        Task EnqueueAsync(ProviderCommandResultMessageQueueItem providerCommandResultMessageQueueItem);
+        Task EnqueueAsync(ProviderCommandResultQueueItem providerCommandResultMessageQueueItem);
     }
 
-    public class ProviderCommandResultMessageQueueClient : IProviderCommandResultMessageQueueClient
+    public sealed class ProviderCommandResultQueueClient : IProviderCommandResultQueueClient
     {
         private readonly Lazy<CloudQueue> cloudQueueInstance;
 
         private readonly Lazy<CloudBlobContainer> cloudContainerInstance;
 
-        public ProviderCommandResultMessageQueueClient(IConfiguration configuration)
+        public ProviderCommandResultQueueClient(IConfiguration configuration)
         {
             if (configuration is null)
                 throw new ArgumentNullException(nameof(configuration));
@@ -71,23 +71,23 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers.Commands.Result
             return container.GetSharedAccessSignature(adHocPolicy, null);
         }
 
-        public async Task EnqueueAsync(ProviderCommandResultMessageQueueItem providerCommandResultMessageQueueItem)
+        public async Task EnqueueAsync(ProviderCommandResultQueueItem providerCommandResultQueueItem)
         {
-            if (providerCommandResultMessageQueueItem is null)
-                throw new ArgumentNullException(nameof(providerCommandResultMessageQueueItem));
+            if (providerCommandResultQueueItem is null)
+                throw new ArgumentNullException(nameof(providerCommandResultQueueItem));
 
-            var queueMessage = providerCommandResultMessageQueueItem
+            var queueMessage = providerCommandResultQueueItem
                 .ToCloudQueueMessage();
 
             if (queueMessage.AsString.Length > CloudQueueMessage.MaxMessageSize)
             {
-                var providerCommandResultMessageQueueItemRef = new ProviderCommandResultMessageQueueItem()
+                var providerCommandResultQueueItemRef = new ProviderCommandResultQueueItem()
                 {
-                    CallbackUrl = providerCommandResultMessageQueueItem.CallbackUrl,
-                    PayloadUrl = await PersistAsync(providerCommandResultMessageQueueItem).ConfigureAwait(false)
+                    CallbackUrl = providerCommandResultQueueItem.CallbackUrl,
+                    PayloadUrl = await PersistAsync(providerCommandResultQueueItem).ConfigureAwait(false)
                 };
 
-                queueMessage = providerCommandResultMessageQueueItemRef
+                queueMessage = providerCommandResultQueueItemRef
                     .ToCloudQueueMessage();
             }
 
@@ -99,19 +99,19 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers.Commands.Result
                 .ConfigureAwait(false);
         }
 
-        private async Task<string> PersistAsync(ProviderCommandResultMessageQueueItem providerCommandResultMessageQueueItem)
+        private async Task<string> PersistAsync(ProviderCommandResultQueueItem providerCommandResultQueueItem)
         {
-            if (providerCommandResultMessageQueueItem is null)
-                throw new ArgumentNullException(nameof(providerCommandResultMessageQueueItem));
+            if (providerCommandResultQueueItem is null)
+                throw new ArgumentNullException(nameof(providerCommandResultQueueItem));
 
             var container = await GetProviderCommandResultContainerAsync()
                 .ConfigureAwait(false);
 
             var blob = container
-                .GetBlockBlobReference($"{providerCommandResultMessageQueueItem.Payload.CommandId ?? Guid.NewGuid()}.json");
+                .GetBlockBlobReference($"{Guid.NewGuid()}.json");
 
             await blob
-                .UploadTextAsync(providerCommandResultMessageQueueItem.ToString())
+                .UploadTextAsync(providerCommandResultQueueItem.ToString())
                 .ConfigureAwait(false);
 
             var token = await GetProviderCommandResultContainerSasTokenAsync()

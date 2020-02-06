@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers
+namespace TeamCloud.Providers.Core
 {
     [AttributeUsage(AttributeTargets.Assembly, Inherited = false, AllowMultiple = true)]
     public sealed class FunctionsImportAttribute : Attribute

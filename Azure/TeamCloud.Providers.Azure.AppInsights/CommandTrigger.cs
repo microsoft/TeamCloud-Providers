@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using TeamCloud.Model.Commands;
 using TeamCloud.Providers.Azure.AppInsights.Orchestrations;
-using Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers;
+using TeamCloud.Providers.Core;
 
 namespace TeamCloud.Providers.Azure.AppInsights
 {
