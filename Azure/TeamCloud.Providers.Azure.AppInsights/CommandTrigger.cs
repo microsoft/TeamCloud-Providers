@@ -32,17 +32,9 @@ namespace TeamCloud.Providers.Azure.AppInsights
             if (durableClient is null)
                 throw new ArgumentNullException(nameof(durableClient));
 
-            var orchestrationName = OrchestrationName(providerCommandMessage.Command);
-
-            _ = await durableClient
-                .StartNewAsync<object>(orchestrationName, providerCommandMessage.CommandId.ToString(), providerCommandMessage)
+            var providerCommandResult = await durableClient
+                .HandleProviderCommandMessageAsync(providerCommandMessage)
                 .ConfigureAwait(false);
-
-            var status = await durableClient
-                .GetStatusAsync(providerCommandMessage.CommandId.ToString())
-                .ConfigureAwait(false);
-
-            var providerCommandResult = providerCommandMessage.Command.CreateResult();
 
             if (providerCommandResult.RuntimeStatus.IsFinal())
             {
@@ -52,13 +44,5 @@ namespace TeamCloud.Providers.Azure.AppInsights
             return new AcceptedResult(string.Empty, providerCommandResult);
         }
 
-        private static string OrchestrationName(ICommand command) => (command) switch
-        {
-            ProviderRegisterCommand _ => nameof(ProviderRegisterOrchestration),
-            ProjectCreateCommand _ => nameof(ProjectCreateOrchestration),
-            ProjectUpdateCommand _ => nameof(ProjectUpdateOrchestration),
-            ProjectDeleteCommand _ => nameof(ProjectDeleteOrchestration),
-            _ => throw new NotSupportedException()
-        };
     }
 }

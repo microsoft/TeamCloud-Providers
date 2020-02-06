@@ -5,7 +5,11 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers.Commands.Orchestrations;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using TeamCloud.Model.Commands;
 
 namespace Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers
@@ -19,12 +23,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers
             (int) OrchestrationRuntimeStatus.Terminated
         };
 
-        public static ICommandResult GetResult(this DurableOrchestrationStatus orchestrationStatus)
-        {
-            var command = orchestrationStatus.Input.ToObject<ICommand>();
+        public static bool IsFinalRuntimeStatus(this DurableOrchestrationStatus orchestrationStatus)
+            => FinalRuntimeStatus.Contains((int)orchestrationStatus.RuntimeStatus);
 
-            return command.CreateResult().ApplyOrchestrationStatus(orchestrationStatus);
-        }
+        public static ICommandResult GetResult(this DurableOrchestrationStatus orchestrationStatus)
+            => orchestrationStatus.Input.ToObject<ICommand>().CreateResult().ApplyOrchestrationStatus(orchestrationStatus);
 
         private static ICommandResult ApplyOrchestrationStatus(this ICommandResult commandResult, DurableOrchestrationStatus orchestrationStatus)
         {
@@ -36,7 +39,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers
             commandResult.RuntimeStatus = (CommandRuntimeStatus)orchestrationStatus.RuntimeStatus;
             commandResult.CustomStatus = orchestrationStatus.CustomStatus?.ToString();
 
-            if (FinalRuntimeStatus.Contains((int)orchestrationStatus.RuntimeStatus) && (orchestrationStatus.Output?.HasValues ?? false))
+            if (orchestrationStatus.IsFinalRuntimeStatus() && (orchestrationStatus.Output?.HasValues ?? false))
             {
                 var orchstrationResultType = commandResult.GetType()
                     .GetInterfaces()
@@ -53,6 +56,58 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers
             }
 
             return commandResult;
+        }
+
+        public static IServiceCollection AddCommandOrchestration(this IServiceCollection services, Action<Configuration> config)
+        {
+            if (services is null)
+                throw new ArgumentNullException(nameof(services));
+
+            if (config is null)
+                throw new ArgumentNullException(nameof(config));
+
+            services
+                .TryAddSingleton<IConfiguration>(new Configuration());
+
+            var configuration = services
+                .BuildServiceProvider()
+                .GetRequiredService<IConfiguration>();
+
+            if (configuration is Configuration configurationTyped)
+                config(configurationTyped);
+
+            return services;
+        }
+
+        public static async Task<ICommandResult> HandleProviderCommandMessageAsync(this IDurableClient durableClient, ProviderCommandMessage providerCommandMessage)
+        {
+            _ = await durableClient
+                .StartNewAsync(nameof(ProviderCommandMessageOrchestration), providerCommandMessage)
+                .ConfigureAwait(false);
+
+            var timeoutDuration = TimeSpan.FromSeconds(30);
+            var timeout = DateTime.UtcNow.Add(timeoutDuration);
+
+            while (DateTime.UtcNow <= timeout)
+            {
+                var commandStatus = await durableClient
+                    .GetStatusAsync(providerCommandMessage.CommandId.ToString())
+                    .ConfigureAwait(false);
+
+                if (commandStatus is null)
+                {
+                    await Task
+                        .Delay(1000)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    return commandStatus
+                        .GetResult();
+                }
+            }
+
+            throw new TimeoutException($"Failed to get status for command {providerCommandMessage.CommandId} within {timeoutDuration}");
         }
     }
 }

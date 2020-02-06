@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		TeamCloud.Providers.Azure.sln.licenseheader = TeamCloud.Providers.Azure.sln.licenseheader
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers", "..\Shared\Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers\Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers.csproj", "{E8637BA6-C1EB-4111-BD65-EA39195EDA03}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers", "..\Shared\Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers\Microsoft.Azure.WebJobs.Extensions.TeamCloud.Providers.csproj", "{E8637BA6-C1EB-4111-BD65-EA39195EDA03}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Shared", "Solution Shared", "{D302A0F0-9163-4417-A75E-221033204694}"
 EndProject

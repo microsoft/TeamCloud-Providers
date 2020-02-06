@@ -24,9 +24,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var providerCommandMessage = functionContext.GetInput<ProviderCommandMessage>();
-
-            var command = providerCommandMessage.Command as ProjectDeleteCommand;
+            var command = functionContext.GetInput<ProjectDeleteCommand>();
 
             var project = await functionContext
                 .CallActivityAsync<Project>(nameof(ProjectDeleteActivity), command)
@@ -36,8 +34,6 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
             commandResult.Result = project;
 
             functionContext.SetOutput(commandResult);
-
-            functionContext.StartNewOrchestration(nameof(SendCommandResultOrchestration), providerCommandMessage);
         }
     }
 }
