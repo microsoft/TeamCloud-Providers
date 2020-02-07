@@ -24,20 +24,17 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var providerCommandMessage = functionContext.GetInput<ProviderCommandMessage>();
+            var command = functionContext.GetInput<ProjectCreateCommand>();
 
-            var command = providerCommandMessage.Command as ProjectCreateCommand;
-
-            var project = await functionContext
+            var result = await functionContext
                 .CallActivityAsync<Project>(nameof(ProjectCreateActivity), command)
                 .ConfigureAwait(true);
 
             var commandResult = command.CreateResult();
-            commandResult.Result = project;
+
+            commandResult.Result = result;
 
             functionContext.SetOutput(commandResult);
-
-            functionContext.StartNewOrchestration(nameof(SendCommandResultOrchestration), providerCommandMessage);
         }
     }
 }

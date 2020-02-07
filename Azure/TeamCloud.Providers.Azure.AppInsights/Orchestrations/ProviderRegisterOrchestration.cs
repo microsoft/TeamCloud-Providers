@@ -25,9 +25,7 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var providerCommandMessage = functionContext.GetInput<ProviderCommandMessage>();
-
-            var command = providerCommandMessage.Command as ProviderRegisterCommand;
+            var command = functionContext.GetInput<ProviderRegisterCommand>();
 
             var providerRegistraion = await functionContext
                 .CallActivityAsync<ProviderRegistration>(nameof(ProviderRegisterActivity), command)
@@ -37,8 +35,6 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
             commandResult.Result = providerRegistraion;
 
             functionContext.SetOutput(commandResult);
-
-            functionContext.StartNewOrchestration(nameof(SendCommandResultOrchestration), providerCommandMessage);
         }
     }
 }
