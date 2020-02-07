@@ -18,7 +18,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
             configuration.Orchestrations.Returns(new Dictionary<Type, string>());
 
             var dispatcher = new ProviderCommandMessageDispatcher(configuration);
-            var message = new ProviderCommandMessage(new TestCommand(), new Provider(), "http://localhost/callback");
+            var message = new ProviderCommandMessage(new TestCommand(), "http://localhost/callback");
 
             Assert.Throws<NotSupportedException>(() => dispatcher.Run(message, NullLogger.Instance));
         }
@@ -34,7 +34,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
             });
 
             var dispatcher = new ProviderCommandMessageDispatcher(configuration);
-            var message = new ProviderCommandMessage(new TestCommand(), new Provider(), "http://localhost/callback");
+            var message = new ProviderCommandMessage(new TestCommand(), "http://localhost/callback");
             var orchestration = dispatcher.Run(message, NullLogger.Instance);
 
             Assert.Equal(nameof(TestCommandOrchestration), orchestration);
@@ -51,7 +51,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
             });
 
             var dispatcher = new ProviderCommandMessageDispatcher(configuration);
-            var message = new ProviderCommandMessage(new TestInheritedCommand(), new Provider(), "http://localhost/callback");
+            var message = new ProviderCommandMessage(new TestInheritedCommand(), "http://localhost/callback");
             var orchestration = dispatcher.Run(message, NullLogger.Instance);
 
             Assert.Null(orchestration);
@@ -68,7 +68,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
             });
 
             var dispatcher = new ProviderCommandMessageDispatcher(configuration);
-            var message = new ProviderCommandMessage(new TestInheritedCommand(), new Provider(), "http://localhost/callback");
+            var message = new ProviderCommandMessage(new TestInheritedCommand(), "http://localhost/callback");
             var orchestration = dispatcher.Run(message, NullLogger.Instance);
 
             Assert.Equal(nameof(TestCommandOrchestration), orchestration);
@@ -85,7 +85,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
             });
 
             var dispatcher = new ProviderCommandMessageDispatcher(configuration);
-            var message = new ProviderCommandMessage(new TestInheritedCommand(), new Provider(), "http://localhost/callback");
+            var message = new ProviderCommandMessage(new TestInheritedCommand(), "http://localhost/callback");
             var orchestration = dispatcher.Run(message, NullLogger.Instance);
 
             Assert.Null(orchestration);
@@ -102,7 +102,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
             });
 
             var dispatcher = new ProviderCommandMessageDispatcher(configuration);
-            var message = new ProviderCommandMessage(new TestInheritedCommand(), new Provider(), "http://localhost/callback");
+            var message = new ProviderCommandMessage(new TestInheritedCommand(), "http://localhost/callback");
             var orchestration = dispatcher.Run(message, NullLogger.Instance);
 
             Assert.Equal(nameof(TestCommandOrchestration), orchestration);
@@ -119,7 +119,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
             });
 
             var dispatcher = new ProviderCommandMessageDispatcher(configuration);
-            var message = new ProviderCommandMessage(new TestInheritedCommand(), new Provider(), "http://localhost/callback");
+            var message = new ProviderCommandMessage(new TestInheritedCommand(), "http://localhost/callback");
             var orchestration = dispatcher.Run(message, NullLogger.Instance);
 
             Assert.Null(orchestration);
@@ -136,7 +136,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
             });
 
             var dispatcher = new ProviderCommandMessageDispatcher(configuration);
-            var message = new ProviderCommandMessage(new TestInheritedCommand(), new Provider(), "http://localhost/callback");
+            var message = new ProviderCommandMessage(new TestInheritedCommand(), "http://localhost/callback");
             var orchestration = dispatcher.Run(message, NullLogger.Instance);
 
             Assert.Equal(nameof(TestCommandOrchestration), orchestration);
@@ -153,7 +153,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
             });
 
             var dispatcher = new ProviderCommandMessageDispatcher(configuration);
-            var message = new ProviderCommandMessage(new TestInheritedCommand(), new Provider(), "http://localhost/callback");
+            var message = new ProviderCommandMessage(new TestInheritedCommand(), "http://localhost/callback");
             var orchestration = dispatcher.Run(message, NullLogger.Instance);
 
             Assert.Null(orchestration);
