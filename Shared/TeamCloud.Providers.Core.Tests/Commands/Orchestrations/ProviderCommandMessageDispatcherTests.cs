@@ -45,7 +45,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
         {
             var configuration = Substitute.For<IConfiguration>();
 
-            configuration.Ignores.Returns(new List<Type>()
+            configuration.Ignored.Returns(new List<Type>()
             {
                 typeof(TestInheritedCommand)
             });
@@ -79,7 +79,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
         {
             var configuration = Substitute.For<IConfiguration>();
 
-            configuration.Ignores.Returns(new List<Type>()
+            configuration.Ignored.Returns(new List<Type>()
             {
                 typeof(TestCommand)
             });
@@ -113,7 +113,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
         {
             var configuration = Substitute.For<IConfiguration>();
 
-            configuration.Ignores.Returns(new List<Type>()
+            configuration.Ignored.Returns(new List<Type>()
             {
                 typeof(ICommand)
             });
@@ -147,7 +147,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
         {
             var configuration = Substitute.For<IConfiguration>();
 
-            configuration.Ignores.Returns(new List<Type>()
+            configuration.Ignored.Returns(new List<Type>()
             {
                 typeof(ICommand<TestPayload, TestCommandResult>)
             });

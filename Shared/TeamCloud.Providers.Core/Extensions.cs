@@ -26,9 +26,6 @@ namespace TeamCloud.Providers.Core
         public static bool IsFinalRuntimeStatus(this DurableOrchestrationStatus orchestrationStatus)
             => FinalRuntimeStatus.Contains((int)orchestrationStatus.RuntimeStatus);
 
-        public static ICommandResult GetResult(this DurableOrchestrationStatus orchestrationStatus)
-            => orchestrationStatus.Input.ToObject<ICommand>().CreateResult().ApplyOrchestrationStatus(orchestrationStatus);
-
         private static ICommandResult ApplyOrchestrationStatus(this ICommandResult commandResult, DurableOrchestrationStatus orchestrationStatus)
         {
             if (orchestrationStatus is null)
@@ -81,33 +78,69 @@ namespace TeamCloud.Providers.Core
 
         public static async Task<ICommandResult> HandleProviderCommandMessageAsync(this IDurableClient durableClient, ProviderCommandMessage providerCommandMessage)
         {
-            _ = await durableClient
-                .StartNewAsync(nameof(ProviderCommandMessageOrchestration), providerCommandMessage)
+            if (durableClient is null)
+                throw new ArgumentNullException(nameof(durableClient));
+
+            if (providerCommandMessage is null)
+                throw new ArgumentNullException(nameof(providerCommandMessage));
+
+            if (providerCommandMessage.CommandId is null)
+                throw new ArgumentException("The given command message doesn't contain a command");
+
+            var commandStatus = await durableClient
+                .GetStatusAsync(providerCommandMessage.CommandId.ToString())
                 .ConfigureAwait(false);
 
-            var timeoutDuration = TimeSpan.FromSeconds(30);
-            var timeout = DateTime.UtcNow.Add(timeoutDuration);
-
-            while (DateTime.UtcNow <= timeout)
+            if (commandStatus != null)
             {
-                var commandStatus = await durableClient
-                    .GetStatusAsync(providerCommandMessage.CommandId.ToString())
-                    .ConfigureAwait(false);
+                var exceptionMessage = commandStatus.IsFinalRuntimeStatus()
+                    ? $"The command {providerCommandMessage.Command} was already processed."
+                    : $"The command {providerCommandMessage.Command} is already in progress.";
 
-                if (commandStatus is null)
-                {
-                    await Task
-                        .Delay(1000)
-                        .ConfigureAwait(false);
-                }
-                else
-                {
-                    return commandStatus
-                        .GetResult();
-                }
+                throw new ArgumentException(exceptionMessage);
             }
 
-            throw new TimeoutException($"Failed to get status for command {providerCommandMessage.CommandId} within {timeoutDuration}");
+            try
+            {
+                _ = await durableClient
+                    .StartNewAsync(nameof(ProviderCommandMessageOrchestration), providerCommandMessage)
+                    .ConfigureAwait(false);
+
+                var timeoutDuration = TimeSpan.FromSeconds(30);
+                var timeout = DateTime.UtcNow.Add(timeoutDuration);
+
+                while (DateTime.UtcNow <= timeout)
+                {
+                    commandStatus = await durableClient
+                        .GetStatusAsync(providerCommandMessage.CommandId.ToString())
+                        .ConfigureAwait(false);
+
+                    if (commandStatus is null)
+                    {
+                        await Task
+                            .Delay(1000)
+                            .ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        return providerCommandMessage.Command
+                            .CreateResult()
+                            .ApplyOrchestrationStatus(commandStatus);
+                    }
+                }
+
+                throw new TimeoutException($"Failed to get status for command {providerCommandMessage.CommandId} within {timeoutDuration}");
+            }
+            catch (Exception exc)
+            {
+                var commandResult = providerCommandMessage.Command
+                    .CreateResult()
+                    .ApplyOrchestrationStatus(commandStatus);
+
+                commandResult.Exceptions.Add(exc);
+
+                return commandResult;
+            }
         }
     }
 }

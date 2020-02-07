@@ -11,6 +11,7 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using TeamCloud.Model.Commands;
+using TeamCloud.Model.Validation;
 using TeamCloud.Providers.Core;
 
 namespace TeamCloud.Providers.Azure.DevOps
@@ -29,14 +30,14 @@ namespace TeamCloud.Providers.Azure.DevOps
             if (durableClient is null)
                 throw new ArgumentNullException(nameof(durableClient));
 
+            providerCommandMessage.Validate(throwOnValidationError: true);
+
             var providerCommandResult = await durableClient
                 .HandleProviderCommandMessageAsync(providerCommandMessage)
                 .ConfigureAwait(false);
 
             if (providerCommandResult.RuntimeStatus.IsFinal())
-            {
                 return new OkObjectResult(providerCommandResult);
-            }
 
             return new AcceptedResult(string.Empty, providerCommandResult);
         }
