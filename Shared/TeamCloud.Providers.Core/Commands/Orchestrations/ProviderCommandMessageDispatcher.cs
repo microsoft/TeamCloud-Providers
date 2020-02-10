@@ -63,7 +63,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
                     return true;
                 }
 
-                return (configuration.Ignored?.Contains(type) ?? false);
+                return configuration.Ignored?.Contains(type) ?? false;
             }
         }
     }

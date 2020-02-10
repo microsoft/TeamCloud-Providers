@@ -39,9 +39,9 @@ namespace TeamCloud.Providers.Azure.DevTestLabs
                 .AddTeamCloudCommandOrchestration(config =>
                 {
                     config.MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration));
-                    config.MapCommand<ProjectCreateCommand>(nameof(ProjectCreateOrchestration));
-                    config.MapCommand<ProjectUpdateCommand>(nameof(ProjectUpdateOrchestration));
-                    config.MapCommand<ProjectDeleteCommand>(nameof(ProjectDeleteOrchestration));
+                    config.MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration));
+                    config.MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration));
+                    config.MapCommand<ProviderProjectDeleteCommand>(nameof(ProjectDeleteOrchestration));
                     config.IgnoreCommand<ICommand>();
                 });
         }

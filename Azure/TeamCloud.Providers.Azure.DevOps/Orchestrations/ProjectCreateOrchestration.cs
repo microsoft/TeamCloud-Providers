@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -24,15 +25,14 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var command = functionContext.GetInput<ProjectCreateCommand>();
+            var command = functionContext.GetInput<ProviderProjectCreateCommand>();
 
-            var result = await functionContext
-                .CallActivityAsync<Project>(nameof(ProjectCreateActivity), command)
+            var properties = await functionContext
+                .CallActivityAsync<Dictionary<string, string>>(nameof(ProjectCreateActivity), command)
                 .ConfigureAwait(true);
 
             var commandResult = command.CreateResult();
-
-            commandResult.Result = result;
+            commandResult.Result = new ProviderProperties { Properties = properties };
 
             functionContext.SetOutput(commandResult);
         }
