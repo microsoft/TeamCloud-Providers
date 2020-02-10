@@ -6,6 +6,7 @@
 using System;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using TeamCloud.Http;
 using TeamCloud.Model.Commands;
 using TeamCloud.Providers.Azure.DevOps;
 using TeamCloud.Providers.Azure.DevOps.Orchestrations;
@@ -34,7 +35,8 @@ namespace TeamCloud.Providers.Azure.DevOps
                 .AddNewtonsoftJson();
 
             builder.Services
-                .AddCommandOrchestration(config =>
+                .AddTeamCloudHttp()
+                .AddTeamCloudCommandOrchestration(config =>
                 {
                     config.MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration));
                     config.MapCommand<ProjectCreateCommand>(nameof(ProjectCreateOrchestration));
