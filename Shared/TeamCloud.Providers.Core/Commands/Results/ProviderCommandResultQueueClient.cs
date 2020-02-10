@@ -119,7 +119,5 @@ namespace TeamCloud.Providers.Core.Commands.Results
 
             return $"{blob.Uri.AbsoluteUri}{token}";
         }
-
-
     }
 }
