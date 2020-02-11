@@ -29,18 +29,24 @@ namespace TeamCloud.Providers.Core
         public string ConnectionString { get; set; }
             = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
 
-        public void MapCommand<T>(string orchestrationName)
+        public Configuration MapCommand<T>(string orchestrationName)
             where T : ICommand
         {
             if (string.IsNullOrEmpty(orchestrationName))
                 throw new ArgumentException("Cannot be null or empty.", nameof(orchestrationName));
 
             orchestrations[typeof(T)] = orchestrationName;
+
+            return this;
         }
 
-        public void IgnoreCommand<T>()
+        public Configuration IgnoreCommand<T>()
             where T : ICommand
-            => ignores.Add(typeof(T));
+        {
+            ignores.Add(typeof(T));
+
+            return this;
+        }
 
         IReadOnlyDictionary<Type, string> IConfiguration.Orchestrations
             => orchestrations;

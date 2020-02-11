@@ -36,10 +36,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs
                 .HandleProviderCommandMessageAsync(providerCommandMessage)
                 .ConfigureAwait(false);
 
-            if (providerCommandResult.RuntimeStatus.IsFinal())
-                return new OkObjectResult(providerCommandResult);
-
-            return new AcceptedResult(string.Empty, providerCommandResult);
+            return new OkObjectResult(providerCommandResult);
         }
     }
 }

@@ -1,0 +1,26 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "0.0.0.1",
+  "parameters": {
+  },
+  "variables": {
+    "resourceName": "[concat('ai-', uniqueString(resourceGroup().id))]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2015-05-01",
+      "type": "microsoft.insights/components",
+      "name": "[variables('resourceName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "ApplicationId": "[variables('resourceName')]"
+      }
+    }
+  ],
+  "outputs": {
+    "resourceId": {
+      "type": "string",
+      "value": "[resourceId('microsoft.insights/components', variables('resourceName'))]"
+    }
+  }
+}

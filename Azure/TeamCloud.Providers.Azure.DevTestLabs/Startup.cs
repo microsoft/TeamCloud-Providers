@@ -6,6 +6,9 @@
 using System;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using TeamCloud.Azure;
+using TeamCloud.Azure.Deployment;
+using TeamCloud.Azure.Deployment.Providers;
 using TeamCloud.Http;
 using TeamCloud.Model.Commands;
 using TeamCloud.Providers.Azure.DevTestLabs;
@@ -36,13 +39,20 @@ namespace TeamCloud.Providers.Azure.DevTestLabs
 
             builder.Services
                 .AddTeamCloudHttp()
-                .AddTeamCloudCommandOrchestration(config =>
+                .AddTeamCloudAzure(configuration =>
                 {
-                    config.MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration));
-                    config.MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration));
-                    config.MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration));
-                    config.MapCommand<ProviderProjectDeleteCommand>(nameof(ProjectDeleteOrchestration));
-                    config.IgnoreCommand<ICommand>();
+                    configuration
+                        .AddDeployment()
+                        .SetDeploymentArtifactsProvider<AzureStorageArtifactsProvider>();
+                })
+                .AddTeamCloudCommandOrchestration(configuration =>
+                {
+                    configuration
+                        .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration))
+                        .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
+                        .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
+                        .MapCommand<ProviderProjectDeleteCommand>(nameof(ProjectDeleteOrchestration))
+                        .IgnoreCommand<ICommand>();
                 });
         }
     }

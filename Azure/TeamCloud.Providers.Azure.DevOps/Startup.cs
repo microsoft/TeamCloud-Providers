@@ -36,13 +36,14 @@ namespace TeamCloud.Providers.Azure.DevOps
 
             builder.Services
                 .AddTeamCloudHttp()
-                .AddTeamCloudCommandOrchestration(config =>
+                .AddTeamCloudCommandOrchestration(configuration =>
                 {
-                    config.MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration));
-                    config.MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration));
-                    config.MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration));
-                    config.MapCommand<ProviderProjectDeleteCommand>(nameof(ProjectDeleteOrchestration));
-                    config.IgnoreCommand<ICommand>();
+                    configuration
+                        .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration))
+                        .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
+                        .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
+                        .MapCommand<ProviderProjectDeleteCommand>(nameof(ProjectDeleteOrchestration))
+                        .IgnoreCommand<ICommand>();
                 });
         }
     }
