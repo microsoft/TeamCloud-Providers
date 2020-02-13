@@ -27,7 +27,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
 
             var registration = new ProviderRegistration
             {
-                PricipalId = Guid.NewGuid()
+                PrincipalId = null // this provider does not talk to any azure resources yet
             };
 
             registration.Properties.Add(nameof(ProviderRegisterActivity), command.CommandId.ToString());
