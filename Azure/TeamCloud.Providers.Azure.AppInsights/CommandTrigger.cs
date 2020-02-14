@@ -18,7 +18,6 @@ namespace TeamCloud.Providers.Azure.AppInsights
 {
     public class CommandTrigger
     {
-        [Disable()]
         [FunctionName(nameof(CommandTrigger))]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "command")] ProviderCommandMessage providerCommandMessage,
