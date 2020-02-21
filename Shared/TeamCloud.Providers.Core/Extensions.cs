@@ -137,7 +137,7 @@ namespace TeamCloud.Providers.Core
                     .CreateResult()
                     .ApplyOrchestrationStatus(commandStatus);
 
-                commandResult.Exceptions.Add(exc);
+                commandResult.Errors.Add(exc);
 
                 return commandResult;
             }

@@ -12,10 +12,10 @@
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.1" />
-    <PackageReference Include="TeamCloud.Http" Version="0.1.0-ci0304" />
-    <PackageReference Include="TeamCloud.Azure" Version="0.1.0-ci0304" />
-    <PackageReference Include="TeamCloud.Azure.Deployment" Version="0.1.0-ci0304" />
-    <PackageReference Include="TeamCloud.Model.Validation" Version="0.1.0-ci0304" />
+    <PackageReference Include="TeamCloud.Http" Version="0.1.0-ci0306" />
+    <PackageReference Include="TeamCloud.Azure" Version="0.1.0-ci0306" />
+    <PackageReference Include="TeamCloud.Azure.Deployment" Version="0.1.0-ci0306" />
+    <PackageReference Include="TeamCloud.Model.Validation" Version="0.1.0-ci0306" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\TeamCloud.Providers.Core\TeamCloud.Providers.Core.csproj" />
