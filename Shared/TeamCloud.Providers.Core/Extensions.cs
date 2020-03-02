@@ -18,8 +18,9 @@ namespace TeamCloud.Providers.Core
     {
         private static readonly int[] FinalRuntimeStatus = new int[]
         {
-            (int) OrchestrationRuntimeStatus.Canceled,
             (int) OrchestrationRuntimeStatus.Completed,
+            (int) OrchestrationRuntimeStatus.Failed,
+            (int) OrchestrationRuntimeStatus.Canceled,
             (int) OrchestrationRuntimeStatus.Terminated
         };
 
