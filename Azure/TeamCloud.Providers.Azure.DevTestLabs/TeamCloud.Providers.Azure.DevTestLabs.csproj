@@ -7,15 +7,35 @@
     <!--<UserSecretsId></UserSecretsId>-->
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Templates\ProjectCreateTemplate.json" />
+    <None Remove="Templates\ProjectCreateTemplate_Bastion.json" />
+    <None Remove="Templates\ProjectCreateTemplate_Identity.json" />
+    <None Remove="Templates\ProjectCreateTemplate_KeyVault.json" />
+    <None Remove="Templates\ProjectCreateTemplate_Repository.json" />
+    <None Remove="Templates\ProjectCreateTemplate_VNet.json" />
+    <None Remove="Templates\ProjectCreateTemplate_VNetSecure.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\ProjectCreateTemplate.json" />
+    <EmbeddedResource Include="Templates\ProjectCreateTemplate_Bastion.json" />
+    <EmbeddedResource Include="Templates\ProjectCreateTemplate_Identity.json" />
+    <EmbeddedResource Include="Templates\ProjectCreateTemplate_KeyVault.json" />
+    <EmbeddedResource Include="Templates\ProjectCreateTemplate_Repository.json" />
+    <EmbeddedResource Include="Templates\ProjectCreateTemplate_VNet.json" />
+    <EmbeddedResource Include="Templates\ProjectCreateTemplate_VNetSecure.json" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Flurl.Http" Version="2.4.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="3.1.2" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.3" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.1" />
-    <PackageReference Include="TeamCloud.Http" Version="0.1.0-ci0306" />
-    <PackageReference Include="TeamCloud.Azure" Version="0.1.0-ci0306" />
-    <PackageReference Include="TeamCloud.Azure.Deployment" Version="0.1.0-ci0306" />
-    <PackageReference Include="TeamCloud.Model.Validation" Version="0.1.0-ci0306" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.2" />
+    <PackageReference Include="TeamCloud.Configuration" Version="0.1.0-ci0328" />
+    <PackageReference Include="TeamCloud.Http" Version="0.1.0-ci0328" />
+    <PackageReference Include="TeamCloud.Azure" Version="0.1.0-ci0328" />
+    <PackageReference Include="TeamCloud.Azure.Deployment" Version="0.1.0-ci0328" />
+    <PackageReference Include="TeamCloud.Model.Validation" Version="0.1.0-ci0328" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\TeamCloud.Providers.Core\TeamCloud.Providers.Core.csproj" />

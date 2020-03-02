@@ -1,0 +1,164 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "ProjectName": {
+      "type": "string"
+    },
+    "LabVirtualNetworkId": {
+      "type": "string"
+    },
+    "LabVirtualNetworkName": {
+      "type": "string"
+    },
+    "LabVirtualNetworkSubnets": {
+      "type": "array"
+    },
+    "LabVirtualNetworkSecurityGroupId": {
+      "type": "string"
+    },
+    "_artifactsLocation": {
+      "type": "string"
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring"
+    }
+  },
+  "variables": {
+    "BastionHostNSGName": "[concat(parameters('ProjectName'),'-BH-NSG')]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-02-01",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('BastionHostNSGName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "bastion-in-allow",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationPortRange": "443",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "bastion-control-in-allow",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "sourceAddressPrefix": "GatewayManager",
+              "destinationPortRange": "443",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 120,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "bastion-in-deny",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Deny",
+              "priority": 900,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "bastion-vnet-out-allow",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationPortRanges": [
+                "22",
+                "3389"
+              ],
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "bastion-azure-out-allow",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationPortRange": "443",
+              "destinationAddressPrefix": "AzureCloud",
+              "access": "Allow",
+              "priority": 120,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "bastion-out-deny",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationPortRange": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Deny",
+              "priority": 900,
+              "direction": "Outbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2018-04-01",
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "name": "[concat(parameters('LabVirtualNetworkName'), '/', parameters('LabVirtualNetworkSubnets')[copyIndex()].subnetname)]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('BastionHostNSGName'))]"
+      ],
+      "properties": {
+        "privateEndpointNetworkPolicies": "Disabled",
+        "addressPrefix": "[parameters('LabVirtualNetworkSubnets')[copyIndex()].subnetprefix]",
+        "networkSecurityGroup": {
+          "id": "[if(equals(parameters('LabVirtualNetworkSubnets')[copyIndex()].subnetname,'AzureBastionSubnet'), resourceId('Microsoft.Network/networkSecurityGroups/', variables('BastionHostNSGName')) , parameters('LabVirtualNetworkSecurityGroupId'))]"
+        }
+      },
+      "copy": {
+        "name": "subnetnsgcopy",
+        "count": "[length(parameters('LabVirtualNetworkSubnets'))]",
+        "mode": "Serial"
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "[concat(deployment().name, '-bastion')]",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('_artifactsLocation'), 'Bastion.json', parameters('_artifactsLocationSasToken'))]"
+        },
+        "parameters": {
+          "ProjectName": {
+            "value": "[parameters('ProjectName')]"
+          },
+          "BastionSubnetId": {
+            "value": "[concat(parameters('LabVirtualNetworkId'), '/subnets/AzureBastionSubnet')]"
+          }
+        }
+      }
+    }
+
+  ]
+}

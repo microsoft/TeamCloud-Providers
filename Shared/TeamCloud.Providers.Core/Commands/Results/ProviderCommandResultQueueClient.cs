@@ -22,7 +22,7 @@ namespace TeamCloud.Providers.Core.Commands.Results
 
         private readonly Lazy<CloudBlobContainer> cloudContainerInstance;
 
-        public ProviderCommandResultQueueClient(IConfiguration configuration)
+        public ProviderCommandResultQueueClient(IOrchestrationConfiguration configuration)
         {
             if (configuration is null)
                 throw new ArgumentNullException(nameof(configuration));

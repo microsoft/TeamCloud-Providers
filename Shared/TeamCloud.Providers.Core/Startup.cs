@@ -26,7 +26,7 @@ namespace TeamCloud.Providers.Core
                 .AddNewtonsoftJson();
 
             builder.Services
-                .TryAddSingleton<IConfiguration>(new Configuration());
+                .TryAddSingleton<IOrchestrationConfiguration>(new OrchestrationConfiguration());
 
             builder.Services
                 .TryAddSingleton<IProviderCommandResultQueueClient, ProviderCommandResultQueueClient>();

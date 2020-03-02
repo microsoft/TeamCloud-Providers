@@ -1,0 +1,38 @@
+﻿{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "ProjectName": {
+      "type": "string"
+    },
+    "Repositories": {
+      "type": "array"
+    }
+  },
+  "variables": {
+  },
+  "resources": [
+    {
+      "name": "[concat(parameters('ProjectName'), '/', uniqueString(parameters('Repositories')[copyIndex()].Name))]",
+      "type": "Microsoft.DevTestLab/labs/artifactSources",
+      "apiVersion": "2017-04-26-preview",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "RepositoryCopy",
+        "count": "[length(parameters('Repositories'))]"
+      },
+      "properties": {
+        "securityToken": "[parameters('Repositories')[copyIndex()].Token]",
+        "displayName": "[parameters('Repositories')[copyIndex()].Name]",
+        "uri": "[parameters('Repositories')[copyIndex()].Uri]",
+        "sourceType": "VsoGit",
+        "folderPath": "[parameters('Repositories')[copyIndex()].ArtifactsPath]",
+        "armTemplateFolderPath": "[parameters('Repositories')[copyIndex()].EnvironmentsPath]",
+        "branchRef": "[parameters('Repositories')[copyIndex()].Branch]",
+        "status": "Enabled"
+      }
+    },
+  ],
+  "outputs": {
+  }
+}

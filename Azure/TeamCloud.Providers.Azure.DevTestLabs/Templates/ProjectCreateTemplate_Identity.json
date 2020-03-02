@@ -1,0 +1,82 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "ProjectName": {
+      "type": "string"
+    },
+    "KeyVaultName": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "roleDefinition_Owner": "[concat('/subscriptions/',subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
+    "roleDefinition_Contributor": "[concat('/subscriptions/',subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+    "roleDefinition_Reader": "[concat('/subscriptions/',subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
+    "labIdentity": "[concat(parameters('ProjectName'),'-MSI')]"
+  },
+  "resources": [
+    {
+      "name": "[variables('labIdentity')]",
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "apiVersion": "2018-11-30",
+      "location": "[resourceGroup().location]"
+    },
+    {
+      "name": "[concat(parameters('ProjectName'), '/', variables('labIdentity'))]",
+      "type": "Microsoft.DevTestLab/labs/serviceRunners",
+      "apiVersion": "2018-10-15-preview",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('labIdentity'))]"
+      ],
+      "properties":{
+        "identityUsageType": "Environment"
+      },
+      "identity": {
+        "type": "userAssigned",
+        "userAssignedIdentities": {
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('labIdentity'))]": {}
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('ProjectName'), '/Microsoft.Authorization/', guid(resourceId('Microsoft.DevTestLab/labs', parameters('ProjectName')), variables('labIdentity')))]",
+      "type": "Microsoft.DevTestLab/labs/providers/roleAssignments",
+      "apiVersion": "2019-04-01-preview",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.DevTestLab/labs/serviceRunners', parameters('ProjectName'), variables('labIdentity'))]"
+      ],
+      "properties": {
+        "roleDefinitionId": "[variables('roleDefinition_Contributor')]",
+        "principalId": "[reference(resourceId('Microsoft.DevTestLab/labs/serviceRunners', parameters('ProjectName'), variables('labIdentity')), '2018-10-15-preview', 'Full').identity.principalId]",
+        "principalType": "ServicePrincipal"
+      }
+    },
+    {
+      "name": "[concat(parameters('keyVaultName'), '/add')]",
+      "type": "Microsoft.KeyVault/vaults/accessPolicies",
+      "apiVersion": "2018-02-14",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.DevTestLab/labs/serviceRunners', parameters('ProjectName'), variables('labIdentity'))]"
+      ],
+      "properties": {
+        "accessPolicies": [
+          {
+            "tenantId": "[reference(resourceId('Microsoft.DevTestLab/labs/serviceRunners', parameters('ProjectName'), variables('labIdentity')), '2018-10-15-preview', 'Full').identity.tenantId]",
+            "objectId": "[reference(resourceId('Microsoft.DevTestLab/labs/serviceRunners', parameters('ProjectName'), variables('labIdentity')), '2018-10-15-preview', 'Full').identity.principalId]",
+            "permissions": {
+              "secrets": [
+                "get"
+              ]
+            }
+          }
+        ]
+      }
+    }  
+  ],
+  "outputs": {
+  }
+}

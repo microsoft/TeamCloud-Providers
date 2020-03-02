@@ -1,0 +1,104 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "ProjectName": {
+      "type": "string"
+    },
+    "LabVirtualNetworkId": {
+      "type": "string"
+    },
+    "LabVirtualNetworkName": {
+      "type": "string"
+    },
+    "LabVirtualNetworkPrefix": {
+      "type": "string"
+    },
+    "LabVirtualNetworkSubnets": {
+      "type": "array"
+    },
+    "LabVirtualNetworkSecurityGroupId": {
+      "type": "string"
+    },
+    "_artifactsLocation": {
+      "type": "string"
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring"
+    }
+  },
+  "variables": {
+  },
+  "resources": [
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[parameters('labVirtualNetworkName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('labVirtualNetworkPrefix')]"
+          ]
+        }
+      }
+    },
+    {
+      "apiVersion": "2018-04-01",
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "name": "[concat(parameters('labVirtualNetworkName'), '/', parameters('LabVirtualNetworkSubnets')[copyIndex()].subnetname)]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('labVirtualNetworkName'))]"
+      ],
+      "properties": {
+        "privateEndpointNetworkPolicies": "Disabled",
+        "addressPrefix": "[parameters('LabVirtualNetworkSubnets')[copyIndex()].subnetprefix]"
+      },
+      "copy": {
+        "name": "subnetcopy",
+        "count": "[length(parameters('LabVirtualNetworkSubnets'))]",
+        "mode": "Serial"
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "[concat(deployment().name, '-vnetsecure')]",
+      "type": "Microsoft.Resources/deployments",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('labVirtualNetworkName'))]",
+        "subnetcopy"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('_artifactsLocation'), 'VNetSecure.json', parameters('_artifactsLocationSasToken'))]"
+        },
+        "parameters": {
+          "ProjectName": {
+            "value": "[parameters('ProjectName')]"
+          },
+          "LabVirtualNetworkId": {
+            "value": "[parameters('LabVirtualNetworkId')]"
+          },
+          "LabVirtualNetworkName": {
+            "value": "[parameters('LabVirtualNetworkName')]"
+          },
+          "LabVirtualNetworkSubnets": {
+            "value": "[parameters('LabVirtualNetworkSubnets')]"
+          },
+          "LabVirtualNetworkSecurityGroupId": {
+            "value": "[parameters('LabVirtualNetworkSecurityGroupId')]"
+          },
+          "_artifactsLocation": {
+            "value": "[parameters('_artifactsLocation')]"
+          },
+          "_artifactsLocationSasToken": {
+            "value": "[parameters('_artifactsLocationSasToken')]"
+          }
+        }
+      }
+    }
+
+  ]
+}

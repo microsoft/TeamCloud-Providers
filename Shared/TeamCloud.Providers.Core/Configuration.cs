@@ -9,7 +9,7 @@ using TeamCloud.Model.Commands;
 
 namespace TeamCloud.Providers.Core
 {
-    public interface IConfiguration
+    public interface IOrchestrationConfiguration
     {
         string ConnectionString { get; }
 
@@ -18,18 +18,18 @@ namespace TeamCloud.Providers.Core
         IReadOnlyCollection<Type> Ignored { get; }
     }
 
-    public sealed class Configuration : IConfiguration
+    public sealed class OrchestrationConfiguration : IOrchestrationConfiguration
     {
         private readonly Dictionary<Type, string> orchestrations = new Dictionary<Type, string>();
 
         private readonly HashSet<Type> ignores = new HashSet<Type>();
 
-        internal Configuration() { }
+        internal OrchestrationConfiguration() { }
 
         public string ConnectionString { get; set; }
             = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
 
-        public Configuration MapCommand<T>(string orchestrationName)
+        public OrchestrationConfiguration MapCommand<T>(string orchestrationName)
             where T : ICommand
         {
             if (string.IsNullOrEmpty(orchestrationName))
@@ -40,7 +40,7 @@ namespace TeamCloud.Providers.Core
             return this;
         }
 
-        public Configuration IgnoreCommand<T>()
+        public OrchestrationConfiguration IgnoreCommand<T>()
             where T : ICommand
         {
             ignores.Add(typeof(T));
@@ -48,10 +48,10 @@ namespace TeamCloud.Providers.Core
             return this;
         }
 
-        IReadOnlyDictionary<Type, string> IConfiguration.Orchestrations
+        IReadOnlyDictionary<Type, string> IOrchestrationConfiguration.Orchestrations
             => orchestrations;
 
-        IReadOnlyCollection<Type> IConfiguration.Ignored
+        IReadOnlyCollection<Type> IOrchestrationConfiguration.Ignored
             => ignores;
     }
 }

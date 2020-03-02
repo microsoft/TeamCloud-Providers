@@ -15,9 +15,9 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
 {
     public class ProviderCommandMessageDispatcher
     {
-        private readonly IConfiguration configuration;
+        private readonly IOrchestrationConfiguration configuration;
 
-        public ProviderCommandMessageDispatcher(IConfiguration configuration)
+        public ProviderCommandMessageDispatcher(IOrchestrationConfiguration configuration)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }

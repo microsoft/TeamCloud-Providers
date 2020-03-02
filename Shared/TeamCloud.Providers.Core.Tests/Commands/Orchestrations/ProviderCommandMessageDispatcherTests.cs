@@ -13,7 +13,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
         [Fact]
         public void GetOrchestration_NoConfiguration()
         {
-            var configuration = Substitute.For<IConfiguration>();
+            var configuration = Substitute.For<IOrchestrationConfiguration>();
 
             configuration.Orchestrations.Returns(new Dictionary<Type, string>());
 
@@ -26,7 +26,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
         [Fact]
         public void GetOrchestration_Exact_Match()
         {
-            var configuration = Substitute.For<IConfiguration>();
+            var configuration = Substitute.For<IOrchestrationConfiguration>();
 
             configuration.Orchestrations.Returns(new Dictionary<Type, string>()
             {
@@ -43,7 +43,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
         [Fact]
         public void GetOrchestration_Exact_Ignored()
         {
-            var configuration = Substitute.For<IConfiguration>();
+            var configuration = Substitute.For<IOrchestrationConfiguration>();
 
             configuration.Ignored.Returns(new List<Type>()
             {
@@ -60,7 +60,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
         [Fact]
         public void GetOrchestration_Inherited_Match()
         {
-            var configuration = Substitute.For<IConfiguration>();
+            var configuration = Substitute.For<IOrchestrationConfiguration>();
 
             configuration.Orchestrations.Returns(new Dictionary<Type, string>()
             {
@@ -77,7 +77,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
         [Fact]
         public void GetOrchestration_Inherited_Ignored()
         {
-            var configuration = Substitute.For<IConfiguration>();
+            var configuration = Substitute.For<IOrchestrationConfiguration>();
 
             configuration.Ignored.Returns(new List<Type>()
             {
@@ -94,7 +94,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
         [Fact]
         public void GetOrchestration_Interface_Match()
         {
-            var configuration = Substitute.For<IConfiguration>();
+            var configuration = Substitute.For<IOrchestrationConfiguration>();
 
             configuration.Orchestrations.Returns(new Dictionary<Type, string>()
             {
@@ -111,7 +111,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
         [Fact]
         public void GetOrchestration_Interface_Ignore()
         {
-            var configuration = Substitute.For<IConfiguration>();
+            var configuration = Substitute.For<IOrchestrationConfiguration>();
 
             configuration.Ignored.Returns(new List<Type>()
             {
@@ -128,7 +128,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
         [Fact]
         public void GetOrchestration_InterfaceGeneric_Match()
         {
-            var configuration = Substitute.For<IConfiguration>();
+            var configuration = Substitute.For<IOrchestrationConfiguration>();
 
             configuration.Orchestrations.Returns(new Dictionary<Type, string>()
             {
@@ -145,7 +145,7 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
         [Fact]
         public void GetOrchestration_InterfaceGeneric_Ignore()
         {
-            var configuration = Substitute.For<IConfiguration>();
+            var configuration = Substitute.For<IOrchestrationConfiguration>();
 
             configuration.Ignored.Returns(new List<Type>()
             {

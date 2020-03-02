@@ -55,7 +55,7 @@ namespace TeamCloud.Providers.Core
             return commandResult;
         }
 
-        public static IServiceCollection AddTeamCloudCommandOrchestration(this IServiceCollection services, Action<Configuration> config)
+        public static IServiceCollection AddTeamCloudCommandOrchestration(this IServiceCollection services, Action<OrchestrationConfiguration> config)
         {
             if (services is null)
                 throw new ArgumentNullException(nameof(services));
@@ -64,13 +64,13 @@ namespace TeamCloud.Providers.Core
                 throw new ArgumentNullException(nameof(config));
 
             services
-                .TryAddSingleton<IConfiguration>(new Configuration());
+                .TryAddSingleton<IOrchestrationConfiguration>(new OrchestrationConfiguration());
 
             var configuration = services
                 .BuildServiceProvider()
-                .GetRequiredService<IConfiguration>();
+                .GetRequiredService<IOrchestrationConfiguration>();
 
-            if (configuration is Configuration configurationTyped)
+            if (configuration is OrchestrationConfiguration configurationTyped)
                 config(configurationTyped);
 
             return services;
