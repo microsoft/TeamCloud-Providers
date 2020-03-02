@@ -40,8 +40,6 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
                 PrincipalId = identity?.ObjectId
             };
 
-            registration.Properties.Add(nameof(ProviderRegisterActivity), command.CommandId.ToString());
-
             return registration;
         }
     }

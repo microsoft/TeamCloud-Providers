@@ -30,8 +30,6 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
                 PrincipalId = null // this provider does not talk to any azure resources yet
             };
 
-            registration.Properties.Add(nameof(ProviderRegisterActivity), command.CommandId.ToString());
-
             return registration;
         }
     }

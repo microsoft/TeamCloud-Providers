@@ -25,9 +25,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
 
             await Task.Delay(30 * 1000);
 
-            return new Dictionary<string, string> {
-                { "LastCommandId", command.CommandId.ToString() }
-            };
+            return new Dictionary<string, string>();
         }
     }
 }
