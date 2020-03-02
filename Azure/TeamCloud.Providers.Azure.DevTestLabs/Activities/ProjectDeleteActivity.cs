@@ -23,8 +23,6 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
             if (command is null)
                 throw new ArgumentNullException(nameof(command));
 
-            await Task.Delay(30 * 1000);
-
             return new Dictionary<string, string>();
         }
     }

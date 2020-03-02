@@ -23,8 +23,6 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
             if (command is null)
                 throw new ArgumentNullException(nameof(command));
 
-            await Task.Delay(30 * 1000);
-
             var registration = new ProviderRegistration
             {
                 PrincipalId = null // this provider does not talk to any azure resources yet
