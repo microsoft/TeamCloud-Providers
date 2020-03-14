@@ -26,4 +26,8 @@
     <ProjectReference Include="..\TeamCloud.Providers.Core\TeamCloud.Providers.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Commands\Orchestrations\" />
+  </ItemGroup>
+
 </Project>

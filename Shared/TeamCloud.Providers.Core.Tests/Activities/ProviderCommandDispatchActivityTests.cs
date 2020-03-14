@@ -1,41 +1,46 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using TeamCloud.Model.Commands;
+using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
+using TeamCloud.Providers.Core.Configuration;
 using Xunit;
 
-namespace TeamCloud.Providers.Core.Commands.Orchestrations
+namespace TeamCloud.Providers.Core.Activities
 {
-    public class ProviderCommandMessageDispatcherTests
+    public class ProviderCommandDispatchActivityTests
     {
         [Fact]
         public void GetOrchestration_NoConfiguration()
         {
             var configuration = Substitute.For<IOrchestrationConfiguration>();
 
-            configuration.Orchestrations.Returns(new Dictionary<Type, string>());
+            configuration.Orchestrations.Returns(new Dictionary<Type, IOrchestrationSettings>());
 
-            var dispatcher = new ProviderCommandMessageDispatcher(configuration);
-            var message = new ProviderCommandMessage(new TestCommand(), "http://localhost/callback");
+            var dispatcher = new ProviderCommandDispatchActivity(configuration);
+            var command = new TestCommand();
 
-            Assert.Throws<NotSupportedException>(() => dispatcher.Run(message, NullLogger.Instance));
+            Assert.Throws<NotSupportedException>(() => dispatcher.RunActivity(command));
         }
 
         [Fact]
         public void GetOrchestration_Exact_Match()
         {
+            var settings = Substitute.For<IOrchestrationSettings>();
+
+            settings.OrchestrationName.Returns(nameof(TestCommandOrchestration));
+
             var configuration = Substitute.For<IOrchestrationConfiguration>();
 
-            configuration.Orchestrations.Returns(new Dictionary<Type, string>()
+            configuration.Orchestrations.Returns(new Dictionary<Type, IOrchestrationSettings>()
             {
-                { typeof(TestCommand), nameof(TestCommandOrchestration) }
+                { typeof(TestCommand),  settings }
             });
 
-            var dispatcher = new ProviderCommandMessageDispatcher(configuration);
-            var message = new ProviderCommandMessage(new TestCommand(), "http://localhost/callback");
-            var orchestration = dispatcher.Run(message, NullLogger.Instance);
+            var dispatcher = new ProviderCommandDispatchActivity(configuration);
+            var command = new TestCommand();
+            var orchestration = dispatcher.RunActivity(command);
 
             Assert.Equal(nameof(TestCommandOrchestration), orchestration);
         }
@@ -50,9 +55,9 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
                 typeof(TestInheritedCommand)
             });
 
-            var dispatcher = new ProviderCommandMessageDispatcher(configuration);
-            var message = new ProviderCommandMessage(new TestInheritedCommand(), "http://localhost/callback");
-            var orchestration = dispatcher.Run(message, NullLogger.Instance);
+            var dispatcher = new ProviderCommandDispatchActivity(configuration);
+            var command = new TestInheritedCommand();
+            var orchestration = dispatcher.RunActivity(command);
 
             Assert.Null(orchestration);
         }
@@ -60,16 +65,20 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
         [Fact]
         public void GetOrchestration_Inherited_Match()
         {
+            var settings = Substitute.For<IOrchestrationSettings>();
+
+            settings.OrchestrationName.Returns(nameof(TestCommandOrchestration));
+
             var configuration = Substitute.For<IOrchestrationConfiguration>();
 
-            configuration.Orchestrations.Returns(new Dictionary<Type, string>()
+            configuration.Orchestrations.Returns(new Dictionary<Type, IOrchestrationSettings>()
             {
-                { typeof(TestCommand), nameof(TestCommandOrchestration) }
+                { typeof(TestCommand),  settings }
             });
 
-            var dispatcher = new ProviderCommandMessageDispatcher(configuration);
-            var message = new ProviderCommandMessage(new TestInheritedCommand(), "http://localhost/callback");
-            var orchestration = dispatcher.Run(message, NullLogger.Instance);
+            var dispatcher = new ProviderCommandDispatchActivity(configuration);
+            var command = new TestInheritedCommand();
+            var orchestration = dispatcher.RunActivity(command);
 
             Assert.Equal(nameof(TestCommandOrchestration), orchestration);
         }
@@ -84,9 +93,9 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
                 typeof(TestCommand)
             });
 
-            var dispatcher = new ProviderCommandMessageDispatcher(configuration);
-            var message = new ProviderCommandMessage(new TestInheritedCommand(), "http://localhost/callback");
-            var orchestration = dispatcher.Run(message, NullLogger.Instance);
+            var dispatcher = new ProviderCommandDispatchActivity(configuration);
+            var command = new TestInheritedCommand();
+            var orchestration = dispatcher.RunActivity(command);
 
             Assert.Null(orchestration);
         }
@@ -94,16 +103,20 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
         [Fact]
         public void GetOrchestration_Interface_Match()
         {
+            var settings = Substitute.For<IOrchestrationSettings>();
+
+            settings.OrchestrationName.Returns(nameof(TestCommandOrchestration));
+
             var configuration = Substitute.For<IOrchestrationConfiguration>();
 
-            configuration.Orchestrations.Returns(new Dictionary<Type, string>()
+            configuration.Orchestrations.Returns(new Dictionary<Type, IOrchestrationSettings>()
             {
-                { typeof(ICommand), nameof(TestCommandOrchestration) }
+                { typeof(ICommand),  settings }
             });
 
-            var dispatcher = new ProviderCommandMessageDispatcher(configuration);
-            var message = new ProviderCommandMessage(new TestInheritedCommand(), "http://localhost/callback");
-            var orchestration = dispatcher.Run(message, NullLogger.Instance);
+            var dispatcher = new ProviderCommandDispatchActivity(configuration);
+            var command = new TestInheritedCommand();
+            var orchestration = dispatcher.RunActivity(command);
 
             Assert.Equal(nameof(TestCommandOrchestration), orchestration);
         }
@@ -118,9 +131,9 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
                 typeof(ICommand)
             });
 
-            var dispatcher = new ProviderCommandMessageDispatcher(configuration);
-            var message = new ProviderCommandMessage(new TestInheritedCommand(), "http://localhost/callback");
-            var orchestration = dispatcher.Run(message, NullLogger.Instance);
+            var dispatcher = new ProviderCommandDispatchActivity(configuration);
+            var command = new TestInheritedCommand();
+            var orchestration = dispatcher.RunActivity(command);
 
             Assert.Null(orchestration);
         }
@@ -128,16 +141,20 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
         [Fact]
         public void GetOrchestration_InterfaceGeneric_Match()
         {
+            var settings = Substitute.For<IOrchestrationSettings>();
+
+            settings.OrchestrationName.Returns(nameof(TestCommandOrchestration));
+
             var configuration = Substitute.For<IOrchestrationConfiguration>();
 
-            configuration.Orchestrations.Returns(new Dictionary<Type, string>()
+            configuration.Orchestrations.Returns(new Dictionary<Type, IOrchestrationSettings>()
             {
-                { typeof(ICommand<TestPayload, TestCommandResult>), nameof(TestCommandOrchestration) }
+                { typeof(ICommand<TestPayload, TestCommandResult>), settings }
             });
 
-            var dispatcher = new ProviderCommandMessageDispatcher(configuration);
-            var message = new ProviderCommandMessage(new TestInheritedCommand(), "http://localhost/callback");
-            var orchestration = dispatcher.Run(message, NullLogger.Instance);
+            var dispatcher = new ProviderCommandDispatchActivity(configuration);
+            var command = new TestInheritedCommand();
+            var orchestration = dispatcher.RunActivity(command);
 
             Assert.Equal(nameof(TestCommandOrchestration), orchestration);
         }
@@ -152,18 +169,19 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
                 typeof(ICommand<TestPayload, TestCommandResult>)
             });
 
-            var dispatcher = new ProviderCommandMessageDispatcher(configuration);
-            var message = new ProviderCommandMessage(new TestInheritedCommand(), "http://localhost/callback");
-            var orchestration = dispatcher.Run(message, NullLogger.Instance);
+            var dispatcher = new ProviderCommandDispatchActivity(configuration);
+            var command = new TestInheritedCommand();
+            var orchestration = dispatcher.RunActivity(command);
 
             Assert.Null(orchestration);
         }
+
         #region Mocks
 
         public class TestPayload
         { }
 
-        public class TestCommand : Command<TestPayload, TestCommandResult>
+        public class TestCommand : ProviderCommand<TestPayload, TestCommandResult>
         {
             private static readonly User DefaultUser = new User()
             {

@@ -43,7 +43,7 @@ namespace TeamCloud.Providers.Azure.DevOps
                         .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
                         .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
                         .MapCommand<ProviderProjectDeleteCommand>(nameof(ProjectDeleteOrchestration))
-                        .IgnoreCommand<ICommand>();
+                        .IgnoreCommand<IProviderCommand>();
                 });
         }
     }

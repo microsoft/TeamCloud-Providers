@@ -4,30 +4,27 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using TeamCloud.Model.Commands;
-using TeamCloud.Providers.Core.Commands.Orchestrations;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using TeamCloud.Model.Commands.Core;
+using TeamCloud.Model.Data;
+using TeamCloud.Orchestration;
+using TeamCloud.Providers.Azure.AppInsights;
+using TeamCloud.Providers.Core.Configuration;
 
 namespace TeamCloud.Providers.Core
 {
     public static class Extensions
     {
-        private static readonly int[] FinalRuntimeStatus = new int[]
-        {
-            (int) OrchestrationRuntimeStatus.Completed,
-            (int) OrchestrationRuntimeStatus.Failed,
-            (int) OrchestrationRuntimeStatus.Canceled,
-            (int) OrchestrationRuntimeStatus.Terminated
-        };
-
-        public static bool IsFinalRuntimeStatus(this DurableOrchestrationStatus orchestrationStatus)
-            => FinalRuntimeStatus.Contains((int)orchestrationStatus.RuntimeStatus);
-
-        private static ICommandResult ApplyOrchestrationStatus(this ICommandResult commandResult, DurableOrchestrationStatus orchestrationStatus)
+        public static ICommandResult ApplyStatus(this ICommandResult commandResult, DurableOrchestrationStatus orchestrationStatus)
         {
             if (orchestrationStatus is null)
                 throw new ArgumentNullException(nameof(orchestrationStatus));
@@ -36,22 +33,6 @@ namespace TeamCloud.Providers.Core
             commandResult.LastUpdatedTime = orchestrationStatus.LastUpdatedTime;
             commandResult.RuntimeStatus = (CommandRuntimeStatus)orchestrationStatus.RuntimeStatus;
             commandResult.CustomStatus = orchestrationStatus.CustomStatus?.ToString();
-
-            if (orchestrationStatus.IsFinalRuntimeStatus() && (orchestrationStatus.Output?.HasValues ?? false))
-            {
-                var orchstrationResultType = commandResult.GetType()
-                    .GetInterfaces()
-                    .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ICommandResult<>))
-                    .Select(i => i.GetGenericArguments()[0])
-                    .FirstOrDefault();
-
-                if (orchstrationResultType != null)
-                {
-                    var orchstrationResult = orchestrationStatus.Output.ToObject(orchstrationResultType);
-
-                    commandResult.GetType().GetProperty("Result").SetValue(commandResult, orchstrationResult);
-                }
-            }
 
             return commandResult;
         }
@@ -77,71 +58,71 @@ namespace TeamCloud.Providers.Core
             return services;
         }
 
-        public static async Task<ICommandResult> HandleProviderCommandMessageAsync(this IDurableClient durableClient, ProviderCommandMessage providerCommandMessage)
+        public static async Task<JObject> ReadAsJsonAsync(this HttpContent httpContent)
+        {
+            using var stream = await httpContent
+                .ReadAsStreamAsync()
+                .ConfigureAwait(false);
+
+            var streamReader = new StreamReader(stream);
+            var jsonReader = new JsonTextReader(streamReader);
+
+            return JObject.Load(jsonReader);
+        }
+
+        public static Task<T> ReadAsJsonAsync<T>(this HttpContent httpContent)
+            => httpContent.ReadAsJsonAsync().ContinueWith((json) => json.Result.ToObject<T>(), TaskContinuationOptions.OnlyOnRanToCompletion);
+
+        public static async Task<ICommandResult> GetCommandResultAsync(this IDurableClient durableClient, ICommand command)
         {
             if (durableClient is null)
                 throw new ArgumentNullException(nameof(durableClient));
 
-            if (providerCommandMessage is null)
-                throw new ArgumentNullException(nameof(providerCommandMessage));
-
-            if (providerCommandMessage.CommandId is null)
-                throw new ArgumentException("The given command message doesn't contain a command");
+            if (command is null)
+                throw new ArgumentNullException(nameof(command));
 
             var commandStatus = await durableClient
-                .GetStatusAsync(providerCommandMessage.CommandId.ToString())
+                .GetStatusAsync(CommandHandler.GetCommandOrchestrationInstanceId(command))
                 .ConfigureAwait(false);
 
-            if (commandStatus != null)
+            if (commandStatus is null)
             {
-                var exceptionMessage = commandStatus.IsFinalRuntimeStatus()
-                    ? $"The command {providerCommandMessage.Command} was already processed."
-                    : $"The command {providerCommandMessage.Command} is already in progress.";
+                // the command orchestration wasn't created yet
+                // there is no way to return a command result
 
-                throw new ArgumentException(exceptionMessage);
+                return null;
             }
-
-            try
+            else if (commandStatus.RuntimeStatus.IsFinal())
             {
-                _ = await durableClient
-                    .StartNewAsync(nameof(ProviderCommandMessageOrchestration), providerCommandMessage)
+                // the command orchestration reached a final state
+                // but the message orchestration is responsible to
+                // send the result and there could modify the overall
+                // command result (e.g. if a send operation fails).
+
+                var commandMessageStatus = await durableClient
+                    .GetStatusAsync(CommandHandler.GetCommandMessageOrchestrationInstanceId(command))
                     .ConfigureAwait(false);
 
-                var timeoutDuration = TimeSpan.FromSeconds(30);
-                var timeout = DateTime.UtcNow.Add(timeoutDuration);
-
-                while (DateTime.UtcNow <= timeout)
+                if (commandMessageStatus?.Output.HasValues ?? false)
                 {
-                    commandStatus = await durableClient
-                        .GetStatusAsync(providerCommandMessage.CommandId.ToString())
-                        .ConfigureAwait(false);
-
-                    if (commandStatus is null)
-                    {
-                        await Task
-                            .Delay(1000)
-                            .ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        return providerCommandMessage.Command
-                            .CreateResult()
-                            .ApplyOrchestrationStatus(commandStatus);
-                    }
+                    return commandMessageStatus.Output
+                        .ToObject<ICommandResult>()
+                        .ApplyStatus(commandMessageStatus);
                 }
-
-                throw new TimeoutException($"Failed to get status for command {providerCommandMessage.CommandId} within {timeoutDuration}");
             }
-            catch (Exception exc)
-            {
-                var commandResult = providerCommandMessage.Command
-                    .CreateResult()
-                    .ApplyOrchestrationStatus(commandStatus);
 
-                commandResult.Errors.Add(exc);
+            // the command orchestration is in-flight
+            // get the current command result from its
+            // output or fallback to the default result
 
-                return commandResult;
-            }
+            var commandResult = commandStatus.Output.HasValues
+                ? commandStatus.Output.ToObject<ICommandResult>()
+                : command.CreateResult(); // fallback to the default command result
+
+            return commandResult.ApplyStatus(commandStatus);
         }
+
+        public static IDictionary<Guid, IEnumerable<Guid>> ToRoleAssignments(this IList<User> users, Func<string, Guid> roleIdCallback)
+            => users.ToDictionary(user => user.Id, user => Enumerable.Repeat(roleIdCallback(user.Role), 1));
     }
 }

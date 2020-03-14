@@ -12,6 +12,7 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using TeamCloud.Azure.Deployment;
 using TeamCloud.Model.Commands;
+using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.DevTestLabs.Templates;
 
 namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
@@ -26,6 +27,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
         }
 
         [FunctionName(nameof(ProjectCreateActivity))]
+        [RetryOptions(3)]
         public async Task<Dictionary<string, string>> RunActivity(
             [ActivityTrigger] ProviderProjectCreateCommand command,
             ILogger log)
@@ -59,11 +61,11 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
             template.Parameters["LabSNetPrefix"] = snetPrefix;
 
             var deployment = await azureDeploymentService
-                .DeployTemplateAsync(template, command.Payload.ResourceGroup.SubscriptionId, command.Payload.ResourceGroup.ResourceGroupName)
+                .DeployResourceGroupTemplateAsync(template, command.Payload.ResourceGroup.SubscriptionId, command.Payload.ResourceGroup.ResourceGroupName)
                 .ConfigureAwait(false);
 
             var deploymentOutput = await deployment
-                .WaitAndGetOutputAsync(throwOnError: true, cleanUp: true)
+                .WaitAndGetOutputAsync(throwOnError: true)
                 .ConfigureAwait(false);
 
             return deploymentOutput

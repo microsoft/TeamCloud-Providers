@@ -8,7 +8,7 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TeamCloud.Providers.Core;
-using TeamCloud.Providers.Core.Commands.Results;
+using TeamCloud.Providers.Core.Configuration;
 
 [assembly: FunctionsStartup(typeof(TeamCloudCoreStartup))]
 
@@ -27,9 +27,6 @@ namespace TeamCloud.Providers.Core
 
             builder.Services
                 .TryAddSingleton<IOrchestrationConfiguration>(new OrchestrationConfiguration());
-
-            builder.Services
-                .TryAddSingleton<IProviderCommandResultQueueClient, ProviderCommandResultQueueClient>();
         }
     }
 }
