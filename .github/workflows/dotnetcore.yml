@@ -11,6 +11,7 @@ jobs:
 
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false # disable fail fast as long not every provider package contains code
       matrix: 
         provider: ['Azure', 'GitHub', 'Microsoft']
         
