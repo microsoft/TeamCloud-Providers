@@ -10,7 +10,9 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix: 
+        provider: ['Azure', 'GitHub', 'Microsoft']
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET Core
