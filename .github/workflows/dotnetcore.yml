@@ -1,0 +1,29 @@
+name: .NET Core
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false # disable fail fast as long not every provider package contains code
+      matrix: 
+        provider: ['Azure', 'GitHub', 'Microsoft']
+        
+    env:
+      working-directory: ./${{ matrix.provider }}
+      
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
+    - name: Build with dotnet
+      run: dotnet build --configuration Release
+      working-directory: ${{ env.working-directory }}
