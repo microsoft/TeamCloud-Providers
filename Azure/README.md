@@ -32,3 +32,4 @@ Deploying Azure Provider resources is as simple as clicking the associated _"Dep
 [azure-deploy-appinsights]:https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2FTeamCloud%2DProviders%2Fmaster%2FAzure%2Fazuredeploy.appinsights.json
 [azure-deploy-devops]:https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2FTeamCloud%2DProviders%2Fmaster%2FAzure%2Fazuredeploy.devops.json
 [azure-deploy-devtestlabs]:https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2FTeamCloud%2DProviders%2Fmaster%2FAzure%2Fazuredeploy.devtestlabs.json
+
