@@ -8,29 +8,27 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.Logging;
-using TeamCloud.Model.Commands;
+using TeamCloud.Model.Commands.Core;
+using TeamCloud.Providers.Core.Configuration;
 
-namespace TeamCloud.Providers.Core.Commands.Orchestrations
+namespace TeamCloud.Providers.Core.Activities
 {
-    public class ProviderCommandMessageDispatcher
+    public class ProviderCommandDispatchActivity
     {
         private readonly IOrchestrationConfiguration configuration;
 
-        public ProviderCommandMessageDispatcher(IOrchestrationConfiguration configuration)
+        public ProviderCommandDispatchActivity(IOrchestrationConfiguration configuration)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
-        [FunctionName(nameof(ProviderCommandMessageDispatcher))]
-        public string Run(
-            [ActivityTrigger] ProviderCommandMessage providerCommandMessage,
-            ILogger log)
+        [FunctionName(nameof(ProviderCommandDispatchActivity))]
+        public string RunActivity([ActivityTrigger] ICommand command)
         {
-            if (providerCommandMessage is null)
-                throw new ArgumentNullException(nameof(providerCommandMessage));
+            if (command is null)
+                throw new ArgumentNullException(nameof(command));
 
-            var commandType = providerCommandMessage.CommandType;
+            var commandType = command.GetType();
             var commandInterfaces = new List<Type>();
 
             while (commandType != null)
@@ -50,15 +48,15 @@ namespace TeamCloud.Providers.Core.Commands.Orchestrations
                     return orchestrationNameByInterfaceType;
             }
 
-            throw new NotSupportedException($"Command type '{providerCommandMessage.CommandType}' is not mapped to an orchestration.");
+            throw new NotSupportedException($"Command type '{commandType}' is not mapped to an orchestration.");
 
             bool TryGetOrchestrationName(Type type, out string orchestrationName)
             {
                 orchestrationName = null;
 
-                if (configuration.Orchestrations != null && configuration.Orchestrations.TryGetValue(type, out string match))
+                if (configuration.Orchestrations != null && configuration.Orchestrations.TryGetValue(type, out IOrchestrationSettings orchestrationSettings))
                 {
-                    orchestrationName = match;
+                    orchestrationName = orchestrationSettings.OrchestrationName;
 
                     return true;
                 }

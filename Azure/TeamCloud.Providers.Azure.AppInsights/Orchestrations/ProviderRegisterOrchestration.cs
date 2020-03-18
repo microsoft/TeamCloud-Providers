@@ -11,6 +11,7 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data;
+using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.AppInsights.Activities;
 
 namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
@@ -28,7 +29,7 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
             var command = functionContext.GetInput<ProviderRegisterCommand>();
 
             var providerRegistraion = await functionContext
-                .CallActivityAsync<ProviderRegistration>(nameof(ProviderRegisterActivity), command)
+                .CallActivityWithRetryAsync<ProviderRegistration>(nameof(ProviderRegisterActivity), command)
                 .ConfigureAwait(true);
 
             var commandResult = command.CreateResult();

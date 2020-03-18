@@ -4,13 +4,13 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data;
+using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.DevTestLabs.Activities;
 
 namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
@@ -28,10 +28,11 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
             var command = functionContext.GetInput<ProviderRegisterCommand>();
 
             var providerRegistraion = await functionContext
-                .CallActivityAsync<ProviderRegistration>(nameof(ProviderRegisterActivity), command)
+                .CallActivityWithRetryAsync<ProviderRegistration>(nameof(ProviderRegisterActivity), command)
                 .ConfigureAwait(true);
 
             var commandResult = command.CreateResult();
+
             commandResult.Result = providerRegistraion;
 
             functionContext.SetOutput(commandResult);

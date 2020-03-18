@@ -16,6 +16,7 @@ using Microsoft.Extensions.Hosting;
 using TeamCloud.Azure;
 using TeamCloud.Azure.Deployment;
 using TeamCloud.Azure.Deployment.Providers;
+using TeamCloud.Azure.Resources;
 using TeamCloud.Configuration;
 using TeamCloud.Http;
 using TeamCloud.Model.Commands;
@@ -52,17 +53,17 @@ namespace TeamCloud.Providers.Azure.AppInsights
                 .AddTeamCloudAzure(configuration =>
                 {
                     configuration
+                        .AddResources()
                         .AddDeployment()
                         .SetDeploymentArtifactsProvider<AzureStorageArtifactsProvider>();
                 })
                 .AddTeamCloudCommandOrchestration(configuration =>
                 {
                     configuration
-                        .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration))
-                        .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
-                        .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
-                        .MapCommand<ProviderProjectDeleteCommand>(nameof(ProjectDeleteOrchestration))
-                        .IgnoreCommand<ICommand>();
+                        .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration), (command) => TimeSpan.FromMinutes(5))
+                        .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration), (command) => TimeSpan.FromMinutes(10))
+                        .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration), (command) => TimeSpan.FromMinutes(10))
+                        .IgnoreCommand<IProviderCommand>();
                 });
         }
 
