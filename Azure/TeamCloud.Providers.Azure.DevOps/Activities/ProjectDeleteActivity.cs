@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
@@ -16,7 +15,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
     public static class ProjectDeleteActivity
     {
         [FunctionName(nameof(ProjectDeleteActivity))]
-        public static async Task<Dictionary<string, string>> RunActivity(
+        public static Dictionary<string, string> RunActivity(
             [ActivityTrigger] ProviderProjectDeleteCommand command,
             ILogger log)
         {

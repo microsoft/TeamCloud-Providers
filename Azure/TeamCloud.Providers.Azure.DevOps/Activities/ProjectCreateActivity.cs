@@ -16,7 +16,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
     public static class ProjectCreateActivity
     {
         [FunctionName(nameof(ProjectCreateActivity))]
-        public static async Task<Dictionary<string, string>> RunActivity(
+        public static Dictionary<string, string> RunActivity(
             [ActivityTrigger] ProviderProjectCreateCommand command,
             ILogger log)
         {

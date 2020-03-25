@@ -16,7 +16,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
     public static class ProjectUpdateActivity
     {
         [FunctionName(nameof(ProjectUpdateActivity))]
-        public static async Task<Dictionary<string, string>> RunActivity(
+        public static Dictionary<string, string> RunActivity(
             [ActivityTrigger] ProviderProjectUpdateCommand command,
             ILogger log)
         {

@@ -16,7 +16,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
     public static class ProviderRegisterActivity
     {
         [FunctionName(nameof(ProviderRegisterActivity))]
-        public static async Task<ProviderRegistration> RunActivity(
+        public static ProviderRegistration RunActivity(
             [ActivityTrigger] ProviderRegisterCommand command,
             ILogger log)
         {

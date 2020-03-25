@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Flurl.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Orchestration;
 using TeamCloud.Serialization;
@@ -14,7 +16,7 @@ namespace TeamCloud.Providers.Core.Activities
     {
         [FunctionName(nameof(ProviderCommandResultSendActivity))]
         [RetryOptions(5)]
-        public static async Task RunActivity([ActivityTrigger] IDurableActivityContext functionContext)
+        public static async Task RunActivity([ActivityTrigger] IDurableActivityContext functionContext, ILogger log)
         {
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
@@ -23,6 +25,8 @@ namespace TeamCloud.Providers.Core.Activities
 
             try
             {
+                log.LogInformation($"Sending command result ({commandResult.CommandId}) to {callbackUrl}: {JsonConvert.SerializeObject(commandResult)}");
+
                 await callbackUrl
                     .PostJsonAsync(commandResult)
                     .ConfigureAwait(false);

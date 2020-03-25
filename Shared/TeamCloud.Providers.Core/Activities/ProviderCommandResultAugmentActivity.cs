@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Serialization;
 
@@ -12,7 +14,8 @@ namespace TeamCloud.Providers.Core.Activities
         [FunctionName(nameof(ProviderCommandResultAugmentActivity))]
         public static async Task<ICommandResult> RunActivity(
             [ActivityTrigger] IDurableActivityContext functionContext,
-            [DurableClient] IDurableClient durableClient)
+            [DurableClient] IDurableClient durableClient,
+            ILogger log)
         {
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
@@ -28,13 +31,17 @@ namespace TeamCloud.Providers.Core.Activities
                     .GetStatusAsync(instanceId)
                     .ConfigureAwait(false);
 
-                return commandResult
+                commandResult = commandResult
                     .ApplyStatus(commandStatus);
+
+                log.LogInformation($"Augmented command result ({commandResult.CommandId}): {JsonConvert.SerializeObject(commandResult)}");
             }
             catch (Exception exc) when (!exc.IsSerializable(out var serializableExc))
             {
                 throw serializableExc;
             }
+
+            return commandResult;
         }
     }
 }

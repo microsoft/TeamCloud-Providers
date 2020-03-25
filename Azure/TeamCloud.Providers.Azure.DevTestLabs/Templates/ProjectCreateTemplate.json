@@ -13,11 +13,17 @@
       "type": "string",
       "defaultValue": ""
     },
-    "LabPublicEnvironments": {
-      "type": "string"
+    "LabBastionHostEnabled": {
+      "type": "bool"
     },
-    "LabPublicArtifacts": {
-      "type": "string"
+    "LabMarketplaceEnabled": {
+      "type": "bool"
+    },
+    "LabPublicEnvironmentsEnabled": {
+      "type": "bool"
+    },
+    "LabPublicArtifactsEnabled": {
+      "type": "bool"
     },
     "LabVNetPrefix": {
       "type": "string"
@@ -34,7 +40,11 @@
   },
   "variables": {
     "labVirtualNetworkId": "[resourceId('Microsoft.Network/virtualNetworks', variables('labVirtualNetworkName'))]",
-    "labVirtualNetworkName": "[parameters('ProjectName')]"
+    "labVirtualNetworkName": "[parameters('ProjectName')]",
+    "labBastionHost": "[if(parameters('LabBastionHostEnabled'), 'Enabled', 'Disabled')]",
+    "labMarketplace": "[if(parameters('LabMarketplaceEnabled'), 'Enabled', 'Disabled')]",
+    "labPublicEnvironments": "[if(parameters('LabPublicEnvironmentsEnabled'), 'Enabled', 'Disabled')]",
+    "labPublicArtifacts": "[if(parameters('LabPublicArtifactsEnabled'), 'Enabled', 'Disabled')]"
   },
   "resources": [
     {
@@ -59,6 +69,9 @@
         "parameters": {
           "ProjectName": {
             "value": "[parameters('ProjectName')]"
+          },
+          "LabBastionHostEnabled": {
+            "value": "[parameters('LabBastionHostEnabled')]"
           },
           "LabVirtualNetworkId": {
             "value": "[variables('labVirtualNetworkId')]"
@@ -92,7 +105,7 @@
       "tags": "[resourceGroup().tags]",
       "properties": {
         "vmCreationResourceGroupId": "[resourceGroup().id]",
-        "browserConnect": "Enabled"
+        "browserConnect": "[variables('labBastionHost')]"
       }
     },
     {
@@ -121,6 +134,22 @@
       }
     },
     {
+      "condition": "[not(parameters('LabMarketplaceEnabled'))]",
+      "name": "[concat(parameters('ProjectName'), '/default/GalleryImage')]",
+      "type": "Microsoft.DevTestLab/labs/policySets/policies",
+      "apiVersion": "2018-10-15-preview",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.DevTestLab/labs', parameters('ProjectName'))]"
+      ],
+      "properties": {
+        "status": "Enabled",
+        "factName": "GalleryImage",
+        "threshold": "[concat('[',']')]",
+        "evaluatorType": "AllowedValuesPolicy"
+      }
+    },
+    {
       "condition": "[not(empty(parameters('ImageGallery')))]",
       "name": "[concat(parameters('ProjectName'), '/', uniqueString(parameters('ImageGallery')))]",
       "type": "Microsoft.DevTestLab/labs/sharedGalleries",
@@ -143,7 +172,7 @@
         "[resourceId('Microsoft.DevTestLab/labs', parameters('ProjectName'))]"
       ],
       "properties": {
-        "status": "[parameters('LabPublicEnvironments')]"
+        "status": "[variables('labPublicEnvironments')]"
       }
     },
     {
@@ -155,7 +184,7 @@
         "[resourceId('Microsoft.DevTestLab/labs', parameters('ProjectName'))]"
       ],
       "properties": {
-        "status": "[parameters('LabPublicArtifacts')]"
+        "status": "[variables('labPublicArtifacts')]"
       }
     },
     {

@@ -14,6 +14,7 @@ using TeamCloud.Model.Commands.Core;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.AppInsights;
 using TeamCloud.Providers.Core.Activities;
+using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Core.Orchestrations
 {
@@ -50,7 +51,8 @@ namespace TeamCloud.Providers.Core.Orchestrations
 
                 if (string.IsNullOrEmpty(commandOrchestrationName))
                 {
-                    commandLog.LogInformation($"Dispatching command '{command.GetType().FullName}' ({command.CommandId}) >>> DEFAULT RESULT HANDLING");
+                    commandLog
+                        .LogInformation($"Dispatching command '{command.GetType().FullName}' ({command.CommandId}) >>> FALLBACK ({commandOrchestrationInstanceId})");
 
                     commandResult = await functionContext
                         .CallSubOrchestratorWithRetryAsync<ICommandResult>(nameof(ProviderCommandFallbackOrchestration), commandOrchestrationInstanceId, command)
@@ -58,7 +60,8 @@ namespace TeamCloud.Providers.Core.Orchestrations
                 }
                 else
                 {
-                    commandLog.LogInformation($"Dispatching command '{command.GetType().FullName}' ({commandMessage.CommandId}) >>> {commandOrchestrationName}");
+                    commandLog
+                        .LogInformation($"Dispatching command '{command.GetType().FullName}' ({commandMessage.CommandId}) >>> {commandOrchestrationName} ({commandOrchestrationInstanceId})");
 
                     commandResult = await functionContext
                         .CallSubOrchestratorWithRetryAsync<ICommandResult>(commandOrchestrationName, commandOrchestrationInstanceId, command)
@@ -73,7 +76,8 @@ namespace TeamCloud.Providers.Core.Orchestrations
             {
                 commandLog.LogError(exc, $"Processing command '{command.GetType().FullName}' ({command.CommandId}) Failed >>> {exc.Message}");
 
-                commandResult.Errors.Add(exc);
+                commandResult.Errors
+                    .Add(exc.AsSerializable());
             }
             finally
             {
@@ -88,7 +92,8 @@ namespace TeamCloud.Providers.Core.Orchestrations
                 {
                     commandLog.LogError(exc, $"Sending result for command '{command.GetType().FullName}' ({command.CommandId}) Failed >>> {exc.Message}");
 
-                    commandResult.Errors.Add(exc);
+                    commandResult.Errors
+                        .Add(exc.AsSerializable());
                 }
                 finally
                 {

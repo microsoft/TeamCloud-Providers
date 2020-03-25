@@ -55,8 +55,10 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
             template.Parameters["ProjectName"] = command.Payload.Name;
             //template.Parameters["Repositories"] = Array.Empty<object>();
             //template.Parameters["ImageGallery"] = "";
-            template.Parameters["LabPublicEnvironments"] = "Enabled";
-            template.Parameters["LabPublicArtifacts"] = "Enabled";
+            template.Parameters["LabBastionHostEnabled"] = false;
+            template.Parameters["LabMarketplaceEnabled"] = false;
+            template.Parameters["LabPublicEnvironmentsEnabled"] = false;
+            template.Parameters["LabPublicArtifactsEnabled"] = false;
             template.Parameters["LabVNetPrefix"] = vnetPrefix;
             template.Parameters["LabSNetPrefix"] = snetPrefix;
 

@@ -16,7 +16,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
     public static class ProjectDeleteActivity
     {
         [FunctionName(nameof(ProjectDeleteActivity))]
-        public static async Task<Dictionary<string, string>> RunActivity(
+        public static Dictionary<string, string> RunActivity(
             [ActivityTrigger] ProviderProjectDeleteCommand command,
             ILogger log)
         {
