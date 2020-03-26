@@ -3,7 +3,7 @@ using TeamCloud.Model.Data;
 
 namespace TeamCloud.Providers.Core
 {
-    class UserUpdateComparer : IEqualityComparer<User>
+    internal class UserUpdateComparer : IEqualityComparer<User>
     {
         public bool Equals(User x, User y)
             => object.Equals(x, y) && (x.Role != y.Role);

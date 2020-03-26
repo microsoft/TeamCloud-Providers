@@ -5,10 +5,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.Logging;
 using TeamCloud.Model.Commands;
 
 namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
@@ -17,8 +15,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
     {
         [FunctionName(nameof(ProjectUpdateActivity))]
         public static Dictionary<string, string> RunActivity(
-            [ActivityTrigger] ProviderProjectUpdateCommand command,
-            ILogger log)
+            [ActivityTrigger] ProviderProjectUpdateCommand command)
         {
             if (command is null)
                 throw new ArgumentNullException(nameof(command));

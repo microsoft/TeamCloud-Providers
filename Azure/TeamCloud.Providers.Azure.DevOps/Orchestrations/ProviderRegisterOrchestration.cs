@@ -20,8 +20,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
     {
         [FunctionName(nameof(ProviderRegisterOrchestration))]
         public static async Task RunOrchestration(
-            [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
-            ILogger log)
+            [OrchestrationTrigger] IDurableOrchestrationContext functionContext)
         {
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));

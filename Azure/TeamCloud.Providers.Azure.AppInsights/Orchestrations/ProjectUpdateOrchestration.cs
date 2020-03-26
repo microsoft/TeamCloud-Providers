@@ -20,19 +20,19 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
     {
         [FunctionName(nameof(ProjectUpdateOrchestration))]
         public static async Task RunOrchestration(
-            [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
-            ILogger log)
+            [OrchestrationTrigger] IDurableOrchestrationContext functionContext)
         {
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
             var command = functionContext.GetInput<ProviderProjectUpdateCommand>();
+            var commandResult = command.CreateResult();
 
             var properties = await functionContext
                 .CallActivityWithRetryAsync<Dictionary<string, string>>(nameof(ProjectUpdateActivity), command)
                 .ConfigureAwait(true);
 
-            var commandResult = command.CreateResult();
+
             commandResult.Result = new ProviderOutput { Properties = properties };
 
             functionContext.SetOutput(commandResult);

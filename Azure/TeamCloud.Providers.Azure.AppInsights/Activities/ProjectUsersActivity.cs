@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.Logging;
 using TeamCloud.Azure.Resources;
 using TeamCloud.Model.Data;
 using TeamCloud.Providers.Core;
@@ -20,24 +19,25 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
 
         [FunctionName(nameof(ProjectUsersActivity))]
         public async Task RunActivity(
-            [ActivityTrigger] (Project project, string resourceId) input,
-            ILogger log)
+            [ActivityTrigger] IDurableActivityContext functionContext)
         {
-            var roleAssignments = input.project.Users
+            if (functionContext is null)
+                throw new ArgumentNullException(nameof(functionContext));
+
+            var (project, resourceId) = functionContext.GetInput<(Project, string)>();
+
+            var resource = await azureResourceService
+                .GetResourceAsync(resourceId, throwIfNotExists: true)
+                .ConfigureAwait(false);
+
+            var roleAssignments = project.Users
                 .ToRoleAssignments(role => role.Equals(UserRoles.Project.Owner, StringComparison.OrdinalIgnoreCase)
                     ? AzureRoleDefinition.Contributor
                     : AzureRoleDefinition.Reader);
-
-            var resource = await azureResourceService
-                .GetResourceAsync(input.resourceId)
-                .ConfigureAwait(false);
-
 
             await resource
                 .SetRoleAssignmentsAsync(roleAssignments)
                 .ConfigureAwait(false);
         }
-
-
     }
 }

@@ -15,6 +15,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using TeamCloud.Http;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Validation;
@@ -54,6 +55,12 @@ namespace TeamCloud.Providers.Azure.AppInsights
             string commandId,
             ILogger log)
         {
+            if (requestMessage is null)
+                throw new ArgumentNullException(nameof(requestMessage));
+
+            if (durableClient is null)
+                throw new ArgumentNullException(nameof(durableClient));
+
             IActionResult actionResult;
 
             try
@@ -66,7 +73,7 @@ namespace TeamCloud.Providers.Azure.AppInsights
                         if (string.IsNullOrEmpty(commandId))
                             actionResult = new NotFoundResult();
                         else
-                            actionResult = await HandleGetAsync(durableClient, Guid.Parse(commandId), log).ConfigureAwait(false);
+                            actionResult = await HandleGetAsync(durableClient, Guid.Parse(commandId)).ConfigureAwait(false);
 
                         break;
 
@@ -90,7 +97,7 @@ namespace TeamCloud.Providers.Azure.AppInsights
             return actionResult;
         }
 
-        private async Task<IActionResult> HandleGetAsync(IDurableClient durableClient, Guid commandId, ILogger log)
+        private async Task<IActionResult> HandleGetAsync(IDurableClient durableClient, Guid commandId)
         {
             var messageInstanceId = GetCommandMessageOrchestrationInstanceId(commandId);
 
@@ -162,7 +169,7 @@ namespace TeamCloud.Providers.Azure.AppInsights
             return CreateCommandResultResponse(message.Command, commandResult);
         }
 
-        private async Task<ICommandResult> WaitForCommandResultAsync(IDurableClient durableClient, ICommand command, ILogger log)
+        private static async Task<ICommandResult> WaitForCommandResultAsync(IDurableClient durableClient, ICommand command, ILogger log)
         {
             var timeoutDuration = TimeSpan.FromMinutes(5);
             var timeout = DateTime.UtcNow.Add(timeoutDuration);

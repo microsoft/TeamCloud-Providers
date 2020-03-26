@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.Logging;
 using TeamCloud.Azure.Deployment;
 using TeamCloud.Model.Commands;
 using TeamCloud.Orchestration;
@@ -29,8 +28,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
         [FunctionName(nameof(ProjectCreateActivity))]
         [RetryOptions(3)]
         public async Task<Dictionary<string, string>> RunActivity(
-            [ActivityTrigger] ProviderProjectCreateCommand command,
-            ILogger log)
+            [ActivityTrigger] ProviderProjectCreateCommand command)
         {
             if (command is null)
                 throw new ArgumentNullException(nameof(command));
@@ -72,7 +70,6 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
 
             return deploymentOutput
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString());
-
         }
     }
 }

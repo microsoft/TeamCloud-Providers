@@ -16,8 +16,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
     {
         [FunctionName(nameof(ProjectDeleteActivity))]
         public static Dictionary<string, string> RunActivity(
-            [ActivityTrigger] ProviderProjectDeleteCommand command,
-            ILogger log)
+            [ActivityTrigger] ProviderProjectDeleteCommand command)
         {
             if (command is null)
                 throw new ArgumentNullException(nameof(command));

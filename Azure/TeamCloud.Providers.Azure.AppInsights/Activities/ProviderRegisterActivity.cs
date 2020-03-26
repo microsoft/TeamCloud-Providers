@@ -25,8 +25,7 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
 
         [FunctionName(nameof(ProviderRegisterActivity))]
         public async Task<ProviderRegistration> RunActivity(
-            [ActivityTrigger] ProviderRegisterCommand command,
-            ILogger log)
+            [ActivityTrigger] ProviderRegisterCommand command)
         {
             if (command is null)
                 throw new ArgumentNullException(nameof(command));

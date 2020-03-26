@@ -26,6 +26,9 @@ namespace TeamCloud.Providers.Core
     {
         public static ICommandResult ApplyStatus(this ICommandResult commandResult, DurableOrchestrationStatus orchestrationStatus)
         {
+            if (commandResult is null)
+                throw new ArgumentNullException(nameof(commandResult));
+
             if (orchestrationStatus is null)
                 throw new ArgumentNullException(nameof(orchestrationStatus));
 
@@ -57,21 +60,6 @@ namespace TeamCloud.Providers.Core
 
             return services;
         }
-
-        public static async Task<JObject> ReadAsJsonAsync(this HttpContent httpContent)
-        {
-            using var stream = await httpContent
-                .ReadAsStreamAsync()
-                .ConfigureAwait(false);
-
-            var streamReader = new StreamReader(stream);
-            var jsonReader = new JsonTextReader(streamReader);
-
-            return JObject.Load(jsonReader);
-        }
-
-        public static Task<T> ReadAsJsonAsync<T>(this HttpContent httpContent)
-            => httpContent.ReadAsJsonAsync().ContinueWith((json) => json.Result.ToObject<T>(), TaskContinuationOptions.OnlyOnRanToCompletion);
 
         public static async Task<ICommandResult> GetCommandResultAsync(this IDurableClient durableClient, ICommand command)
         {

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.Logging;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 
@@ -10,12 +9,15 @@ namespace TeamCloud.Providers.Core.Orchestrations
     {
         [FunctionName(nameof(ProviderCommandFallbackOrchestration))]
         public static ICommandResult RunOrchestrator(
-            [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
-            ILogger log)
+            [OrchestrationTrigger] IDurableOrchestrationContext functionContext)
         {
-            var command = functionContext.GetInput<IProviderCommand>();
+            if (functionContext is null)
+                throw new System.ArgumentNullException(nameof(functionContext));
 
-            return command.CreateResult();
+            var command = functionContext.GetInput<IProviderCommand>();
+            var commandResult = command.CreateResult();
+
+            return commandResult;
         }
     }
 }

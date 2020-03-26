@@ -17,8 +17,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
     {
         [FunctionName(nameof(ProjectCreateActivity))]
         public static Dictionary<string, string> RunActivity(
-            [ActivityTrigger] ProviderProjectCreateCommand command,
-            ILogger log)
+            [ActivityTrigger] ProviderProjectCreateCommand command)
         {
             if (command is null)
                 throw new ArgumentNullException(nameof(command));

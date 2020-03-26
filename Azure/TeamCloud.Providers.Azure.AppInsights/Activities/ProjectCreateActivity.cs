@@ -6,12 +6,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.Logging;
 using TeamCloud.Azure.Deployment;
-using TeamCloud.Model.Commands;
+using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.AppInsights.Templates;
 
@@ -29,18 +29,18 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
         [FunctionName(nameof(ProjectCreateActivity))]
         [RetryOptions(3)]
         public async Task<Dictionary<string, string>> RunActivity(
-            [ActivityTrigger] ProviderProjectCreateCommand command,
-            ILogger log)
+            [ActivityTrigger] Project project)
         {
-            if (command is null)
-                throw new ArgumentNullException(nameof(command));
+            if (project is null)
+                throw new ArgumentNullException(nameof(project));
 
             var template = new ProjectCreateTemplate();
 
-            template.Parameters["ProjectName"] = command.Payload.Name;
+            template.Parameters["ProviderName"] = Assembly.GetExecutingAssembly().GetName().Name;
+            template.Parameters["ProjectName"] = project.Name;
 
             var deployment = await azureDeploymentService
-                .DeployResourceGroupTemplateAsync(template, command.Payload.ResourceGroup.SubscriptionId, command.Payload.ResourceGroup.ResourceGroupName)
+                .DeployResourceGroupTemplateAsync(template, project.ResourceGroup.SubscriptionId, project.ResourceGroup.ResourceGroupName)
                 .ConfigureAwait(false);
 
             var deploymentOutput = await deployment

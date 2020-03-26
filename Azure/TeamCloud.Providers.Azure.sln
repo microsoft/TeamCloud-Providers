@@ -10,8 +10,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TeamCloud.Providers.Azure.A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E078B0A0-9B73-40B7-B94A-94A50FEE98ED}"
 	ProjectSection(SolutionItems) = preProject
+		GlobalSuppressions.cs = GlobalSuppressions.cs
 		TeamCloud.Providers.Azure.bat = TeamCloud.Providers.Azure.bat
 		TeamCloud.Providers.Azure.sln.licenseheader = TeamCloud.Providers.Azure.sln.licenseheader
+		TeamCloud.Providers.Azure.sln.targets = TeamCloud.Providers.Azure.sln.targets
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Shared", "Solution Shared", "{D302A0F0-9163-4417-A75E-221033204694}"

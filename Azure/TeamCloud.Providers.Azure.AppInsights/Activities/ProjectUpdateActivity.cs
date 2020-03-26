@@ -5,11 +5,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
-using TeamCloud.Model.Commands;
+using TeamCloud.Model.Data;
 
 namespace TeamCloud.Providers.Azure.AppInsights.Activities
 {
@@ -17,11 +16,10 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
     {
         [FunctionName(nameof(ProjectUpdateActivity))]
         public static Dictionary<string, string> RunActivity(
-            [ActivityTrigger] ProviderProjectUpdateCommand command,
-            ILogger log)
+            [ActivityTrigger] Project project)
         {
-            if (command is null)
-                throw new ArgumentNullException(nameof(command));
+            if (project is null)
+                throw new ArgumentNullException(nameof(project));
 
             return new Dictionary<string, string>();
         }
