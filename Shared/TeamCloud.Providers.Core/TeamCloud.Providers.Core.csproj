@@ -6,6 +6,10 @@
   </PropertyGroup>
   
   <PropertyGroup>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <Company>Microsoft Corporation</Company>
     <Product>TeamCloud</Product>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
