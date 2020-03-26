@@ -65,8 +65,8 @@ jobs:
       run: |
         dotnet publish Azure/TeamCloud.Providers.Azure.DevOps/TeamCloud.Providers.Azure.DevOps.csproj -o TeamCloud.Providers.Azure.DevOps -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true --no-build
         
-        pushd TeamCloud.Providers.Azure.DevOps 
-          zip -r ../TeamCloud.Providers.Azure.DevOps .zip *
+        pushd TeamCloud.Providers.Azure.DevOps
+          zip -r ../TeamCloud.Providers.Azure.DevOps.zip *
         popd
 
     - name: Create Release Asset - TeamCloud.Providers.Azure.DevTestLabs
