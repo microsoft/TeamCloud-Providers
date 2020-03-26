@@ -1,0 +1,129 @@
+name: Create Pre-release
+
+on:
+  push:
+    branches: [ master ]
+
+env:
+  BUILD_CONFIGURATION: Release
+  
+jobs:
+
+  build:
+    name: Create new Pre-release
+    if: "!contains(join(github.event.commits.*.message), '+norelease')"
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+      
+    - name: Checkout Tags
+      run: git fetch -t
+      
+    - name: Setup GitVersion
+      uses: gittools/actions/gitversion/setup@v0.9.2
+      with:
+          versionSpec: '5.x'
+
+    - name: Execute GitVersion
+      id: gitversion
+      uses: gittools/actions/gitversion/execute@v0.9.2
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.101'
+
+    # - name: Build & Package Core for Pre-release
+    #   run: dotnet build Shared/TeamCloud.Providers.Core/TeamCloud.Providers.Core.csproj -o Prerelease -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true --version-suffix "pre"
+
+    # - name: Publish Core Pre-release NuGet Packages
+    #   run: dotnet nuget push 'Prerelease/*.nupkg' --api-key '${{ secrets.MYGET_DEV_TOKEN }}' --source 'https://www.myget.org/F/teamcloud-dev/api/v2/package' --symbol-api-key '${{ secrets.MYGET_DEV_TOKEN }}' --symbol-source 'https://www.myget.org/F/teamcloud-dev/symbols/api/v2/package' --skip-duplicate
+
+    - name: Build & Package Core for Release
+      run: dotnet build Shared/TeamCloud.Providers.Core/TeamCloud.Providers.Core.csproj -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true
+
+    # - name: Create Release Asset - NuGet
+    #   run: zip -r -j NuGet.zip src -i '*.nupkg' 
+
+    - name: Build Azure for Release
+      run: dotnet build Azure/TeamCloud.Providers.Azure.sln -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true
+
+    - name: Create Release Asset - TeamCloud.Providers.Azure.AppInsights 
+      run: |
+        dotnet publish Azure/TeamCloud.Providers.Azure.AppInsights/TeamCloud.Providers.Azure.AppInsights.csproj -o TeamCloud.Providers.Azure.AppInsights -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true --no-build
+
+        pushd TeamCloud.Providers.Azure.AppInsights
+          zip -r ../TeamCloud.Providers.Azure.AppInsights.zip *
+        popd
+
+    - name: Create Release Asset - TeamCloud.Providers.Azure.DevOps
+      run: |
+        dotnet publish Azure/TeamCloud.Providers.Azure.DevOps/TeamCloud.Providers.Azure.DevOps.csproj -o TeamCloud.Providers.Azure.DevOps -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true --no-build
+        
+        pushd TeamCloud.Providers.Azure.DevOps
+          zip -r ../TeamCloud.Providers.Azure.DevOps.zip *
+        popd
+
+    - name: Create Release Asset - TeamCloud.Providers.Azure.DevTestLabs
+      run: |
+        dotnet publish Azure/TeamCloud.Providers.Azure.DevTestLabs/TeamCloud.Providers.Azure.DevTestLabs.csproj -o TeamCloud.Providers.Azure.DevTestLabs -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true --no-build
+        
+        pushd TeamCloud.Providers.Azure.DevTestLabs
+          zip -r ../TeamCloud.Providers.Azure.DevTestLabs.zip *
+        popd
+        
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: 'v${{ steps.gitversion.outputs.majorMinorPatch }}'
+        release_name: 'v${{ steps.gitversion.outputs.majorMinorPatch }}-pre'
+        body: 'Pre-release build.'
+        prerelease: true
+
+    # - name: Upload Release Assets - NuGet
+    #   uses: actions/upload-release-asset@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.create_release.outputs.upload_url }} 
+    #     asset_path: NuGet.zip
+    #     asset_name: NuGet.zip
+    #     asset_content_type: application/zip
+      
+    - name: Upload Release Asset - TeamCloud.Providers.Azure.AppInsights
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        asset_path: TeamCloud.Providers.Azure.AppInsights.zip
+        asset_name: TeamCloud.Providers.Azure.AppInsights.zip
+        asset_content_type: application/zip
+
+    - name: Upload Release Asset - TeamCloud.Providers.Azure.DevOps
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        asset_path: TeamCloud.Providers.Azure.DevOps.zip
+        asset_name: TeamCloud.Providers.Azure.DevOps.zip
+        asset_content_type: application/zip
+    
+    - name: Upload Release Asset - TeamCloud.Providers.Azure.DevTestLabs
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        asset_path: TeamCloud.Providers.Azure.DevTestLabs.zip
+        asset_name: TeamCloud.Providers.Azure.DevTestLabs.zip
+        asset_content_type: application/zip
