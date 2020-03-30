@@ -14,6 +14,7 @@ using TeamCloud.Azure.Deployment;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.AppInsights.Templates;
+using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Azure.AppInsights.Activities
 {
@@ -34,21 +35,28 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
             if (project is null)
                 throw new ArgumentNullException(nameof(project));
 
-            var template = new ProjectCreateTemplate();
+            try
+            {
+                var template = new ProjectCreateTemplate();
 
-            template.Parameters["ProviderName"] = Assembly.GetExecutingAssembly().GetName().Name;
-            template.Parameters["ProjectName"] = project.Name;
+                template.Parameters["ProviderName"] = Assembly.GetExecutingAssembly().GetName().Name;
+                template.Parameters["ProjectName"] = project.Name;
 
-            var deployment = await azureDeploymentService
-                .DeployResourceGroupTemplateAsync(template, project.ResourceGroup.SubscriptionId, project.ResourceGroup.ResourceGroupName)
-                .ConfigureAwait(false);
+                var deployment = await azureDeploymentService
+                    .DeployResourceGroupTemplateAsync(template, project.ResourceGroup.SubscriptionId, project.ResourceGroup.ResourceGroupName)
+                    .ConfigureAwait(false);
 
-            var deploymentOutput = await deployment
-                .WaitAndGetOutputAsync(throwOnError: true)
-                .ConfigureAwait(false);
+                var deploymentOutput = await deployment
+                    .WaitAndGetOutputAsync(throwOnError: true)
+                    .ConfigureAwait(false);
 
-            return deploymentOutput
-                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString());
+                return deploymentOutput
+                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString());
+            }
+            catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
+            {
+                throw serializableException;
+            }
         }
     }
 }

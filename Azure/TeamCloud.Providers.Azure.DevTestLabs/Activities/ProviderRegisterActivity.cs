@@ -7,10 +7,10 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.Logging;
 using TeamCloud.Azure;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data;
+using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
 {
@@ -30,16 +30,23 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
             if (command is null)
                 throw new ArgumentNullException(nameof(command));
 
-            var identity = await azureSessionService
-                .GetIdentityAsync()
-                .ConfigureAwait(false);
-
-            var registration = new ProviderRegistration
+            try
             {
-                PrincipalId = identity?.ObjectId
-            };
+                var identity = await azureSessionService
+                    .GetIdentityAsync()
+                    .ConfigureAwait(false);
 
-            return registration;
+                var registration = new ProviderRegistration
+                {
+                    PrincipalId = identity?.ObjectId
+                };
+
+                return registration;
+            }
+            catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
+            {
+                throw serializableException;
+            }
         }
     }
 }

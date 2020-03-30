@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using TeamCloud.Azure.Resources;
+using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Azure.AppInsights.Activities
 {
@@ -25,11 +26,18 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
             if (!AzureResourceIdentifier.TryParse(resourceGroupId, out var resourceGroupIdValid))
                 throw new ArgumentOutOfRangeException(nameof(resourceGroupId));
 
-            var resourceGroup = await azureResourceService
-                .GetResourceGroupAsync(resourceGroupIdValid.SubscriptionId, resourceGroupIdValid.ResourceGroup, throwIfNotExists: true)
-                .ConfigureAwait(false);
+            try
+            {
+                var resourceGroup = await azureResourceService
+                    .GetResourceGroupAsync(resourceGroupIdValid.SubscriptionId, resourceGroupIdValid.ResourceGroup, throwIfNotExists: true)
+                    .ConfigureAwait(false);
 
-            return Enumerable.Empty<string>();
+                return Enumerable.Empty<string>();
+            }
+            catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
+            {
+                throw serializableException;
+            }
         }
     }
 }

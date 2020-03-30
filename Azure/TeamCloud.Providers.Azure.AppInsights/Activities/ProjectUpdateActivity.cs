@@ -7,8 +7,8 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.Logging;
 using TeamCloud.Model.Data;
+using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Azure.AppInsights.Activities
 {
@@ -21,7 +21,14 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
             if (project is null)
                 throw new ArgumentNullException(nameof(project));
 
-            return new Dictionary<string, string>();
+            try
+            {
+                return new Dictionary<string, string>();
+            }
+            catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
+            {
+                throw serializableException;
+            }
         }
     }
 }

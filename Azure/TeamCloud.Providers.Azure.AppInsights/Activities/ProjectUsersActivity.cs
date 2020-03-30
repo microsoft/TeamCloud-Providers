@@ -5,6 +5,7 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using TeamCloud.Azure.Resources;
 using TeamCloud.Model.Data;
 using TeamCloud.Providers.Core;
+using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Azure.AppInsights.Activities
 {
@@ -24,20 +25,27 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var (project, resourceId) = functionContext.GetInput<(Project, string)>();
+            try
+            {
+                var (project, resourceId) = functionContext.GetInput<(Project, string)>();
 
-            var resource = await azureResourceService
-                .GetResourceAsync(resourceId, throwIfNotExists: true)
-                .ConfigureAwait(false);
+                var resource = await azureResourceService
+                    .GetResourceAsync(resourceId, throwIfNotExists: true)
+                    .ConfigureAwait(false);
 
-            var roleAssignments = project.Users
-                .ToRoleAssignments(role => role.Equals(UserRoles.Project.Owner, StringComparison.OrdinalIgnoreCase)
-                    ? AzureRoleDefinition.Contributor
-                    : AzureRoleDefinition.Reader);
+                var roleAssignments = project.Users
+                    .ToRoleAssignments(role => role.Equals(UserRoles.Project.Owner, StringComparison.OrdinalIgnoreCase)
+                        ? AzureRoleDefinition.Contributor
+                        : AzureRoleDefinition.Reader);
 
-            await resource
-                .SetRoleAssignmentsAsync(roleAssignments)
-                .ConfigureAwait(false);
+                await resource
+                    .SetRoleAssignmentsAsync(roleAssignments)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
+            {
+                throw serializableException;
+            }
         }
     }
 }

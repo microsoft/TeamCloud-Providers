@@ -4,12 +4,11 @@
  */
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.Logging;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data;
+using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Azure.DevOps.Activities
 {
@@ -22,12 +21,19 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
             if (command is null)
                 throw new ArgumentNullException(nameof(command));
 
-            var registration = new ProviderRegistration
+            try
             {
-                PrincipalId = null // this provider does not talk to any azure resources yet
-            };
+                var registration = new ProviderRegistration
+                {
+                    PrincipalId = null // this provider does not talk to any azure resources yet
+                };
 
-            return registration;
+                return registration;
+            }
+            catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
+            {
+                throw serializableException;
+            }
         }
     }
 }
