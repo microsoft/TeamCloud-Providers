@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\TeamCloud.Providers.Shared.sln.targets" />
-  
+
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8.0</LangVersion>
@@ -15,10 +15,10 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.2" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.5" />
-    <PackageReference Include="TeamCloud.Http" Version="0.1.260-pre" />
-    <PackageReference Include="TeamCloud.Model" Version="0.1.260-pre" />
-    <PackageReference Include="TeamCloud.Model.Validation" Version="0.1.260-pre" />
-    <PackageReference Include="TeamCloud.Orchestration" Version="0.1.260-pre" />
+    <PackageReference Include="TeamCloud.Http" Version="0.1.270-pre" />
+    <PackageReference Include="TeamCloud.Model" Version="0.1.270-pre" />
+    <PackageReference Include="TeamCloud.Model.Validation" Version="0.1.270-pre" />
+    <PackageReference Include="TeamCloud.Orchestration" Version="0.1.270-pre" />
   </ItemGroup>
 
 </Project>
