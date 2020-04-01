@@ -5,12 +5,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.Logging;
 using TeamCloud.Model.Commands;
-using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.AppInsights.Activities;
 
@@ -28,14 +27,30 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
             var command = functionContext.GetInput<ProviderProjectUpdateCommand>();
             var commandResult = command.CreateResult();
 
-            var properties = await functionContext
-                .CallActivityWithRetryAsync<Dictionary<string, string>>(nameof(ProjectUpdateActivity), command)
-                .ConfigureAwait(true);
+            try
+            {
+                var resources = await functionContext
+                    .CallActivityWithRetryAsync<IEnumerable<string>>(nameof(ProjectResourceListActivity), command.Payload)
+                    .ConfigureAwait(true);
 
+                var tasks = new List<Task>();
 
-            commandResult.Result = new ProviderOutput { Properties = properties };
+                tasks.AddRange(resources.Select(resource => functionContext.CallActivityWithRetryAsync(nameof(ProjectResourceRolesActivity), (command.Payload, resource))));
+                tasks.AddRange(resources.Select(resource => functionContext.CallActivityWithRetryAsync(nameof(ProjectResourceTagsActivity), (command.Payload, resource))));
 
-            functionContext.SetOutput(commandResult);
+                await Task
+                    .WhenAll(tasks)
+                    .ConfigureAwait(true);
+            }
+            catch (Exception exc)
+            {
+                commandResult ??= command.CreateResult();
+                commandResult.Errors.Add(exc);
+            }
+            finally
+            {
+                functionContext.SetOutput(commandResult);
+            }
         }
     }
 }

@@ -16,6 +16,7 @@ using Microsoft.Extensions.Hosting;
 using TeamCloud.Azure;
 using TeamCloud.Azure.Deployment;
 using TeamCloud.Azure.Deployment.Providers;
+using TeamCloud.Azure.Resources;
 using TeamCloud.Configuration;
 using TeamCloud.Http;
 using TeamCloud.Model.Commands;
@@ -52,6 +53,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs
                 .AddTeamCloudAzure(configuration =>
                 {
                     configuration
+                        .AddResources()
                         .AddDeployment()
                         .SetDeploymentArtifactsProvider<AzureStorageArtifactsProvider>();
                 })
