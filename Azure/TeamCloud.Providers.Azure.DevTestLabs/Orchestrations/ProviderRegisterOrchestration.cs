@@ -11,6 +11,7 @@ using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.DevTestLabs.Activities;
+using TeamCloud.Providers.Core;
 
 namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
 {
@@ -24,6 +25,13 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
                 throw new ArgumentNullException(nameof(functionContext));
 
             var command = functionContext.GetInput<ProviderRegisterCommand>();
+
+            if (Guid.TryParse(command.Payload?.TeamCloudApplicationInsightsKey, out var instrumentationKey))
+            {
+                await functionContext
+                    .SetInstrumentationKeyAsync(instrumentationKey)
+                    .ConfigureAwait(true);
+            }
 
             var providerRegistraion = await functionContext
                 .CallActivityWithRetryAsync<ProviderRegistration>(nameof(ProviderRegisterActivity), command)

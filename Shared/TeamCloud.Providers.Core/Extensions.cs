@@ -5,19 +5,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.AppInsights;
+using TeamCloud.Providers.Core.Activities;
 using TeamCloud.Providers.Core.Configuration;
 
 namespace TeamCloud.Providers.Core
@@ -112,5 +109,12 @@ namespace TeamCloud.Providers.Core
 
         public static IDictionary<Guid, IEnumerable<Guid>> ToRoleAssignments(this IList<User> users, Func<string, Guid> roleIdCallback)
             => users.ToDictionary(user => user.Id, user => Enumerable.Repeat(roleIdCallback(user.Role), 1));
+
+        public static Task SetInstrumentationKeyAsync(this IDurableOrchestrationContext functionContext, Guid instrumentationKey)
+            => instrumentationKey.ToString().Equals(Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY"), StringComparison.OrdinalIgnoreCase)
+            ? Task.CompletedTask : functionContext.SetAppSettingAsync("APPINSIGHTS_INSTRUMENTATIONKEY", instrumentationKey.ToString());
+
+        public static Task SetAppSettingAsync(this IDurableOrchestrationContext functionContext, string key, string value = default)
+            => functionContext.CallActivityWithRetryAsync(nameof(ProviderCommandAppSettingActivity), (key, value));
     }
 }

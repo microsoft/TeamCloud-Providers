@@ -33,13 +33,13 @@
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.2" />
     <PackageReference Include="System.Linq.Async" Version="4.0.0" />
-    <PackageReference Include="TeamCloud.Azure.Resources" Version="0.1.286-pre" />
-    <PackageReference Include="TeamCloud.Configuration" Version="0.1.286-pre" />
-    <PackageReference Include="TeamCloud.Http" Version="0.1.286-pre" />
-    <PackageReference Include="TeamCloud.Azure" Version="0.1.286-pre" />
-    <PackageReference Include="TeamCloud.Azure.Deployment" Version="0.1.286-pre" />
-    <PackageReference Include="TeamCloud.Model.Validation" Version="0.1.286-pre" />
-    <PackageReference Include="TeamCloud.Orchestration" Version="0.1.286-pre" />
+    <PackageReference Include="TeamCloud.Azure.Resources" Version="0.1.289-pre" />
+    <PackageReference Include="TeamCloud.Configuration" Version="0.1.289-pre" />
+    <PackageReference Include="TeamCloud.Http" Version="0.1.289-pre" />
+    <PackageReference Include="TeamCloud.Azure" Version="0.1.289-pre" />
+    <PackageReference Include="TeamCloud.Azure.Deployment" Version="0.1.289-pre" />
+    <PackageReference Include="TeamCloud.Model.Validation" Version="0.1.289-pre" />
+    <PackageReference Include="TeamCloud.Orchestration" Version="0.1.289-pre" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\TeamCloud.Providers.Core\TeamCloud.Providers.Core.csproj" />

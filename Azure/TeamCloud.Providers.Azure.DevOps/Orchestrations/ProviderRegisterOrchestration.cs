@@ -4,15 +4,14 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.Logging;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.DevOps.Activities;
+using TeamCloud.Providers.Core;
 
 namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
 {
@@ -26,6 +25,13 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
                 throw new ArgumentNullException(nameof(functionContext));
 
             var command = functionContext.GetInput<ProviderRegisterCommand>();
+
+            if (Guid.TryParse(command.Payload?.TeamCloudApplicationInsightsKey, out var instrumentationKey))
+            {
+                await functionContext
+                    .SetInstrumentationKeyAsync(instrumentationKey)
+                    .ConfigureAwait(true);
+            }
 
             var providerRegistraion = await functionContext
                 .CallActivityWithRetryAsync<ProviderRegistration>(nameof(ProviderRegisterActivity), command)

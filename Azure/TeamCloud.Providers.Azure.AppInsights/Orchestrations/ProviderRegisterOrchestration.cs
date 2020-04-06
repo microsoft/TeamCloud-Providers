@@ -11,6 +11,7 @@ using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.AppInsights.Activities;
+using TeamCloud.Providers.Core;
 
 namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
 {
@@ -25,11 +26,19 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
 
             var command = functionContext.GetInput<ProviderRegisterCommand>();
 
+            if (Guid.TryParse(command.Payload?.TeamCloudApplicationInsightsKey, out var instrumentationKey))
+            {
+                await functionContext
+                    .SetInstrumentationKeyAsync(instrumentationKey)
+                    .ConfigureAwait(true);
+            }
+
             var providerRegistraion = await functionContext
                 .CallActivityWithRetryAsync<ProviderRegistration>(nameof(ProviderRegisterActivity), command)
                 .ConfigureAwait(true);
 
             var commandResult = command.CreateResult();
+
             commandResult.Result = providerRegistraion;
 
             functionContext.SetOutput(commandResult);
