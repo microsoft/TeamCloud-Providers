@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Extensions.Logging;
 using TeamCloud.Azure.Deployment;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
@@ -27,10 +28,10 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
             this.azureDeploymentService = azureDeploymentService ?? throw new ArgumentNullException(nameof(azureDeploymentService));
         }
 
-        [FunctionName(nameof(ProjectCreateActivity))]
-        [RetryOptions(3)]
+        [FunctionName(nameof(ProjectCreateActivity)), RetryOptions(3, FirstRetryInterval = "00:01:00")]
         public async Task<Dictionary<string, string>> RunActivity(
-            [ActivityTrigger] Project project)
+            [ActivityTrigger] Project project,
+            ILogger log)
         {
             if (project is null)
                 throw new ArgumentNullException(nameof(project));
@@ -55,6 +56,8 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
             }
             catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
             {
+                log.LogError(exc, $"{nameof(ProjectCreateActivity)} failed: {exc.Message}");
+
                 throw serializableException;
             }
         }

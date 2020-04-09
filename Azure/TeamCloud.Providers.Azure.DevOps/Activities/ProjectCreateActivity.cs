@@ -7,19 +7,22 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using TeamCloud.Model.Commands;
+using Microsoft.Extensions.Logging;
+using TeamCloud.Model.Data;
+using TeamCloud.Orchestration;
 using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Azure.DevOps.Activities
 {
     public static class ProjectCreateActivity
     {
-        [FunctionName(nameof(ProjectCreateActivity))]
+        [FunctionName(nameof(ProjectCreateActivity)), RetryOptions(3, FirstRetryInterval = "00:01:00")]
         public static Dictionary<string, string> RunActivity(
-            [ActivityTrigger] ProviderProjectCreateCommand command)
+            [ActivityTrigger] Project project,
+            ILogger log)
         {
-            if (command is null)
-                throw new ArgumentNullException(nameof(command));
+            if (project is null)
+                throw new ArgumentNullException(nameof(project));
 
             try
             {
@@ -27,6 +30,8 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
             }
             catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
             {
+                log.LogError(exc, $"{nameof(ProjectCreateActivity)} failed: {exc.Message}");
+
                 throw serializableException;
             }
         }

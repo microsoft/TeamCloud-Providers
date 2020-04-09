@@ -9,8 +9,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Extensions.Logging;
 using TeamCloud.Azure.Deployment;
-using TeamCloud.Model.Commands;
+using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.DevTestLabs.Templates;
 using TeamCloud.Serialization;
@@ -26,13 +27,13 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
             this.azureDeploymentService = azureDeploymentService ?? throw new ArgumentNullException(nameof(azureDeploymentService));
         }
 
-        [FunctionName(nameof(ProjectCreateActivity))]
-        [RetryOptions(3)]
+        [FunctionName(nameof(ProjectCreateActivity)), RetryOptions(3, FirstRetryInterval = "00:01:00")]
         public async Task<Dictionary<string, string>> RunActivity(
-            [ActivityTrigger] ProviderProjectCreateCommand command)
+            [ActivityTrigger] Project project,
+            ILogger log)
         {
-            if (command is null)
-                throw new ArgumentNullException(nameof(command));
+            if (project is null)
+                throw new ArgumentNullException(nameof(project));
 
             try
             {
@@ -53,7 +54,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
 
                 var template = new ProjectCreateTemplate();
 
-                template.Parameters["ProjectName"] = command.Payload.Name;
+                template.Parameters["ProjectName"] = project.Name;
                 //template.Parameters["Repositories"] = Array.Empty<object>();
                 //template.Parameters["ImageGallery"] = "";
                 template.Parameters["LabBastionHostEnabled"] = false;
@@ -64,7 +65,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
                 template.Parameters["LabSNetPrefix"] = snetPrefix;
 
                 var deployment = await azureDeploymentService
-                    .DeployResourceGroupTemplateAsync(template, command.Payload.ResourceGroup.SubscriptionId, command.Payload.ResourceGroup.ResourceGroupName)
+                    .DeployResourceGroupTemplateAsync(template, project.ResourceGroup.SubscriptionId, project.ResourceGroup.ResourceGroupName)
                     .ConfigureAwait(false);
 
                 var deploymentOutput = await deployment
@@ -76,6 +77,8 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
             }
             catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
             {
+                log.LogError(exc, $"{nameof(ProjectCreateActivity)} failed: {exc.Message}");
+
                 throw serializableException;
             }
         }

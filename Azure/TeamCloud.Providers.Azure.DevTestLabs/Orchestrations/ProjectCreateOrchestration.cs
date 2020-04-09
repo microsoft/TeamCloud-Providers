@@ -28,7 +28,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
             var command = functionContext.GetInput<ProviderProjectCreateCommand>();
 
             var properties = await functionContext
-                .CallActivityWithRetryAsync<Dictionary<string, string>>(nameof(ProjectCreateActivity), command)
+                .CallActivityWithRetryAsync<Dictionary<string, string>>(nameof(ProjectCreateActivity), command.Payload)
                 .ConfigureAwait(true);
 
             var commandResult = command.CreateResult();

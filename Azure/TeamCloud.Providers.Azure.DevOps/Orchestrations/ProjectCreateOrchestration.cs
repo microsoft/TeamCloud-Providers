@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.Logging;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
@@ -28,7 +27,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
             var command = functionContext.GetInput<ProviderProjectCreateCommand>();
 
             var properties = await functionContext
-                .CallActivityWithRetryAsync<Dictionary<string, string>>(nameof(ProjectCreateActivity), command)
+                .CallActivityWithRetryAsync<Dictionary<string, string>>(nameof(ProjectCreateActivity), command.Payload)
                 .ConfigureAwait(true);
 
             var commandResult = command.CreateResult();
