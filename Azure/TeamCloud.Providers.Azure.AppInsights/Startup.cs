@@ -20,6 +20,7 @@ using TeamCloud.Azure.Resources;
 using TeamCloud.Configuration;
 using TeamCloud.Http;
 using TeamCloud.Model.Commands;
+using TeamCloud.Providers.Azure;
 using TeamCloud.Providers.Azure.AppInsights;
 using TeamCloud.Providers.Azure.AppInsights.Orchestrations;
 using TeamCloud.Providers.Core;
@@ -31,7 +32,8 @@ using TeamCloud.Providers.Core;
 // to enable the FunctionsInDependencies (see csproj)
 // feature of the Azure Functions SDK.
 
-[assembly: FunctionsImport(typeof(TeamCloudCoreStartup))]
+[assembly: FunctionsImport(typeof(TeamCloudProvidersCoreStartup))]
+[assembly: FunctionsImport(typeof(TeamCloudProvidersAzureStartup))]
 
 namespace TeamCloud.Providers.Azure.AppInsights
 {

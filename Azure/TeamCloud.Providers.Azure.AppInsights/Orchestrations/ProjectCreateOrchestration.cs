@@ -4,7 +4,7 @@
  */
 
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -12,6 +12,7 @@ using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.AppInsights.Activities;
+using TeamCloud.Providers.Core;
 
 namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
 {
@@ -27,20 +28,24 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
             var command = functionContext.GetInput<ProviderProjectCreateCommand>();
             var commandResult = command.CreateResult();
 
-            var properties = await functionContext
-                .CallActivityWithRetryAsync<Dictionary<string, string>>(nameof(ProjectCreateActivity), command.Payload)
+            var deploymentId = await functionContext
+                .CallActivityWithRetryAsync<string>(nameof(ProjectCreateActivity), command.Payload)
                 .ConfigureAwait(true);
 
-            if (properties.TryGetValue("resourceId", out string resourceId))
+            var deploymentOutput = await functionContext
+                .GetDeploymentOutputAsync(deploymentId)
+                .ConfigureAwait(true);
+
+            if (deploymentOutput.TryGetValue("resourceId", out var resourceId))
             {
                 await functionContext
-                    .CallActivityWithRetryAsync(nameof(ProjectUsersActivity), (command.Payload, resourceId))
+                    .CallActivityWithRetryAsync(nameof(ProjectUsersActivity), (command.Payload, resourceId?.ToString()))
                     .ConfigureAwait(true);
             }
 
             commandResult.Result = new ProviderOutput
             {
-                Properties = properties
+                Properties = deploymentOutput.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString())
             };
 
             functionContext.SetOutput(commandResult);

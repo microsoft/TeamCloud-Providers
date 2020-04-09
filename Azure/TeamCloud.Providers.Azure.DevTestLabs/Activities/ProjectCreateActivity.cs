@@ -4,8 +4,6 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -27,8 +25,8 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
             this.azureDeploymentService = azureDeploymentService ?? throw new ArgumentNullException(nameof(azureDeploymentService));
         }
 
-        [FunctionName(nameof(ProjectCreateActivity)), RetryOptions(3, FirstRetryInterval = "00:01:00")]
-        public async Task<Dictionary<string, string>> RunActivity(
+        [FunctionName(nameof(ProjectCreateActivity)), RetryOptions(3)]
+        public async Task<string> RunActivity(
             [ActivityTrigger] Project project,
             ILogger log)
         {
@@ -68,12 +66,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
                     .DeployResourceGroupTemplateAsync(template, project.ResourceGroup.SubscriptionId, project.ResourceGroup.ResourceGroupName)
                     .ConfigureAwait(false);
 
-                var deploymentOutput = await deployment
-                    .WaitAndGetOutputAsync(throwOnError: true)
-                    .ConfigureAwait(false);
-
-                return deploymentOutput
-                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString());
+                return deployment.ResourceId;
             }
             catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
             {

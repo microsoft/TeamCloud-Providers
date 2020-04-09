@@ -4,15 +4,15 @@
  */
 
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.Logging;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.DevTestLabs.Activities;
+using TeamCloud.Providers.Core;
 
 namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
 {
@@ -26,13 +26,20 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
                 throw new ArgumentNullException(nameof(functionContext));
 
             var command = functionContext.GetInput<ProviderProjectCreateCommand>();
+            var commandResult = command.CreateResult();
 
-            var properties = await functionContext
-                .CallActivityWithRetryAsync<Dictionary<string, string>>(nameof(ProjectCreateActivity), command.Payload)
+            var deploymentId = await functionContext
+                .CallActivityWithRetryAsync<string>(nameof(ProjectCreateActivity), command.Payload)
                 .ConfigureAwait(true);
 
-            var commandResult = command.CreateResult();
-            commandResult.Result = new ProviderOutput { Properties = properties };
+            var deploymentOutput = await functionContext
+                .GetDeploymentOutputAsync(deploymentId)
+                .ConfigureAwait(true);
+
+            commandResult.Result = new ProviderOutput
+            {
+                Properties = deploymentOutput.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString())
+            };
 
             functionContext.SetOutput(commandResult);
         }

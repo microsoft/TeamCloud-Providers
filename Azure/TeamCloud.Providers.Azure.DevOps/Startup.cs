@@ -19,7 +19,7 @@ using TeamCloud.Providers.Core;
 // to enable the FunctionsInDependencies (see csproj)
 // feature of the Azure Functions SDK.
 
-[assembly: FunctionsImport(typeof(TeamCloudCoreStartup))]
+[assembly: FunctionsImport(typeof(TeamCloudProvidersCoreStartup))]
 
 namespace TeamCloud.Providers.Azure.DevOps
 {

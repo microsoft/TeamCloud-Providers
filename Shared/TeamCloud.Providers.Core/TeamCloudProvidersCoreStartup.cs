@@ -10,11 +10,11 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using TeamCloud.Providers.Core;
 using TeamCloud.Providers.Core.Configuration;
 
-[assembly: FunctionsStartup(typeof(TeamCloudCoreStartup))]
+[assembly: FunctionsStartup(typeof(TeamCloudProvidersCoreStartup))]
 
 namespace TeamCloud.Providers.Core
 {
-    public class TeamCloudCoreStartup : FunctionsStartup
+    public class TeamCloudProvidersCoreStartup : FunctionsStartup
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {

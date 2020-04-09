@@ -19,7 +19,7 @@ using TeamCloud.Providers.Core.Configuration;
 
 namespace TeamCloud.Providers.Core
 {
-    public static class Extensions
+    public static class TeamCloudProvidersCoreExtensions
     {
         public static ICommandResult ApplyStatus(this ICommandResult commandResult, DurableOrchestrationStatus orchestrationStatus)
         {
