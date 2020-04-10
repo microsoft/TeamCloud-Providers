@@ -28,12 +28,8 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
             var command = functionContext.GetInput<ProviderProjectCreateCommand>();
             var commandResult = command.CreateResult();
 
-            var deploymentId = await functionContext
-                .CallActivityWithRetryAsync<string>(nameof(ProjectCreateActivity), command.Payload)
-                .ConfigureAwait(true);
-
             var deploymentOutput = await functionContext
-                .GetDeploymentOutputAsync(deploymentId)
+                .GetDeploymentOutputAsync(nameof(ProjectCreateActivity), command.Payload)
                 .ConfigureAwait(true);
 
             if (deploymentOutput.TryGetValue("resourceId", out var resourceId))

@@ -10,7 +10,6 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data;
-using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.DevTestLabs.Activities;
 using TeamCloud.Providers.Core;
 
@@ -28,12 +27,8 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
             var command = functionContext.GetInput<ProviderProjectCreateCommand>();
             var commandResult = command.CreateResult();
 
-            var deploymentId = await functionContext
-                .CallActivityWithRetryAsync<string>(nameof(ProjectCreateActivity), command.Payload)
-                .ConfigureAwait(true);
-
             var deploymentOutput = await functionContext
-                .GetDeploymentOutputAsync(deploymentId)
+                .GetDeploymentOutputAsync(nameof(ProjectCreateActivity), command.Payload)
                 .ConfigureAwait(true);
 
             commandResult.Result = new ProviderOutput
