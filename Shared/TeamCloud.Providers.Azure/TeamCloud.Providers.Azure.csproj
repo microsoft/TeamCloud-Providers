@@ -34,9 +34,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.2.0" />
-    <PackageReference Include="TeamCloud.Azure" Version="0.1.306-pre" />
-    <PackageReference Include="TeamCloud.Azure.Deployment" Version="0.1.306-pre" />
-    <PackageReference Include="TeamCloud.Orchestration" Version="0.1.306-pre" />
+    <PackageReference Include="TeamCloud.Azure" Version="0.1.309-pre" />
+    <PackageReference Include="TeamCloud.Azure.Deployment" Version="0.1.309-pre" />
+    <PackageReference Include="TeamCloud.Orchestration" Version="0.1.309-pre" />
   </ItemGroup>
   
 </Project>
