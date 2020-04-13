@@ -16,7 +16,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
 {
     public static class ProjectCreateActivity
     {
-        [FunctionName(nameof(ProjectCreateActivity)), RetryOptions(3, FirstRetryInterval = "00:01:00")]
+        [FunctionName(nameof(ProjectCreateActivity)), RetryOptions(5, FirstRetryInterval = "00:02:00")]
         public static Dictionary<string, string> RunActivity(
             [ActivityTrigger] Project project,
             ILogger log)
