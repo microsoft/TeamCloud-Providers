@@ -32,6 +32,8 @@ namespace TeamCloud.Providers.Core.Activities
             }
             catch (FlurlHttpException postException) when (postException.Call.HttpStatus == HttpStatusCode.Gone)
             {
+                log.LogError(postException, $"Activity '{nameof(ProviderCommandResultSendActivity)}' failed: {postException.Message}");
+
                 // the server told us that the corresponding orchestration
                 // is gone (reached a final state) and sending another request
                 // doesn't make sense. so lets break our retry loop by raising
@@ -41,6 +43,8 @@ namespace TeamCloud.Providers.Core.Activities
             }
             catch (FlurlHttpException postException) when (postException.Call.HttpStatus == HttpStatusCode.Unauthorized)
             {
+                log.LogError(postException, $"Activity '{nameof(ProviderCommandResultSendActivity)}' failed: {postException.Message}");
+
                 // seems like the authentication token in the callback url is
                 // no longer valid. there is no reason to give this operation
                 // another shot. break the retry look by raising an exception
@@ -50,6 +54,8 @@ namespace TeamCloud.Providers.Core.Activities
             }
             catch (Exception exc) when (!exc.IsSerializable(out var serializableExc))
             {
+                log.LogError(exc, $"Activity '{nameof(ProviderCommandResultSendActivity)}' failed: {exc.Message}");
+
                 throw serializableExc;
             }
         }

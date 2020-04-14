@@ -31,13 +31,18 @@ namespace TeamCloud.Providers.Core.Activities
                     .GetStatusAsync(instanceId)
                     .ConfigureAwait(false);
 
-                commandResult = commandResult
-                    .ApplyStatus(commandStatus);
+                if (commandStatus != null)
+                {
+                    commandResult = commandResult
+                        .ApplyStatus(commandStatus);
 
-                log.LogInformation($"Augmented command result ({commandResult.CommandId}): {JsonConvert.SerializeObject(commandResult)}");
+                    log.LogInformation($"Augmented command result ({commandResult.CommandId}): {JsonConvert.SerializeObject(commandResult)}");
+                }
             }
             catch (Exception exc) when (!exc.IsSerializable(out var serializableExc))
             {
+                log.LogError(exc, $"Activity '{nameof(ProviderCommandResultAugmentActivity)}' failed: {exc.Message}");
+
                 throw serializableExc;
             }
 
