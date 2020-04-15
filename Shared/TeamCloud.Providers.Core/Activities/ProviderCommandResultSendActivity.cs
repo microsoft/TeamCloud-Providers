@@ -14,7 +14,7 @@ namespace TeamCloud.Providers.Core.Activities
 {
     public static class ProviderCommandResultSendActivity
     {
-        [FunctionName(nameof(ProviderCommandResultSendActivity)), RetryOptions(3, FirstRetryInterval = "00:01:00")]
+        [FunctionName(nameof(ProviderCommandResultSendActivity)), RetryOptions(5, FirstRetryInterval = "00:01:00")]
         public static async Task RunActivity([ActivityTrigger] IDurableActivityContext functionContext, ILogger log)
         {
             if (functionContext is null)
@@ -38,17 +38,6 @@ namespace TeamCloud.Providers.Core.Activities
                 // is gone (reached a final state) and sending another request
                 // doesn't make sense. so lets break our retry loop by raising
                 // an exception that terminates the retry loop using the retry handler.
-
-                throw new RetryCanceledException($"Sending command result ({commandResult.CommandId}) failed: {postException.Message}", postException);
-            }
-            catch (FlurlHttpException postException) when (postException.Call.HttpStatus == HttpStatusCode.Unauthorized)
-            {
-                log.LogError(postException, $"Activity '{nameof(ProviderCommandResultSendActivity)}' failed: {postException.Message}");
-
-                // seems like the authentication token in the callback url is
-                // no longer valid. there is no reason to give this operation
-                // another shot. break the retry look by raising an exception
-                // that breaks the retry logic using the retry handler.
 
                 throw new RetryCanceledException($"Sending command result ({commandResult.CommandId}) failed: {postException.Message}", postException);
             }
