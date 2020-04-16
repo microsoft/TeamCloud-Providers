@@ -26,7 +26,7 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
             this.azureDeploymentService = azureDeploymentService ?? throw new ArgumentNullException(nameof(azureDeploymentService));
         }
 
-        [FunctionName(nameof(ProjectCreateActivity)), RetryOptions(5, FirstRetryInterval = "00:02:00")]
+        [FunctionName(nameof(ProjectCreateActivity)), RetryOptions(10, FirstRetryInterval = "00:02:00")]
         public async Task<string> RunActivity(
             [ActivityTrigger] Project project,
             ILogger log)
