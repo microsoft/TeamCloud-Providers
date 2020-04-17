@@ -8,10 +8,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Extensions.Logging;
+using TeamCloud.Model;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data;
 using TeamCloud.Providers.Azure.DevTestLabs.Activities;
 using TeamCloud.Providers.Core;
+using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
 {
@@ -19,24 +22,43 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
     {
         [FunctionName(nameof(ProjectCreateOrchestration))]
         public static async Task RunOrchestration(
-            [OrchestrationTrigger] IDurableOrchestrationContext functionContext)
+            [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
+            ILogger log)
         {
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
+            if (log is null)
+                throw new ArgumentNullException(nameof(log));
+
             var command = functionContext.GetInput<ProviderProjectCreateCommand>();
             var commandResult = command.CreateResult();
 
-            var deploymentOutput = await functionContext
-                .GetDeploymentOutputAsync(nameof(ProjectCreateActivity), command.Payload)
-                .ConfigureAwait(true);
-
-            commandResult.Result = new ProviderOutput
+            using (log.BeginCommandScope(command))
             {
-                Properties = deploymentOutput.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString())
-            };
+                try
+                {
+                    var deploymentOutput = await functionContext
+                        .GetDeploymentOutputAsync(nameof(ProjectCreateActivity), command.Payload)
+                        .ConfigureAwait(true);
 
-            functionContext.SetOutput(commandResult);
+                    commandResult.Result = new ProviderOutput
+                    {
+                        Properties = deploymentOutput.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString())
+                    };
+                }
+                catch (Exception exc)
+                {
+                    commandResult ??= command.CreateResult();
+                    commandResult.Errors.Add(exc);
+
+                    throw exc.AsSerializable();
+                }
+                finally
+                {
+                    functionContext.SetOutput(commandResult);
+                }
+            }
         }
     }
 }

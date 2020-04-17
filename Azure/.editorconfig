@@ -1,4 +1,4 @@
 ﻿[*.cs]
 
 # DF0109: Activity function named 'nameof(...)' does not exist. Did you mean '...'?
-dotnet_diagnostic.DF0109.severity = silent
+dotnet_diagnostic.DF0109.severity = none
