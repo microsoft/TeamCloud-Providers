@@ -39,12 +39,16 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
             {
                 try
                 {
+                    functionContext.SetCustomStatus("Deploy resources", log);
+
                     var deploymentOutput = await functionContext
                         .GetDeploymentOutputAsync(nameof(ProjectCreateActivity), command.Payload)
                         .ConfigureAwait(true);
 
                     if (deploymentOutput.TryGetValue("resourceId", out var resourceId))
                     {
+                        functionContext.SetCustomStatus("Updating user permissions", log);
+
                         await functionContext
                             .CallActivityWithRetryAsync(nameof(ProjectUsersActivity), (command.Payload, resourceId?.ToString()))
                             .ConfigureAwait(true);
@@ -64,6 +68,13 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
                 }
                 finally
                 {
+                    var commandException = commandResult.GetException();
+
+                    if (commandException is null)
+                        functionContext.SetCustomStatus($"Command succeeded", log);
+                    else
+                        functionContext.SetCustomStatus($"Command failed: {commandException.Message}", log, commandException);
+
                     functionContext.SetOutput(commandResult);
                 }
             }

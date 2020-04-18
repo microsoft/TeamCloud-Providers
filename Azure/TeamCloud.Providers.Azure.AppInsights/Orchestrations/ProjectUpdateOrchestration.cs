@@ -14,6 +14,7 @@ using TeamCloud.Model;
 using TeamCloud.Model.Commands;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.AppInsights.Activities;
+using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
 {
@@ -54,9 +55,18 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
                 {
                     commandResult ??= command.CreateResult();
                     commandResult.Errors.Add(exc);
+
+                    throw exc.AsSerializable();
                 }
                 finally
                 {
+                    var commandException = commandResult.GetException();
+
+                    if (commandException is null)
+                        functionContext.SetCustomStatus($"Command succeeded", log);
+                    else
+                        functionContext.SetCustomStatus($"Command failed: {commandException.Message}", log, commandException);
+
                     functionContext.SetOutput(commandResult);
                 }
             }

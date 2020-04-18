@@ -53,6 +53,13 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
                 }
                 finally
                 {
+                    var commandException = commandResult.GetException();
+
+                    if (commandException is null)
+                        functionContext.SetCustomStatus($"Command succeeded", log);
+                    else
+                        functionContext.SetCustomStatus($"Command failed: {commandException.Message}", log, commandException);
+
                     functionContext.SetOutput(commandResult);
                 }
             }
