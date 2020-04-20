@@ -10,6 +10,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using TeamCloud.Azure.Deployment;
+using TeamCloud.Model;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.AppInsights.Templates;
@@ -34,24 +35,27 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
             if (project is null)
                 throw new ArgumentNullException(nameof(project));
 
-            try
+            using (log.BeginProjectScope(project))
             {
-                var template = new ProjectCreateTemplate();
+                try
+                {
+                    var template = new ProjectCreateTemplate();
 
-                template.Parameters["ProviderName"] = Assembly.GetExecutingAssembly().GetName().Name;
-                template.Parameters["ProjectName"] = project.Name;
+                    template.Parameters["ProviderName"] = Assembly.GetExecutingAssembly().GetName().Name;
+                    template.Parameters["ProjectName"] = project.Name;
 
-                var deployment = await azureDeploymentService
-                    .DeployResourceGroupTemplateAsync(template, project.ResourceGroup.SubscriptionId, project.ResourceGroup.ResourceGroupName)
-                    .ConfigureAwait(false);
+                    var deployment = await azureDeploymentService
+                        .DeployResourceGroupTemplateAsync(template, project.ResourceGroup.SubscriptionId, project.ResourceGroup.ResourceGroupName)
+                        .ConfigureAwait(false);
 
-                return deployment.ResourceId;
-            }
-            catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
-            {
-                log.LogError(exc, $"{nameof(ProjectCreateActivity)} failed: {exc.Message}");
+                    return deployment.ResourceId;
+                }
+                catch (Exception exc)
+                {
+                    log.LogError(exc, $"{nameof(ProjectCreateActivity)} failed: {exc.Message}");
 
-                throw serializableException;
+                    throw exc.AsSerializable();
+                }
             }
         }
     }

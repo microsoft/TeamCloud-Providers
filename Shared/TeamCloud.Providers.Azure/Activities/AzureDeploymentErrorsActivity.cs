@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -49,11 +48,11 @@ namespace TeamCloud.Providers.Azure.Activities
                     .GetErrorsAsync()
                     .ConfigureAwait(false);
             }
-            catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
+            catch (Exception exc)
             {
                 log.LogError(exc, $"Activity {nameof(AzureDeploymentErrorsActivity)} failed: {exc.Message}");
 
-                throw serializableException;
+                throw exc.AsSerializable();
             }
         }
     }

@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Extensions.Logging;
+using TeamCloud.Model;
 using TeamCloud.Model.Commands;
 using TeamCloud.Serialization;
 
@@ -16,18 +18,24 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
     {
         [FunctionName(nameof(ProjectUpdateActivity))]
         public static Dictionary<string, string> RunActivity(
-            [ActivityTrigger] ProviderProjectUpdateCommand command)
+            [ActivityTrigger] ProviderProjectUpdateCommand command,
+            ILogger log)
         {
             if (command is null)
                 throw new ArgumentNullException(nameof(command));
 
-            try
+            using (log.BeginCommandScope(command))
             {
-                return new Dictionary<string, string>();
-            }
-            catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
-            {
-                throw serializableException;
+                try
+                {
+                    return new Dictionary<string, string>();
+                }
+                catch (Exception exc)
+                {
+                    log.LogError(exc, $"{nameof(ProviderProjectUpdateCommand)} failed: {exc.Message}");
+
+                    throw exc.AsSerializable();
+                }
             }
         }
     }

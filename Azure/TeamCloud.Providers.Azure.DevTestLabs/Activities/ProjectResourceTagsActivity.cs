@@ -7,7 +7,9 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Extensions.Logging;
 using TeamCloud.Azure.Resources;
+using TeamCloud.Model;
 using TeamCloud.Model.Data;
 using TeamCloud.Serialization;
 
@@ -24,26 +26,32 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
 
         [FunctionName(nameof(ProjectResourceTagsActivity))]
         public async Task RunActivity(
-            [ActivityTrigger] IDurableActivityContext functionContext)
+            [ActivityTrigger] IDurableActivityContext functionContext,
+            ILogger log)
         {
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            try
-            {
-                var (project, resourceId) = functionContext.GetInput<(Project, string)>();
+            var (project, resourceId) = functionContext.GetInput<(Project, string)>();
 
-                var resource = await azureResourceService
-                    .GetResourceAsync(resourceId, throwIfNotExists: true)
-                    .ConfigureAwait(false);
-
-                await resource
-                    .SetTagsAsync(project.Tags)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
+            using (log.BeginProjectScope(project))
             {
-                throw serializableException;
+                try
+                {
+                    var resource = await azureResourceService
+                        .GetResourceAsync(resourceId, throwIfNotExists: true)
+                        .ConfigureAwait(false);
+
+                    await resource
+                        .SetTagsAsync(project.Tags)
+                        .ConfigureAwait(false);
+                }
+                catch (Exception exc)
+                {
+                    log.LogError(exc, $"{nameof(ProjectResourceTagsActivity)} failed: {exc.Message}");
+
+                    throw exc.AsSerializable();
+                }
             }
         }
     }

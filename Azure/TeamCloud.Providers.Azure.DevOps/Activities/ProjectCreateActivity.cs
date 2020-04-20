@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
+using TeamCloud.Model;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Serialization;
@@ -24,15 +25,18 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
             if (project is null)
                 throw new ArgumentNullException(nameof(project));
 
-            try
+            using (log.BeginProjectScope(project))
             {
-                return new Dictionary<string, string>();
-            }
-            catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
-            {
-                log.LogError(exc, $"{nameof(ProjectCreateActivity)} failed: {exc.Message}");
+                try
+                {
+                    return new Dictionary<string, string>();
+                }
+                catch (Exception exc)
+                {
+                    log.LogError(exc, $"{nameof(ProjectCreateActivity)} failed: {exc.Message}");
 
-                throw serializableException;
+                    throw exc.AsSerializable();
+                }
             }
         }
     }

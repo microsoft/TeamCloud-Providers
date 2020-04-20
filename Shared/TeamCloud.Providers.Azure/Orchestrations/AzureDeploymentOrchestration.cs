@@ -79,11 +79,11 @@ namespace TeamCloud.Providers.Azure.Orchestrations
                     }
                 }
             }
-            catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
+            catch (Exception exc)
             {
                 log.LogError(exc, $"Orchestration '{nameof(AzureDeploymentOrchestration)}' failed: {exc.Message}");
 
-                throw serializableException;
+                throw exc.AsSerializable();
             }
         }
     }

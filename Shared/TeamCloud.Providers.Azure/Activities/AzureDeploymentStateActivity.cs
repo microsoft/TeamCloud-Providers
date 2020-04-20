@@ -47,11 +47,11 @@ namespace TeamCloud.Providers.Azure.Activities
                     .GetStateAsync()
                     .ConfigureAwait(false);
             }
-            catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
+            catch (Exception exc) 
             {
                 log.LogError(exc, $"Activity {nameof(AzureDeploymentStateActivity)} failed: {exc.Message}");
 
-                throw serializableException;
+                throw exc.AsSerializable();
             }
         }
     }

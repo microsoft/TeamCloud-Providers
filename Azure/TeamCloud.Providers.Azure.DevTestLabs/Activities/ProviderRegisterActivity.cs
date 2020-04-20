@@ -7,7 +7,9 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Extensions.Logging;
 using TeamCloud.Azure;
+using TeamCloud.Model;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data;
 using TeamCloud.Serialization;
@@ -25,27 +27,33 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
 
         [FunctionName(nameof(ProviderRegisterActivity))]
         public async Task<ProviderRegistration> RunActivity(
-            [ActivityTrigger] ProviderRegisterCommand command)
+            [ActivityTrigger] ProviderRegisterCommand command,
+            ILogger log)
         {
             if (command is null)
                 throw new ArgumentNullException(nameof(command));
 
-            try
+            using (log.BeginCommandScope(command))
             {
-                var identity = await azureSessionService
-                    .GetIdentityAsync()
-                    .ConfigureAwait(false);
-
-                var registration = new ProviderRegistration
+                try
                 {
-                    PrincipalId = identity?.ObjectId
-                };
+                    var identity = await azureSessionService
+                        .GetIdentityAsync()
+                        .ConfigureAwait(false);
 
-                return registration;
-            }
-            catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
-            {
-                throw serializableException;
+                    var registration = new ProviderRegistration
+                    {
+                        PrincipalId = identity?.ObjectId
+                    };
+
+                    return registration;
+                }
+                catch (Exception exc)
+                {
+                    log.LogError(exc, $"{nameof(ProviderRegisterActivity)} failed: {exc.Message}");
+
+                    throw exc.AsSerializable();
+                }
             }
         }
     }

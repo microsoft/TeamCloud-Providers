@@ -8,7 +8,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Extensions.Logging;
 using TeamCloud.Azure.Resources;
+using TeamCloud.Model;
 using TeamCloud.Model.Data;
 using TeamCloud.Serialization;
 
@@ -25,32 +27,38 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
 
         [FunctionName(nameof(ProjectResourceRolesActivity))]
         public async Task RunActivity(
-            [ActivityTrigger] IDurableActivityContext functionContext)
+            [ActivityTrigger] IDurableActivityContext functionContext,
+            ILogger log)
         {
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            try
+            var (project, resourceId) = functionContext.GetInput<(Project, string)>();
+
+            using (log.BeginProjectScope(project))
             {
-                var (project, resourceId) = functionContext.GetInput<(Project, string)>();
-
-                var roleAssignments = (project.Users ?? Enumerable.Empty<User>())
-                    .ToDictionary(usr => usr.Id, usr => Enumerable.Repeat(GetRoleDefinitionId(usr), 1));
-
-                if (roleAssignments.Any())
+                try
                 {
-                    var resource = await azureResourceService
-                        .GetResourceAsync(resourceId, throwIfNotExists: true)
-                        .ConfigureAwait(false);
+                    var roleAssignments = (project.Users ?? Enumerable.Empty<User>())
+                        .ToDictionary(usr => usr.Id, usr => Enumerable.Repeat(GetRoleDefinitionId(usr), 1));
 
-                    await resource
-                        .SetRoleAssignmentsAsync(roleAssignments)
-                        .ConfigureAwait(false);
+                    if (roleAssignments.Any())
+                    {
+                        var resource = await azureResourceService
+                            .GetResourceAsync(resourceId, throwIfNotExists: true)
+                            .ConfigureAwait(false);
+
+                        await resource
+                            .SetRoleAssignmentsAsync(roleAssignments)
+                            .ConfigureAwait(false);
+                    }
                 }
-            }
-            catch (Exception exc) when (!exc.IsSerializable(out var serializableException))
-            {
-                throw serializableException;
+                catch (Exception exc)
+                {
+                    log.LogError(exc, $"{nameof(ProjectResourceRolesActivity)} failed: {exc.Message}");
+
+                    throw exc.AsSerializable();
+                }
             }
 
             static Guid GetRoleDefinitionId(User user) => user.Role switch
