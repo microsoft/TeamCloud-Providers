@@ -46,11 +46,11 @@ namespace TeamCloud.Providers.Core.Activities
 
                 throw new RetryCanceledException($"Sending command result ({commandResult.CommandId}) failed: {postException.Message}", postException);
             }
-            catch (Exception exc) when (!exc.IsSerializable(out var serializableExc))
+            catch (Exception exc)
             {
                 log.LogError(exc, $"Activity '{nameof(ProviderCommandResultSendActivity)}' failed: {exc.Message}");
 
-                throw serializableExc;
+                throw exc.AsSerializable();
             }
         }
     }

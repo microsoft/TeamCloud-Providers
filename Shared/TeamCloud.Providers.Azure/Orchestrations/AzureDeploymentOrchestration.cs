@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using TeamCloud.Azure.Deployment;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.Activities;
@@ -29,6 +30,7 @@ namespace TeamCloud.Providers.Azure.Orchestrations
                 throw new ArgumentNullException(nameof(functionContext));
 
             var (deploymentActivityName, deploymentActivityInput, deploymentResourceId) = functionContext.GetInput<(string, object, string)>();
+            var deploymentLog = functionContext.CreateReplaySafeLogger(log ?? NullLogger.Instance);
 
             try
             {
@@ -81,7 +83,7 @@ namespace TeamCloud.Providers.Azure.Orchestrations
             }
             catch (Exception exc)
             {
-                log.LogError(exc, $"Orchestration '{nameof(AzureDeploymentOrchestration)}' failed: {exc.Message}");
+                deploymentLog.LogError(exc, $"Orchestration '{nameof(AzureDeploymentOrchestration)}' failed: {exc.Message}");
 
                 throw exc.AsSerializable();
             }

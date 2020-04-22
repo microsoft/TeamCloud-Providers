@@ -5,10 +5,10 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using TeamCloud.Model;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data;
@@ -29,11 +29,9 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            if (log is null)
-                throw new ArgumentNullException(nameof(log));
-
             var command = functionContext.GetInput<ProviderRegisterCommand>();
             var commandResult = command.CreateResult();
+            var commandLog = functionContext.CreateReplaySafeLogger(log ?? NullLogger.Instance);
 
             using (log.BeginCommandScope(command))
             {
@@ -64,9 +62,9 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
                     var commandException = commandResult.GetException();
 
                     if (commandException is null)
-                        functionContext.SetCustomStatus($"Command succeeded", log);
+                        functionContext.SetCustomStatus($"Command succeeded", commandLog);
                     else
-                        functionContext.SetCustomStatus($"Command failed: {commandException.Message}", log, commandException);
+                        functionContext.SetCustomStatus($"Command failed: {commandException.Message}", commandLog, commandException);
 
                     functionContext.SetOutput(commandResult);
                 }

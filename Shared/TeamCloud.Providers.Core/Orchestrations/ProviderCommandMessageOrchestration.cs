@@ -14,7 +14,6 @@ using TeamCloud.Model.Commands.Core;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.AppInsights;
 using TeamCloud.Providers.Core.Activities;
-using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Core.Orchestrations
 {
@@ -76,29 +75,27 @@ namespace TeamCloud.Providers.Core.Orchestrations
             {
                 commandLog.LogError(exc, $"Processing command '{command.GetType().FullName}' ({command.CommandId}) Failed >>> {exc.Message}");
 
-                commandResult.Errors
-                    .Add(exc.AsSerializable());
+                commandResult ??= command.CreateResult();
+                commandResult.Errors.Add(exc);
             }
             finally
             {
                 try
                 {
-                    commandResult = await functionContext
-                        .CallActivityWithRetryAsync<ICommandResult>(nameof(ProviderCommandResultSendActivity), (commandResult, commandMessage.CallbackUrl))
+                    await functionContext
+                        .CallActivityWithRetryAsync(nameof(ProviderCommandResultSendActivity), (commandResult, commandMessage.CallbackUrl))
                         .ConfigureAwait(true);
-
                 }
                 catch (Exception exc)
                 {
                     commandLog.LogError(exc, $"Sending result for command '{command.GetType().FullName}' ({command.CommandId}) Failed >>> {exc.Message}");
 
-                    commandResult.Errors
-                        .Add(exc.AsSerializable());
+                    commandResult ??= command.CreateResult();
+                    commandResult.Errors.Add(exc);
                 }
                 finally
                 {
-                    functionContext
-                        .SetOutput(commandResult);
+                    functionContext.SetOutput(commandResult);
                 }
             }
         }
