@@ -42,6 +42,10 @@ namespace TeamCloud.Providers.Core.Orchestrations
 
             try
             {
+                await functionContext
+                    .CallActivityWithRetryAsync(nameof(ProviderCommandDumpActivity), command)
+                    .ConfigureAwait(true);
+
                 var commandOrchestrationName = await functionContext
                     .CallActivityWithRetryAsync<string>(nameof(ProviderCommandDispatchActivity), command)
                     .ConfigureAwait(true);
@@ -95,6 +99,10 @@ namespace TeamCloud.Providers.Core.Orchestrations
                 }
                 finally
                 {
+                    await functionContext
+                        .CallActivityWithRetryAsync(nameof(ProviderCommandResultDumpActivity), commandResult)
+                        .ConfigureAwait(true);
+
                     functionContext.SetOutput(commandResult);
                 }
             }
