@@ -29,9 +29,10 @@ namespace TeamCloud.Providers.Core.Activities
             {
                 var taskHubName = durableClient.GetTaskHubNameSanitized().ToLowerInvariant();
 
-                using var commandResultWriter = binder.Bind<TextWriter>(new BlobAttribute($"{taskHubName}-commands/{commandResult.CommandId}/{commandResult.GetType().Name}.json", FileAccess.Write));
+                using var textWriter = binder.Bind<TextWriter>(new BlobAttribute($"{taskHubName}-commands/{commandResult.CommandId}/{commandResult.GetType().Name}.json", FileAccess.Write));
+                using var jsonWriter = new JsonTextWriter(textWriter) { Formatting = Formatting.Indented };
 
-                new JsonSerializer().Serialize(commandResultWriter, commandResult);
+                JsonSerializer.Create().Serialize(jsonWriter, commandResult);
             }
             catch (Exception exc)
             {
