@@ -25,7 +25,7 @@ namespace TeamCloud.Providers.Azure.Activities
         }
 
         [FunctionName(nameof(AzureDeploymentErrorsActivity))]
-        [RetryOptions(3)]
+        [RetryOptions(5)]
         public async Task<IEnumerable<string>> RunActivity(
             [ActivityTrigger] IDurableActivityContext functionContext,
             ILogger log)
@@ -40,9 +40,6 @@ namespace TeamCloud.Providers.Azure.Activities
                 var deployment = await azureDeploymentService
                     .GetAzureDeploymentAsync(resourceId)
                     .ConfigureAwait(false);
-
-                if (deployment is null)
-                    throw new NullReferenceException($"Could not find deployment by resource id '{resourceId}'");
 
                 return await deployment
                     .GetErrorsAsync()

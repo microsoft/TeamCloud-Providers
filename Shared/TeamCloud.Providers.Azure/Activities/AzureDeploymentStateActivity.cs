@@ -40,12 +40,13 @@ namespace TeamCloud.Providers.Azure.Activities
                     .GetAzureDeploymentAsync(resourceId)
                     .ConfigureAwait(false);
 
-                if (deployment is null)
-                    throw new NullReferenceException($"Could not find deployment by resource id '{resourceId}'");
-
-                return await deployment
+                var deploymentState = await deployment
                     .GetStateAsync()
                     .ConfigureAwait(false);
+
+                log.LogInformation($"Deployment '{resourceId}' is in state '{deploymentState}'");
+
+                return deploymentState;
             }
             catch (Exception exc)
             {

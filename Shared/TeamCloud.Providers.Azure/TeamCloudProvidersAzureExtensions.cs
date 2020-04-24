@@ -14,10 +14,10 @@ namespace TeamCloud.Providers.Core
     public static class TeamCloudProvidersAzureExtensions
     {
         public static Task<IReadOnlyDictionary<string, object>> GetDeploymentOutputAsync(this IDurableOrchestrationContext functionContext, string deploymentResourceId)
-            => functionContext.CallSubOrchestratorWithRetryAsync<IReadOnlyDictionary<string, object>>(nameof(AzureDeploymentOrchestration), (default(string), default(object), deploymentResourceId));
+            => functionContext.CallSubOrchestratorWithRetryAsync<IReadOnlyDictionary<string, object>>(nameof(AzureDeploymentOrchestration), (default(string), default(object), deploymentResourceId, false));
 
         public static Task<IReadOnlyDictionary<string, object>> GetDeploymentOutputAsync(this IDurableOrchestrationContext functionContext, string deploymentActivityName, object deploymentActivityInput = default)
-            => functionContext.CallSubOrchestratorWithRetryAsync<IReadOnlyDictionary<string, object>>(nameof(AzureDeploymentOrchestration), (deploymentActivityName, deploymentActivityInput, default(string)));
+            => functionContext.CallSubOrchestratorWithRetryAsync<IReadOnlyDictionary<string, object>>(nameof(AzureDeploymentOrchestration), (deploymentActivityName, deploymentActivityInput, default(string), false));
 
     }
 }

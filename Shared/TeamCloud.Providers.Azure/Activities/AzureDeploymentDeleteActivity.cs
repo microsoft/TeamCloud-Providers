@@ -1,9 +1,4 @@
-﻿/**
- *  Copyright (c) Microsoft Corporation.
- *  Licensed under the MIT License.
- */
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
@@ -15,18 +10,18 @@ using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Azure.Activities
 {
-    public class AzureDeploymentOutputActivity
+    public class AzureDeploymentDeleteActivity
     {
         private readonly IAzureDeploymentService azureDeploymentService;
 
-        public AzureDeploymentOutputActivity(IAzureDeploymentService azureDeploymentService)
+        public AzureDeploymentDeleteActivity(IAzureDeploymentService azureDeploymentService)
         {
             this.azureDeploymentService = azureDeploymentService ?? throw new ArgumentNullException(nameof(azureDeploymentService));
         }
 
-        [FunctionName(nameof(AzureDeploymentOutputActivity))]
+        [FunctionName(nameof(AzureDeploymentDeleteActivity))]
         [RetryOptions(5)]
-        public async Task<IReadOnlyDictionary<string, object>> RunActivity(
+        public async Task RunActivity(
             [ActivityTrigger] IDurableActivityContext functionContext,
             ILogger log)
         {
@@ -41,17 +36,15 @@ namespace TeamCloud.Providers.Azure.Activities
                     .GetAzureDeploymentAsync(resourceId)
                     .ConfigureAwait(false);
 
-                return await deployment
-                    .GetOutputAsync()
+                await (deployment?.DeleteAsync() ?? Task.CompletedTask)
                     .ConfigureAwait(false);
             }
             catch (Exception exc)
             {
-                log.LogError(exc, $"Activity {nameof(AzureDeploymentErrorsActivity)} failed: {exc.Message}");
+                log.LogError(exc, $"Activity {nameof(AzureDeploymentDeleteActivity)} failed: {exc.Message}");
 
                 throw exc.AsSerializable();
             }
         }
     }
-
 }

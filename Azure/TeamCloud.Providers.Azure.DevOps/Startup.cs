@@ -6,6 +6,7 @@
 using System;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using TeamCloud.Azure;
 using TeamCloud.Http;
 using TeamCloud.Model.Commands;
 using TeamCloud.Providers.Azure.DevOps;
