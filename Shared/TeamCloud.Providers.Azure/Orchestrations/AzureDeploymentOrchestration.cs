@@ -52,7 +52,7 @@ namespace TeamCloud.Providers.Azure.Orchestrations
                 else
                 {
                     await functionContext
-                        .CreateTimer(functionContext.CurrentUtcDateTime.AddSeconds(10), CancellationToken.None)
+                        .CreateTimer(functionContext.CurrentUtcDateTime.AddSeconds(30), CancellationToken.None)
                         .ConfigureAwait(true);
 
                     var state = await functionContext

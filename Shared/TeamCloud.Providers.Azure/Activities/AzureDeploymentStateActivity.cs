@@ -24,7 +24,7 @@ namespace TeamCloud.Providers.Azure.Activities
         }
 
         [FunctionName(nameof(AzureDeploymentStateActivity))]
-        [RetryOptions(3)]
+        [RetryOptions(5)]
         public async Task<AzureDeploymentState> RunActivity(
             [ActivityTrigger] IDurableActivityContext functionContext,
             ILogger log)
@@ -47,7 +47,7 @@ namespace TeamCloud.Providers.Azure.Activities
                     .GetStateAsync()
                     .ConfigureAwait(false);
             }
-            catch (Exception exc) 
+            catch (Exception exc)
             {
                 log.LogError(exc, $"Activity {nameof(AzureDeploymentStateActivity)} failed: {exc.Message}");
 
