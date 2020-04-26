@@ -22,7 +22,7 @@ namespace TeamCloud.Providers.Core.Activities
 
             var (key, value) = functionContext.GetInput<(string, string)>();
 
-            var appSettings = await FunctionEnvironment
+            var appSettings = await FunctionsEnvironment
                 .GetAppSettingsAsync()
                 .ConfigureAwait(false);
 
@@ -39,7 +39,7 @@ namespace TeamCloud.Providers.Core.Activities
                 return; // app settings unmodified - no need to send an update
             }
 
-            _ = await FunctionEnvironment
+            _ = await FunctionsEnvironment
                 .SetAppSettingsAsync(appSettings)
                 .ConfigureAwait(false);
         }

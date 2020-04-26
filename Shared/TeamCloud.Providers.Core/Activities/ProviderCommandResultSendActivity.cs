@@ -20,7 +20,9 @@ namespace TeamCloud.Providers.Core.Activities
     public static class ProviderCommandResultSendActivity
     {
         [FunctionName(nameof(ProviderCommandResultSendActivity)), RetryOptions(5, FirstRetryInterval = "00:01:00")]
-        public static async Task RunActivity([ActivityTrigger] IDurableActivityContext functionContext, ILogger log)
+        public static async Task RunActivity(
+            [ActivityTrigger] IDurableActivityContext functionContext,
+            ILogger log)
         {
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));

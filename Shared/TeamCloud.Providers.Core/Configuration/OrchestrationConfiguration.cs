@@ -33,7 +33,7 @@ namespace TeamCloud.Providers.Core.Configuration
             if (string.IsNullOrEmpty(orchestrationName))
                 throw new ArgumentException("Cannot be null or empty.", nameof(orchestrationName));
 
-            if (!FunctionEnvironment.FunctionExists(orchestrationName))
+            if (!FunctionsEnvironment.FunctionExists(orchestrationName))
                 throw new ArgumentOutOfRangeException(nameof(orchestrationName), $"Could not find orchstration by name '{orchestrationName}'");
 
             orchestrations[typeof(T)] = new OrchestrationSettings()

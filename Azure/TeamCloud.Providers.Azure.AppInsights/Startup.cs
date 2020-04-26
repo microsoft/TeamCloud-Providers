@@ -20,20 +20,16 @@ using TeamCloud.Azure.Resources;
 using TeamCloud.Configuration;
 using TeamCloud.Http;
 using TeamCloud.Model.Commands;
-using TeamCloud.Providers.Azure;
+using TeamCloud.Orchestration.Auditing;
+using TeamCloud.Orchestration.Deployment;
 using TeamCloud.Providers.Azure.AppInsights;
 using TeamCloud.Providers.Azure.AppInsights.Orchestrations;
 using TeamCloud.Providers.Core;
 
 [assembly: FunctionsStartup(typeof(Startup))]
-
-// FunctionsImport will enable the compiler to early bind
-// the assembly of the referenced type. this is required
-// to enable the FunctionsInDependencies (see csproj)
-// feature of the Azure Functions SDK.
-
 [assembly: FunctionsImport(typeof(TeamCloudProvidersCoreStartup))]
-[assembly: FunctionsImport(typeof(TeamCloudProvidersAzureStartup))]
+[assembly: FunctionsImport(typeof(TeamCloudOrchestrationAuditingStartup))]
+[assembly: FunctionsImport(typeof(TeamCloudOrchestrationDeploymentStartup))]
 
 namespace TeamCloud.Providers.Azure.AppInsights
 {
