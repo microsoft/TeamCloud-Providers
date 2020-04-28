@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <LangVersion>8.0</LangVersion>
+    <AzureFunctionsVersion>v3</AzureFunctionsVersion>
+    <FunctionsInDependencies>true</FunctionsInDependencies>
+    <!--<UserSecretsId></UserSecretsId>-->
+  </PropertyGroup>
+  <!-- <ItemGroup>
+    <None Remove="teamcloudmsft.2020-04-21.private-key.pem" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="teamcloudmsft.2020-04-21.private-key.pem" />
+  </ItemGroup> -->
+  <ItemGroup>
+    <PackageReference Include="Flurl.Http" Version="2.4.2" />
+    <PackageReference Include="Octokit" Version="0.47.0" />
+    <PackageReference Include="GitHubJwt" Version="0.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="3.1.2" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.5" />
+    <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.2.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.2" />
+    <PackageReference Include="System.Linq.Async" Version="4.0.0" />
+    <PackageReference Include="TeamCloud.Configuration" Version="0.1.340-pre" />
+    <PackageReference Include="TeamCloud.Http" Version="0.1.340-pre" />
+    <PackageReference Include="TeamCloud.Azure" Version="0.1.340-pre" />
+    <PackageReference Include="TeamCloud.Model.Validation" Version="0.1.340-pre" />
+    <PackageReference Include="TeamCloud.Orchestration" Version="0.1.340-pre" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\TeamCloud.Providers.Azure\TeamCloud.Providers.Azure.csproj" />
+    <ProjectReference Include="..\..\Shared\TeamCloud.Providers.Core\TeamCloud.Providers.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="teamcloudmsft.2020-04-21.private-key.pem">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="host.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+</Project>
