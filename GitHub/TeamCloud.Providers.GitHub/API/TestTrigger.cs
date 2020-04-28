@@ -48,7 +48,7 @@ $@"
 </head>
 <body>
 
-<form action=""https://github.com/organizations/{options.OrganizationName}/settings/apps/new"" method=""post"">
+<form action=""https://github.com/organizations/{options.OrganizationName}/settings/apps/new?state=abc123"" method=""post"">
   Create a GitHub App Manifest: <input type=""text"" name=""manifest"" id=""manifest""><br>
   <input type=""submit"" value=""Submit"">
 </form>
@@ -82,8 +82,8 @@ $@"
       ""team_discussions"": ""write"",
       ""emails"": ""read""
     }},
-    ""callback_url"": ""{Secrets.ProviderUrl}/api/installed""
-    ""setup_url"": ""{Secrets.ProviderUrl}/api/setup"",
+    ""callback_url"": ""{Secrets.ProviderUrl}/api/installed"",
+    ""setup_url"": ""{Secrets.ProviderUrl}/api/setup""
   }})
 </script>
 </body>
