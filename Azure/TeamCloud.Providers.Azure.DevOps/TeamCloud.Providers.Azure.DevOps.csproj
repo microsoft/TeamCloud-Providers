@@ -15,9 +15,9 @@
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask.Analyzers" Version="0.2.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.2" />
     <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.4.0" />
-    <PackageReference Include="TeamCloud.Http" Version="0.1.370-pre" />
-    <PackageReference Include="TeamCloud.Model.Validation" Version="0.1.370-pre" />
-    <PackageReference Include="TeamCloud.Orchestration.Auditing" Version="0.1.370-pre" />
+    <PackageReference Include="TeamCloud.Http" Version="0.1.371-pre" />
+    <PackageReference Include="TeamCloud.Model.Validation" Version="0.1.371-pre" />
+    <PackageReference Include="TeamCloud.Orchestration.Auditing" Version="0.1.371-pre" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\TeamCloud.Providers.Core\TeamCloud.Providers.Core.csproj" />
