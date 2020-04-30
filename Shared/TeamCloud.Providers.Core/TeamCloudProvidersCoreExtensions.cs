@@ -116,5 +116,40 @@ namespace TeamCloud.Providers.Core
 
         public static Task SetAppSettingAsync(this IDurableOrchestrationContext functionContext, string key, string value = default)
             => functionContext.CallActivityWithRetryAsync(nameof(ProviderCommandAppSettingActivity), (key, value));
+
+        internal static string GetTaskHubNameSanitized(this IDurableClient client)
+        {
+            const int MaxTaskHubNameSize = 45;
+            const int MinTaskHubNameSize = 3;
+            const string TaskHubPadding = "Hub";
+
+            if (client is null)
+                throw new ArgumentNullException(nameof(client));
+
+            var validHubNameCharacters = client.TaskHubName
+                    .ToCharArray()
+                    .Where(char.IsLetterOrDigit);
+
+            if (!validHubNameCharacters.Any())
+                return "DefaultTaskHub";
+
+            if (char.IsNumber(validHubNameCharacters.First()))
+            {
+                // Azure Table storage requires that the task hub does not start 
+                // with a number. If it does, prepend "t" to the beginning.
+
+                validHubNameCharacters = validHubNameCharacters.ToList();
+                ((List<char>)validHubNameCharacters).Insert(0, 't');
+            }
+
+            var sanitizedHubName = new string(validHubNameCharacters
+                .Take(MaxTaskHubNameSize)
+                .ToArray());
+
+            if (sanitizedHubName.Length < MinTaskHubNameSize)
+                sanitizedHubName = sanitizedHubName + TaskHubPadding;
+
+            return sanitizedHubName;
+        }
     }
 }

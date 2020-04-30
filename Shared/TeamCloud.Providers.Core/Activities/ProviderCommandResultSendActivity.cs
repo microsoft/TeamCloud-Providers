@@ -20,7 +20,9 @@ namespace TeamCloud.Providers.Core.Activities
     public static class ProviderCommandResultSendActivity
     {
         [FunctionName(nameof(ProviderCommandResultSendActivity)), RetryOptions(5, FirstRetryInterval = "00:01:00")]
-        public static async Task RunActivity([ActivityTrigger] IDurableActivityContext functionContext, ILogger log)
+        public static async Task RunActivity(
+            [ActivityTrigger] IDurableActivityContext functionContext,
+            ILogger log)
         {
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
@@ -46,11 +48,11 @@ namespace TeamCloud.Providers.Core.Activities
 
                 throw new RetryCanceledException($"Sending command result ({commandResult.CommandId}) failed: {postException.Message}", postException);
             }
-            catch (Exception exc) when (!exc.IsSerializable(out var serializableExc))
+            catch (Exception exc)
             {
                 log.LogError(exc, $"Activity '{nameof(ProviderCommandResultSendActivity)}' failed: {exc.Message}");
 
-                throw serializableExc;
+                throw exc.AsSerializable();
             }
         }
     }
