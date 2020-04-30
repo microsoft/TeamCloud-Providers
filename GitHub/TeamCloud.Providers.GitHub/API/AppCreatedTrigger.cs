@@ -35,32 +35,14 @@ namespace TeamCloud.Providers.GitHub
             if (httpRequest is null)
                 throw new ArgumentNullException(nameof(httpRequest));
 
-
-            // json payload from the received webhook
             var query = httpRequest.RequestUri.ParseQueryString();
             var code = query["code"];
-            // var installation_id = query["installation_id"];
-            // var setup_action = query["setup_action"];
-
-            Secrets.AppCode = code;
 
             log.LogWarning($"GitHub code: {code ?? "null"}");
 
-            var url = $"https://api.github.com/app-manifests/{code}/conversions";
-
-            var response = await url
-                .WithHeader("User-Agent", $"TeamCloud/1.0.0.0")
-                // .AllowAnyHttpStatus()
-                .PostStringAsync("");
-
-            var json = await response.Content.ReadAsStringAsync();
-
-            var serializer = new Octokit.Internal.SimpleJsonSerializer();
-            var app = serializer.Deserialize<GitHubAppCreated>(json);
-            //log.LogWarning(app);
-
-
-            Secrets.App = app;
+            var app = await github
+                .GetManifest(code)
+                .ConfigureAwait(false);
 
             var html = $"<html><head><title>Test</title></head><body><p>GitHub app successfully created. Click <a href=\"https://github.com/apps/{app.Slug}/installations/new/permissions?target_id={app.Owner.Id}\">here</a> to install the app into your org and complete the setup.</p></body>";
 

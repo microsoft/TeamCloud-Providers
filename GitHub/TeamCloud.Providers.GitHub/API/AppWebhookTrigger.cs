@@ -45,6 +45,7 @@ namespace TeamCloud.Providers.GitHub
 
             log.LogWarning($"GitHub eventType:{eventType ?? "null"}\nGitHub payload:\n{payload ?? "null"}");
 
+            log.LogWarning(Secrets.Log());
 
             return new OkResult();
             // return new OkObjectResult("hi");
@@ -54,28 +55,45 @@ namespace TeamCloud.Providers.GitHub
             => eventType.ToLowerInvariant() switch
             {
                 "ping" => HandlePing(serializer, payload, log),
+                "installation" => HandleInstallation(serializer, payload, log),
+                // "integration_installation" => HandleInstallation(serializer, payload, log),
                 _ => HandleOther(serializer, payload, log)
             };
 
         private Task HandlePing(SimpleJsonSerializer serializer, string payload, ILogger log)
         {
-
             var ping = serializer.Deserialize<GitHubPing>(payload);
 
             return Task.FromResult(ping);
         }
 
+        private Task HandleInstallation(SimpleJsonSerializer serializer, string payload, ILogger log)
+        {
+            var hook = serializer.Deserialize<GitHubAppInstallationHook>(payload);
+
+            Secrets.Installation = hook?.Installation;
+            Secrets.Installer = hook?.Sender;
+
+            Secrets.InitWorkaround();
+
+            return Task.FromResult(hook.Installation);
+
+            // if (Secrets.Installer is null && hook?.Sender != null)
+            // {
+            //     Secrets.Installer = activity.Sender;
+            // }
+        }
+
         private Task HandleOther(SimpleJsonSerializer serializer, string payload, ILogger log)
         {
-            var activity = serializer.Deserialize<ActivityPayload>(payload);
+            // var activity = serializer.Deserialize<ActivityPayload>(payload);
 
+            // if (Secrets.Installer is null && activity?.Sender != null)
+            // {
+            //     Secrets.Installer = activity.Sender;
+            // }
 
-            if (Secrets.Installer is null && activity?.Sender != null)
-            {
-                Secrets.Installer = activity.Sender;
-            }
-
-            return Task.FromResult(activity);
+            return Task.FromResult("");
         }
     }
 }

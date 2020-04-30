@@ -3,7 +3,6 @@
  *  Licensed under the MIT License.
  */
 
-using System;
 using System.Reflection;
 using TeamCloud.Configuration;
 
@@ -16,6 +15,6 @@ namespace TeamCloud.Providers.GitHub.Options
 
         public string ProductHeaderVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
-        public string OrganizationName = "TeamCloudMSFT";
+        public string OrganizationName = "";
     }
 }

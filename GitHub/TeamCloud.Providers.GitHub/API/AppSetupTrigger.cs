@@ -32,7 +32,16 @@ namespace TeamCloud.Providers.GitHub
             if (httpRequest is null)
                 throw new ArgumentNullException(nameof(httpRequest));
 
-            var html = $"<html><head><title>Test</title></head><body><p>GitHub app successfully installed. Click <a href=\"https://github.com/login/oauth/authorize?client_id={Secrets.App.ClientId}&redirect_uri={Secrets.ProviderUrl}/api/installed&login={Secrets.Installer.Login}\">here</a> to install the app into your user and complete the setup.</p></body>";
+            var query = httpRequest.RequestUri.ParseQueryString();
+            var installation_id = query["installation_id"];
+            var setup_action = query["setup_action"];
+            log.LogWarning($"GitHub installation_id: {installation_id ?? "null"}");
+            log.LogWarning($"GitHub setup_action: {setup_action ?? "null"}");
+
+            log.LogWarning(Secrets.Log());
+
+            // var html = $"<html><head><title>Test</title></head><body><p>GitHub app successfully installed. Click <a href=\"https://github.com/login/oauth/authorize?client_id={Secrets.App.ClientId}&redirect_uri={Secrets.ProviderUrl}/api/installed&login={Secrets.Installer.Login}\">here</a> to install the app into your user and complete the setup.</p></body>";
+            var html = $"<html><head><title>Test</title></head><body><p>GitHub app successfully installed. Return to the CLI.</p></body>";
 
             return new ContentResult
             {

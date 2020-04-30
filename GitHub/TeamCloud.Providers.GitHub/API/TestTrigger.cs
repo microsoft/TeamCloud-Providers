@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using TeamCloud.Model.Data;
 using TeamCloud.Providers.GitHub.Options;
 
 namespace TeamCloud.Providers.GitHub
@@ -27,67 +28,34 @@ namespace TeamCloud.Providers.GitHub
         }
 
         [FunctionName(nameof(TestTrigger))]
-        public IActionResult Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "test")] HttpRequestMessage httpRequest)
+        public async Task<IActionResult> Run(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "test/{projectName}")] HttpRequestMessage httpRequest,
+            string projectName,
+            ILogger log)
         {
             if (httpRequest is null)
                 throw new ArgumentNullException(nameof(httpRequest));
 
-            return new ContentResult
+            log.LogWarning(Secrets.Log());
+
+            var project = new Project
             {
-                Content = Html,
-                ContentType = "text/html"
+                Name = projectName
             };
+
+            var team = await github.CreateTeam(project).ConfigureAwait(false);
+
+            log.LogWarning(team.ToString());
+
+            var repo = await github.CreateRepository(project).ConfigureAwait(false);
+
+            log.LogWarning(repo.ToString());
+
+            var githubProject = await github.CreateProject(project, repo.Id).ConfigureAwait(false);
+
+            log.LogWarning(githubProject.ToString());
+
+            return new OkResult();
         }
-
-        private string Html =>
-$@"
-<html>
-<head>
-  <title>Test</title>
-</head>
-<body>
-
-<form action=""https://github.com/organizations/{options.OrganizationName}/settings/apps/new?state=abc123"" method=""post"">
-  Create a GitHub App Manifest: <input type=""text"" name=""manifest"" id=""manifest""><br>
-  <input type=""submit"" value=""Submit"">
-</form>
-
-<script>
-  input = document.getElementById(""manifest"")
-  input.value = JSON.stringify({{
-    ""name"": ""TeamCloud-Test"",
-    ""url"": ""https://github.com/microsoft/TeamCloud"",
-    ""public"": false,
-    ""redirect_url"": ""{Secrets.ProviderUrl}/api/created"",
-    ""hook_attributes"": {{
-      ""url"": ""{Secrets.ProviderUrl}/api/events"",
-      ""active"": true
-    }},
-    ""default_permissions"": {{
-      ""actions"": ""write"",
-      ""administration"": ""write"",
-      ""checks"": ""write"",
-      ""contents"": ""write"",
-      ""issues"": ""write"",
-      ""metadata"": ""read"",
-      ""pull_requests"": ""write"",
-      ""repository_projects"": ""write"",
-      ""vulnerability_alerts"": ""read"",
-      ""workflows"": ""write"",
-      ""members"": ""write"",
-      ""organization_administration"": ""write"",
-      ""organization_plan"": ""read"",
-      ""organization_projects"": ""write"",
-      ""team_discussions"": ""write"",
-      ""emails"": ""read""
-    }},
-    ""callback_url"": ""{Secrets.ProviderUrl}/api/installed"",
-    ""setup_url"": ""{Secrets.ProviderUrl}/api/setup""
-  }})
-</script>
-</body>
-";
-
     }
 }
