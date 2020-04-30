@@ -83,7 +83,7 @@ namespace TeamCloud.Providers.GitHub
             await DeleteRepository(project)
                 .ConfigureAwait(false);
 
-            // assume it'll be implicitly deleted by deleting the repo
+            // I assume it'll be implicitly deleted by deleting the repo
             // var githubProject = await DeleteProject(project)
             //     .ConfigureAwait(false);
         }

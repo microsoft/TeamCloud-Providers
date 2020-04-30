@@ -13,24 +13,19 @@ using Microsoft.Extensions.Configuration.AzureKeyVault;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-// using TeamCloud.Azure;
+using TeamCloud.Azure;
 using TeamCloud.Configuration;
 using TeamCloud.Http;
 using TeamCloud.Model.Commands;
+using TeamCloud.Orchestration.Auditing;
 using TeamCloud.Providers.Azure;
 using TeamCloud.Providers.Core;
 using TeamCloud.Providers.GitHub;
-// using TeamCloud.Providers.GitHub.Orchestrations;
+using TeamCloud.Providers.GitHub.Orchestrations;
 
 [assembly: FunctionsStartup(typeof(Startup))]
-
-// FunctionsImport will enable the compiler to early bind
-// the assembly of the referenced type. this is required
-// to enable the FunctionsInDependencies (see csproj)
-// feature of the Azure Functions SDK.
-
 [assembly: FunctionsImport(typeof(TeamCloudProvidersCoreStartup))]
-// [assembly: FunctionsImport(typeof(TeamCloudProvidersAzureStartup))]
+[assembly: FunctionsImport(typeof(TeamCloudOrchestrationAuditingStartup))]
 
 namespace TeamCloud.Providers.GitHub
 {
@@ -49,18 +44,18 @@ namespace TeamCloud.Providers.GitHub
             builder.Services
                 .AddTeamCloudOptions(Assembly.GetExecutingAssembly())
                 .AddTeamCloudHttp()
-                // .AddTeamCloudAzure(configuration =>
-                // {
-
-                // })
-                // .AddTeamCloudCommandOrchestration(configuration =>
-                // {
-                //     configuration
-                //         .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration), (command) => TimeSpan.FromMinutes(5))
-                //         .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
-                //         .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
-                //         .IgnoreCommand<IProviderCommand>();
-                // })
+                .AddTeamCloudAzure(configuration =>
+                {
+                    // nothing to configure
+                })
+                .AddTeamCloudCommandOrchestration(configuration =>
+                {
+                    configuration
+                        .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration), (command) => TimeSpan.FromMinutes(5))
+                        .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
+                        .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
+                        .IgnoreCommand<IProviderCommand>();
+                })
                 ;
 
             builder.Services
@@ -93,15 +88,8 @@ namespace TeamCloud.Providers.GitHub
                 // we use the managed identity of the service to authenticate at the KeyVault
                 var azureServiceTokenProvider = new AzureServiceTokenProvider();
 
-                using (var keyVaultClient = new KeyVaultClient(
-                    new KeyVaultClient.AuthenticationCallback(
-                        azureServiceTokenProvider.KeyVaultTokenCallback)))
-                {
-                    configurationBuilder.AddAzureKeyVault(
-                        $"https://{keyVaultName}.vault.azure.net/",
-                        keyVaultClient,
-                        new DefaultKeyVaultSecretManager());
-                }
+                using var keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
+                configurationBuilder.AddAzureKeyVault($"https://{keyVaultName}.vault.azure.net/", keyVaultClient, new DefaultKeyVaultSecretManager());
             }
             else if (hostingEnvironment.IsDevelopment())
             {
