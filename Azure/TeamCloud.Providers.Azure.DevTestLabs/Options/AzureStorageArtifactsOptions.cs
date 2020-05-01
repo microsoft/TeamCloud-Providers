@@ -14,12 +14,6 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Options
     {
         public string BaseUrlOverride { get; set; }
 
-        private string connectionString;
-
-        public string ConnectionString
-        {
-            get => string.IsNullOrEmpty(connectionString) ? Environment.GetEnvironmentVariable("AzureWebJobsStorage") : connectionString;
-            set => connectionString = value;
-        }
+        public string ConnectionString { get; set; } = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
     }
 }
