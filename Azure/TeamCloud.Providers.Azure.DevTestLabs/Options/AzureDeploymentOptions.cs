@@ -9,16 +9,9 @@ using TeamCloud.Configuration;
 
 namespace TeamCloud.Providers.Azure.DevTestLabs.Options
 {
-    [Options]
-    public class AzureDeploymentOptions : IAzureDeploymentOptions
+    [Options("Azure:Deployment")]
+    public sealed class AzureDeploymentOptions : IAzureDeploymentOptions
     {
-        private readonly AzureResourceManagerOptions azureResourceManagerOptions;
-
-        public AzureDeploymentOptions(AzureResourceManagerOptions azureResourceManagerOptions)
-        {
-            this.azureResourceManagerOptions = azureResourceManagerOptions ?? throw new ArgumentNullException(nameof(azureResourceManagerOptions));
-        }
-
-        public string Region => azureResourceManagerOptions.Region;
+        public string DefaultLocation { get; set; } = Environment.GetEnvironmentVariable("REGION_NAME");
     }
 }

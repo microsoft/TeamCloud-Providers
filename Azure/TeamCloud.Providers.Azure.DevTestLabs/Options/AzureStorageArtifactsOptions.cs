@@ -10,7 +10,7 @@ using TeamCloud.Configuration;
 namespace TeamCloud.Providers.Azure.DevTestLabs.Options
 {
     [Options("Azure:DeploymentStorage")]
-    public class AzureStorageArtifactsOptions : IAzureStorageArtifactsOptions
+    public sealed class AzureStorageArtifactsOptions : IAzureStorageArtifactsOptions
     {
         public string BaseUrlOverride { get; set; }
 
