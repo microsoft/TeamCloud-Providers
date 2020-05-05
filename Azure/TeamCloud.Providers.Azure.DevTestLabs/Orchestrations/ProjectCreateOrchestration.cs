@@ -16,7 +16,6 @@ using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Orchestration.Deployment;
 using TeamCloud.Providers.Azure.DevTestLabs.Activities;
-using TeamCloud.Providers.Core;
 using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
@@ -40,7 +39,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
                 try
                 {
                     var deploymentOutput = await functionContext
-                        .GetDeploymentOutputAsync(nameof(ProjectCreateActivity), command.Payload)
+                        .CallDeploymentAsync(nameof(ProjectCreateActivity), command.Payload)
                         .ConfigureAwait(true);
 
                     commandResult.Result = new ProviderOutput

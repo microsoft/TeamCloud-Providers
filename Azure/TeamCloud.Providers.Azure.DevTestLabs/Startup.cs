@@ -20,6 +20,7 @@ using TeamCloud.Azure.Resources;
 using TeamCloud.Configuration;
 using TeamCloud.Http;
 using TeamCloud.Model.Commands;
+using TeamCloud.Orchestration;
 using TeamCloud.Orchestration.Auditing;
 using TeamCloud.Orchestration.Deployment;
 using TeamCloud.Providers.Azure.DevTestLabs;
@@ -28,6 +29,7 @@ using TeamCloud.Providers.Core;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 [assembly: FunctionsImport(typeof(TeamCloudProvidersCoreStartup))]
+[assembly: FunctionsImport(typeof(TeamCloudOrchestrationStartup))]
 [assembly: FunctionsImport(typeof(TeamCloudOrchestrationAuditingStartup))]
 [assembly: FunctionsImport(typeof(TeamCloudOrchestrationDeploymentStartup))]
 

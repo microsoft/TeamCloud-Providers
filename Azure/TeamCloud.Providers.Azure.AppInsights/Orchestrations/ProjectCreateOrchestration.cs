@@ -41,7 +41,7 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
                     functionContext.SetCustomStatus("Deploy resources", commandLog);
 
                     var deploymentOutput = await functionContext
-                        .GetDeploymentOutputAsync(nameof(ProjectCreateActivity), command.Payload)
+                        .CallDeploymentAsync(nameof(ProjectCreateActivity), command.Payload)
                         .ConfigureAwait(true);
 
                     if (deploymentOutput.TryGetValue("resourceId", out var resourceId))
