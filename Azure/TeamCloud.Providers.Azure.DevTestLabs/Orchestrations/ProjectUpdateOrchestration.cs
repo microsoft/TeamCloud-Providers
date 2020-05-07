@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using TeamCloud.Model;
 using TeamCloud.Model.Commands;
+using TeamCloud.Model.Commands.Core;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.DevTestLabs.Activities;
 using TeamCloud.Serialization;
@@ -59,7 +60,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
                 }
                 finally
                 {
-                    var commandException = commandResult.GetException();
+                    var commandException = commandResult.Errors?.ToException();
 
                     if (commandException is null)
                         functionContext.SetCustomStatus($"Command succeeded", commandLog);
