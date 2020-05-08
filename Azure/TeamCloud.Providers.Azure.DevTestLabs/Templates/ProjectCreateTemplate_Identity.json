@@ -25,12 +25,12 @@
     {
       "name": "[concat(parameters('ProjectName'), '/', variables('labIdentity'))]",
       "type": "Microsoft.DevTestLab/labs/serviceRunners",
-      "apiVersion": "2018-09-15",
+      "apiVersion": "2018-10-15-preview",
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('labIdentity'))]"
       ],
-      "properties": {
+      "properties":{
         "identityUsageType": "Environment"
       },
       "identity": {
@@ -50,14 +50,14 @@
       ],
       "properties": {
         "roleDefinitionId": "[variables('roleDefinition_Contributor')]",
-        "principalId": "[reference(resourceId('Microsoft.DevTestLab/labs/serviceRunners', parameters('ProjectName'), variables('labIdentity')), '2018-09-15', 'Full').identity.principalId]",
+        "principalId": "[reference(resourceId('Microsoft.DevTestLab/labs/serviceRunners', parameters('ProjectName'), variables('labIdentity')), '2018-10-15-preview', 'Full').identity.principalId]",
         "principalType": "ServicePrincipal"
       }
     },
     {
       "name": "[concat(parameters('keyVaultName'), '/add')]",
       "type": "Microsoft.KeyVault/vaults/accessPolicies",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2018-02-14",
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[resourceId('Microsoft.DevTestLab/labs/serviceRunners', parameters('ProjectName'), variables('labIdentity'))]"
@@ -65,8 +65,8 @@
       "properties": {
         "accessPolicies": [
           {
-            "tenantId": "[reference(resourceId('Microsoft.DevTestLab/labs/serviceRunners', parameters('ProjectName'), variables('labIdentity')), '2018-09-15', 'Full').identity.tenantId]",
-            "objectId": "[reference(resourceId('Microsoft.DevTestLab/labs/serviceRunners', parameters('ProjectName'), variables('labIdentity')), '2018-09-15', 'Full').identity.principalId]",
+            "tenantId": "[reference(resourceId('Microsoft.DevTestLab/labs/serviceRunners', parameters('ProjectName'), variables('labIdentity')), '2018-10-15-preview', 'Full').identity.tenantId]",
+            "objectId": "[reference(resourceId('Microsoft.DevTestLab/labs/serviceRunners', parameters('ProjectName'), variables('labIdentity')), '2018-10-15-preview', 'Full').identity.principalId]",
             "permissions": {
               "secrets": [
                 "get"
