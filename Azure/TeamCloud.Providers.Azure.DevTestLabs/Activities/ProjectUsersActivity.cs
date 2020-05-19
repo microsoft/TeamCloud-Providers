@@ -44,7 +44,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
                         .ConfigureAwait(false);
 
                     var roleAssignments = project.Users
-                        .ToRoleAssignments(role => role.Equals(UserRoles.Project.Owner, StringComparison.OrdinalIgnoreCase)
+                        .ToRoleAssignments(project.Id, role => role == ProjectUserRole.Owner
                             ? AzureRoleDefinition.Contributor
                             : AzureRoleDefinition.Reader);
 
@@ -60,6 +60,5 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
                 }
             }
         }
-
     }
 }
