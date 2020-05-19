@@ -66,7 +66,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
                     template.Parameters["LabSNetPrefix"] = snetPrefix;
 
                     var deployment = await azureDeploymentService
-                        .DeployResourceGroupTemplateAsync(template, project.ResourceGroup.SubscriptionId, project.ResourceGroup.ResourceGroupName)
+                        .DeployResourceGroupTemplateAsync(template, project.ResourceGroup.SubscriptionId, project.ResourceGroup.Name)
                         .ConfigureAwait(false);
 
                     return deployment.ResourceId;

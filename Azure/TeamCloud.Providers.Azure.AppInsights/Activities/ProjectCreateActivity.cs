@@ -45,7 +45,7 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
                     template.Parameters["ProjectName"] = project.Name;
 
                     var deployment = await azureDeploymentService
-                        .DeployResourceGroupTemplateAsync(template, project.ResourceGroup.SubscriptionId, project.ResourceGroup.ResourceGroupName)
+                        .DeployResourceGroupTemplateAsync(template, project.ResourceGroup.SubscriptionId, project.ResourceGroup.Name)
                         .ConfigureAwait(false);
 
                     return deployment.ResourceId;
