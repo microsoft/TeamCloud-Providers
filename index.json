@@ -2,7 +2,7 @@
     "providers": {
         "azure.appinsights": [
             {
-                "id": "azure.appinsights",
+                "name": "azure.appinsights",
                 "description": "Azure App Insights Provider for TeamCloud",
                 "zipUrl": "https://github.com/microsoft/TeamCloud/releases/download/v0.1.73/TeamCloud.Providers.Azure.AppInsights.zip",
                 "deployUrl": "https://github.com/microsoft/TeamCloud/releases/download/v0.1.73/teamcloud.providers.azure.appinsights.json",
@@ -11,7 +11,7 @@
         ],
         "azure.devops": [
             {
-                "id": "azure.devops",
+                "name": "azure.devops",
                 "description": "Azure DevOps Provider for TeamCloud",
                 "zipUrl": "https://github.com/microsoft/TeamCloud/releases/download/v0.1.73/TeamCloud.Providers.Azure.DevOps.zip",
                 "deployUrl": "https://github.com/microsoft/TeamCloud/releases/download/v0.1.73/teamcloud.providers.azure.devops.json",
@@ -20,7 +20,7 @@
         ],
         "azure.devtestlabs": [
             {
-                "id": "azure.devtestlabs",
+                "name": "azure.devtestlabs",
                 "description": "Azure DevTest Labs Provider for TeamCloud",
                 "zipUrl": "https://github.com/microsoft/TeamCloud/releases/download/v0.1.73/TeamCloud.Providers.Azure.DevTestLabs.zip",
                 "deployUrl": "https://github.com/microsoft/TeamCloud/releases/download/v0.1.73/teamcloud.providers.azure.devtestlabs.json",
@@ -29,7 +29,7 @@
         ],
         "github": [
             {
-                "id": "github",
+                "name": "github",
                 "description": "GitHub Provider for TeamCloud",
                 "zipUrl": "https://github.com/microsoft/TeamCloud/releases/download/v0.1.73/TeamCloud.Providers.GitHub.zip",
                 "deployUrl": "https://github.com/microsoft/TeamCloud/releases/download/v0.1.73/teamcloud.providers.github.json",
