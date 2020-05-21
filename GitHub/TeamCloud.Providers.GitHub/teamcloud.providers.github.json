@@ -4,25 +4,16 @@
     "parameters": {
         "functionAppName": {
             "type": "string",
-            "defaultValue": "[concat('devops-', uniqueString(resourceGroup().id))]",
+            "defaultValue": "[concat('github-', uniqueString(resourceGroup().id))]",
             "metadata": {
                 "description": "The name of the function app acting as a TeamCloud Provider that you wish to create. This will also be used as the subdomain of your Provider endpoint (i.e. myteamcloudprovider.azurewebsites.net)."
-            }
-        },
-        "deployProviderSource": {
-            "type": "bool",
-            "defaultValue": true,
-            "metadata": {
-                "description": "Select true to deploy the Azure Resources as well as the Provider source code from GitHub.  Select false to only deploy the Azure Resources."
             }
         }
     },
     "variables": {
         "functionAppNameLower": "[toLower(parameters('functionAppName'))]",
         "webjobsStorageAccountName": "[concat('wjstorage', uniqueString(resourceGroup().id))]",
-        "taskhubStorageAccountName": "[concat('thstorage', uniqueString(resourceGroup().id))]",
-        "sourceRepoUrl": "https://github.com/microsoft/TeamCloud-Providers.git",
-        "sourceBranch": "master"
+        "taskhubStorageAccountName": "[concat('thstorage', uniqueString(resourceGroup().id))]"
     },
     "resources": [
         {
@@ -68,7 +59,6 @@
                     "name": "appsettings",
                     "apiVersion": "2018-02-01",
                     "properties": {
-                        "PROJECT": "Azure/TeamCloud.Providers.Azure.DevOps/TeamCloud.Providers.Azure.DevOps.csproj",
                         "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('webjobsStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('webjobsStorageAccountName')), '2017-06-01').keys[0].value)]",
                         "DurableFunctionsHubStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('taskhubStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('taskhubStorageAccountName')), '2017-06-01').keys[0].value)]",
                         "FUNCTION_APP_EDIT_MODE": "readonly",
@@ -80,23 +70,6 @@
                     },
                     "dependsOn": [
                         "[resourceId('Microsoft.Web/sites', variables('functionAppNameLower'))]"
-                    ]
-                },
-                {
-                    "condition": "[parameters('deployProviderSource')]",
-                    "type": "sourcecontrols",
-                    "name": "web",
-                    "apiVersion": "2019-08-01",
-                    "properties": {
-                        "repoUrl": "[variables('sourceRepoUrl')]",
-                        "branch": "[variables('sourceBranch')]",
-                        "isManualIntegration": true,
-                        "deploymentRollbackEnabled": false,
-                        "isMercurial": false
-                    },
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', variables('functionAppNameLower'))]",
-                        "[resourceId('Microsoft.Web/sites/config', variables('functionAppNameLower'), 'appsettings')]"
                     ]
                 }
             ]
@@ -148,9 +121,13 @@
         }
     ],
     "outputs": {
+        "name": {
+            "type": "string",
+            "value": "[variables('functionAppNameLower')]"
+        },
         "url": {
             "type": "string",
-            "value": "[concat('https://', variables('functionAppNameLower'), '.azurewebsites.net/api/command')]"
+            "value": "[concat('https://', variables('functionAppNameLower'), '.azurewebsites.net')]"
         },
         "authCode": {
             "type": "string",
