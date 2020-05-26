@@ -17,6 +17,20 @@
     },
     "resources": [
         {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2018-09-01-preview",
+            "name": "[guid(concat(resourceGroup().id, 'contributor'))]",
+            "properties": {
+                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+                "principalId": "[reference(resourceId('Microsoft.Web/sites', variables('functionAppNameLower')), '2018-11-01', 'Full').identity.principalId]",
+                "scope": "[resourceGroup().id]",
+                "principalType": "ServicePrincipal"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('functionAppNameLower'))]"
+            ]
+        },
+        {
             "type": "Microsoft.Web/serverfarms",
             "kind": "functionapp",
             "name": "[variables('functionAppNameLower')]",
