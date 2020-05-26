@@ -13,15 +13,17 @@
     "variables": {
         "functionAppNameLower": "[toLower(parameters('functionAppName'))]",
         "webjobsStorageAccountName": "[concat('wjstorage', uniqueString(resourceGroup().id))]",
-        "taskhubStorageAccountName": "[concat('thstorage', uniqueString(resourceGroup().id))]"
+        "taskhubStorageAccountName": "[concat('thstorage', uniqueString(resourceGroup().id))]",
+        "functionAppRoleAssignmentId": "[guid(concat(resourceGroup().id, variables('functionAppNameLower'), 'contributor'))]",
+        "contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]"
     },
     "resources": [
         {
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2018-09-01-preview",
-            "name": "[guid(concat(resourceGroup().id, 'contributor'))]",
+            "name": "[variables('functionAppRoleAssignmentId')]",
             "properties": {
-                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+                "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
                 "principalId": "[reference(resourceId('Microsoft.Web/sites', variables('functionAppNameLower')), '2018-11-01', 'Full').identity.principalId]",
                 "scope": "[resourceGroup().id]",
                 "principalType": "ServicePrincipal"
@@ -109,11 +111,10 @@
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[variables('webjobsStorageAccountName')]",
             "apiVersion": "2019-04-01",
-            "kind": "Storage",
+            "kind": "StorageV2",
             "location": "[resourceGroup().location]",
             "sku": {
-                "name": "Standard_GRS",
-                "tier": "Standard"
+                "name": "Standard_RAGRS"
             },
             "properties": {
                 "name": "[variables('webjobsStorageAccountName')]"
@@ -123,11 +124,10 @@
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[variables('taskhubStorageAccountName')]",
             "apiVersion": "2019-04-01",
-            "kind": "Storage",
+            "kind": "StorageV2",
             "location": "[resourceGroup().location]",
             "sku": {
-                "name": "Standard_GRS",
-                "tier": "Standard"
+                "name": "Standard_RAGRS"
             },
             "properties": {
                 "name": "[variables('taskhubStorageAccountName')]"
