@@ -30,7 +30,7 @@
       "dependsOn": [
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('labIdentity'))]"
       ],
-      "properties":{
+      "properties": {
         "identityUsageType": "Environment"
       },
       "identity": {
@@ -65,7 +65,7 @@
       "properties": {
         "accessPolicies": [
           {
-            "tenantId": "[reference(resourceId('Microsoft.DevTestLab/labs/serviceRunners', parameters('ProjectName'), variables('labIdentity')), '2018-10-15-preview', 'Full').identity.tenantId]",
+            "tenantId": "[subscription().tenantId]",
             "objectId": "[reference(resourceId('Microsoft.DevTestLab/labs/serviceRunners', parameters('ProjectName'), variables('labIdentity')), '2018-10-15-preview', 'Full').identity.principalId]",
             "permissions": {
               "secrets": [

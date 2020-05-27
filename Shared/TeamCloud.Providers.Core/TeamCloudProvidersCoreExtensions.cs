@@ -107,8 +107,8 @@ namespace TeamCloud.Providers.Core
             return commandResult.ApplyStatus(commandStatus);
         }
 
-        public static IDictionary<Guid, IEnumerable<Guid>> ToRoleAssignments(this IList<User> users, Func<string, Guid> roleIdCallback)
-            => users.ToDictionary(user => user.Id, user => Enumerable.Repeat(roleIdCallback(user.Role), 1));
+        public static IDictionary<Guid, IEnumerable<Guid>> ToRoleAssignments(this IList<User> users, Guid projectId, Func<ProjectUserRole, Guid> roleIdCallback)
+            => users.ToDictionary(user => user.Id, user => Enumerable.Repeat(roleIdCallback(user.RoleFor(projectId)), 1));
 
         public static Task SetInstrumentationKeyAsync(this IDurableOrchestrationContext functionContext, Guid instrumentationKey)
             => instrumentationKey.ToString().Equals(Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY"), StringComparison.OrdinalIgnoreCase)
@@ -135,7 +135,7 @@ namespace TeamCloud.Providers.Core
 
             if (char.IsNumber(validHubNameCharacters.First()))
             {
-                // Azure Table storage requires that the task hub does not start 
+                // Azure Table storage requires that the task hub does not start
                 // with a number. If it does, prepend "t" to the beginning.
 
                 validHubNameCharacters = validHubNameCharacters.ToList();

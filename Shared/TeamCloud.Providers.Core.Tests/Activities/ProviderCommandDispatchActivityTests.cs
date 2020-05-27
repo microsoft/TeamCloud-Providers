@@ -191,7 +191,7 @@ namespace TeamCloud.Providers.Core.Activities
             private static readonly User DefaultUser = new User()
             {
                 Id = Guid.NewGuid(),
-                Role = "Unknown"
+                Role = TeamCloudUserRole.None
             };
 
             private static readonly TestPayload DefaultPayload = new TestPayload();

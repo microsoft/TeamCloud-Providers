@@ -14,24 +14,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
-      - name: Checkout Tags
-        run: git fetch -t
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
-      - name: Validate License Headers
-        run: |
-          LIC_HEADER_COUNT=$(find . -name '*.cs' -exec grep -H -E -o -c "Copyright \(c\) Microsoft Corporation\." {} \; -exec grep -H -E -o -c "Licensed under the MIT License\." {} \;)
-          LIC_HEADER_MISSING="$( echo "$LIC_HEADER_COUNT" | grep ':0$' || : )"
-          #[ ! -z "$LIC_HEADER_MISSING" ] && echo -e "Missing License Header:\n$LIC_HEADER_MISSING" && exit 1
+    - name: Checkout Tags
+      run: git fetch --prune --tags
 
-      - name: Setup GitVersion
-        uses: gittools/actions/gitversion/setup@v0.9.2
-        with:
-          versionSpec: '5.x'
+    - name: Validate License Headers
+      run: |
+        LIC_HEADER_COUNT=$(find . -name '*.cs' -exec grep -H -E -o -c "Copyright \(c\) Microsoft Corporation\." {} \; -exec grep -H -E -o -c "Licensed under the MIT License\." {} \;)
+        LIC_HEADER_MISSING="$( echo "$LIC_HEADER_COUNT" | grep ':0$' || : )"
+        #[ ! -z "$LIC_HEADER_MISSING" ] && echo -e "Missing License Header:\n$LIC_HEADER_MISSING" && exit 1
+
+    - name: Setup GitVersion
+      uses: gittools/actions/gitversion/setup@v0.9.2
+      with:
+          versionSpec: '5.2.4'
 
       - name: Execute GitVersion
         id: gitversion

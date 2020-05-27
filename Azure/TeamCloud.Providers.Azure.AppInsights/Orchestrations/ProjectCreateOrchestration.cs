@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using TeamCloud.Model;
 using TeamCloud.Model.Commands;
+using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Orchestration.Deployment;
@@ -41,7 +42,7 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
                     functionContext.SetCustomStatus("Deploy resources", commandLog);
 
                     var deploymentOutput = await functionContext
-                        .GetDeploymentOutputAsync(nameof(ProjectCreateActivity), command.Payload)
+                        .CallDeploymentAsync(nameof(ProjectCreateActivity), command.Payload)
                         .ConfigureAwait(true);
 
                     if (deploymentOutput.TryGetValue("resourceId", out var resourceId))
@@ -67,7 +68,7 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
                 }
                 finally
                 {
-                    var commandException = commandResult.GetException();
+                    var commandException = commandResult.Errors?.ToException();
 
                     if (commandException is null)
                         functionContext.SetCustomStatus($"Command succeeded", commandLog);

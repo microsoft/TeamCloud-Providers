@@ -12,11 +12,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using TeamCloud.Model;
 using TeamCloud.Model.Commands;
+using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Orchestration.Deployment;
 using TeamCloud.Providers.Azure.DevTestLabs.Activities;
-using TeamCloud.Providers.Core;
 using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
@@ -40,7 +40,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
                 try
                 {
                     var deploymentOutput = await functionContext
-                        .GetDeploymentOutputAsync(nameof(ProjectCreateActivity), command.Payload)
+                        .CallDeploymentAsync(nameof(ProjectCreateActivity), command.Payload)
                         .ConfigureAwait(true);
 
                     commandResult.Result = new ProviderOutput
@@ -57,7 +57,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
                 }
                 finally
                 {
-                    var commandException = commandResult.GetException();
+                    var commandException = commandResult.Errors?.ToException();
 
                     if (commandException is null)
                         functionContext.SetCustomStatus($"Command succeeded", commandLog);

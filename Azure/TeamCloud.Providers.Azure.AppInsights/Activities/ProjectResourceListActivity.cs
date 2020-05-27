@@ -42,7 +42,7 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
                 try
                 {
                     var resourceGroup = await azureResourceService
-                        .GetResourceGroupAsync(project.ResourceGroup.SubscriptionId, project.ResourceGroup.ResourceGroupName, throwIfNotExists: true)
+                        .GetResourceGroupAsync(project.ResourceGroup.SubscriptionId, project.ResourceGroup.Name, throwIfNotExists: true)
                         .ConfigureAwait(false);
 
                     var resources = resourceGroup
