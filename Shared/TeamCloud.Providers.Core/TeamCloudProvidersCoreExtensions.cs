@@ -147,7 +147,7 @@ namespace TeamCloud.Providers.Core
                 .ToArray());
 
             if (sanitizedHubName.Length < MinTaskHubNameSize)
-                sanitizedHubName = sanitizedHubName + TaskHubPadding;
+                sanitizedHubName += TaskHubPadding;
 
             return sanitizedHubName;
         }
