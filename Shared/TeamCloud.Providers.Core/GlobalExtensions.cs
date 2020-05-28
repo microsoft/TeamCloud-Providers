@@ -131,7 +131,7 @@ namespace TeamCloud.Providers.Core
 
             if (char.IsNumber(validHubNameCharacters.First()))
             {
-                // Azure Table storage requires that the task hub does not start 
+                // Azure Table storage requires that the task hub does not start
                 // with a number. If it does, prepend "t" to the beginning.
 
                 validHubNameCharacters = validHubNameCharacters.ToList();
@@ -143,7 +143,7 @@ namespace TeamCloud.Providers.Core
                 .ToArray());
 
             if (sanitizedHubName.Length < MinTaskHubNameSize)
-                sanitizedHubName = sanitizedHubName + TaskHubPadding;
+                sanitizedHubName += TaskHubPadding;
 
             return sanitizedHubName;
         }

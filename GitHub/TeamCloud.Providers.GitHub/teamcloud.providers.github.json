@@ -4,16 +4,9 @@
     "parameters": {
         "functionAppName": {
             "type": "string",
-            "defaultValue": "[concat('appinsights-', uniqueString(resourceGroup().id))]",
+            "defaultValue": "[concat('github-', uniqueString(resourceGroup().id))]",
             "metadata": {
                 "description": "The name of the function app acting as a TeamCloud Provider that you wish to create. This will also be used as the subdomain of your Provider endpoint (i.e. myteamcloudprovider.azurewebsites.net)."
-            }
-        },
-        "deployProviderSource": {
-            "type": "bool",
-            "defaultValue": true,
-            "metadata": {
-                "description": "Select true to deploy the Azure Resources as well as the Provider source code from GitHub.  Select false to only deploy the Azure Resources."
             }
         }
     },
@@ -21,10 +14,24 @@
         "functionAppNameLower": "[toLower(parameters('functionAppName'))]",
         "webjobsStorageAccountName": "[concat('wjstorage', uniqueString(resourceGroup().id))]",
         "taskhubStorageAccountName": "[concat('thstorage', uniqueString(resourceGroup().id))]",
-        "sourceRepoUrl": "https://github.com/microsoft/TeamCloud-Providers.git",
-        "sourceBranch": "master"
+        "functionAppRoleAssignmentId": "[guid(concat(resourceGroup().id, variables('functionAppNameLower'), 'contributor'))]",
+        "contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]"
     },
     "resources": [
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2018-09-01-preview",
+            "name": "[variables('functionAppRoleAssignmentId')]",
+            "properties": {
+                "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
+                "principalId": "[reference(resourceId('Microsoft.Web/sites', variables('functionAppNameLower')), '2018-11-01', 'Full').identity.principalId]",
+                "scope": "[resourceGroup().id]",
+                "principalType": "ServicePrincipal"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('functionAppNameLower'))]"
+            ]
+        },
         {
             "type": "Microsoft.Web/serverfarms",
             "kind": "functionapp",
@@ -68,7 +75,6 @@
                     "name": "appsettings",
                     "apiVersion": "2018-02-01",
                     "properties": {
-                        "PROJECT": "Azure/TeamCloud.Providers.Azure.AppInsights/TeamCloud.Providers.Azure.AppInsights.csproj",
                         "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('webjobsStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('webjobsStorageAccountName')), '2017-06-01').keys[0].value)]",
                         "DurableFunctionsHubStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('taskhubStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('taskhubStorageAccountName')), '2017-06-01').keys[0].value)]",
                         "FUNCTION_APP_EDIT_MODE": "readonly",
@@ -80,23 +86,6 @@
                     },
                     "dependsOn": [
                         "[resourceId('Microsoft.Web/sites', variables('functionAppNameLower'))]"
-                    ]
-                },
-                {
-                    "condition": "[parameters('deployProviderSource')]",
-                    "type": "sourcecontrols",
-                    "name": "web",
-                    "apiVersion": "2019-08-01",
-                    "properties": {
-                        "repoUrl": "[variables('sourceRepoUrl')]",
-                        "branch": "[variables('sourceBranch')]",
-                        "isManualIntegration": true,
-                        "deploymentRollbackEnabled": false,
-                        "isMercurial": false
-                    },
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', variables('functionAppNameLower'))]",
-                        "[resourceId('Microsoft.Web/sites/config', variables('functionAppNameLower'), 'appsettings')]"
                     ]
                 }
             ]
@@ -122,11 +111,10 @@
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[variables('webjobsStorageAccountName')]",
             "apiVersion": "2019-04-01",
-            "kind": "Storage",
+            "kind": "StorageV2",
             "location": "[resourceGroup().location]",
             "sku": {
-                "name": "Standard_GRS",
-                "tier": "Standard"
+                "name": "Standard_RAGRS"
             },
             "properties": {
                 "name": "[variables('webjobsStorageAccountName')]"
@@ -136,11 +124,10 @@
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[variables('taskhubStorageAccountName')]",
             "apiVersion": "2019-04-01",
-            "kind": "Storage",
+            "kind": "StorageV2",
             "location": "[resourceGroup().location]",
             "sku": {
-                "name": "Standard_GRS",
-                "tier": "Standard"
+                "name": "Standard_RAGRS"
             },
             "properties": {
                 "name": "[variables('taskhubStorageAccountName')]"
@@ -148,9 +135,13 @@
         }
     ],
     "outputs": {
+        "name": {
+            "type": "string",
+            "value": "[variables('functionAppNameLower')]"
+        },
         "url": {
             "type": "string",
-            "value": "[concat('https://', variables('functionAppNameLower'), '.azurewebsites.net/api/command')]"
+            "value": "[concat('https://', variables('functionAppNameLower'), '.azurewebsites.net')]"
         },
         "authCode": {
             "type": "string",
