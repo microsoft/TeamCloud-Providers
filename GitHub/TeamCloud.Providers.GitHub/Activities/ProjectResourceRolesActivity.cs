@@ -39,7 +39,7 @@ namespace TeamCloud.Providers.GitHub.Activities
                 try
                 {
                     var roleAssignments = (project.Users ?? Enumerable.Empty<User>())
-                        .ToDictionary(usr => usr.Id, usr => Enumerable.Repeat(GetTeamRole(usr), 1));
+                        .ToDictionary(usr => usr.Id, usr => Enumerable.Repeat(GetTeamRole(usr, project.Id), 1));
 
                     if (roleAssignments.Any())
                     {
@@ -56,11 +56,11 @@ namespace TeamCloud.Providers.GitHub.Activities
                 }
             }
 
-            static Octokit.TeamRole GetTeamRole(User user) => user.Role switch
+            static Octokit.TeamRole GetTeamRole(User user, string projectId) => user.RoleFor(projectId) switch
             {
-                UserRoles.Project.Owner => Octokit.TeamRole.Maintainer,
-                UserRoles.Project.Member => Octokit.TeamRole.Member,
-                _ => throw new NotSupportedException($"User '{user.Id}' has an unsupported role '{user.Role}'")
+                ProjectUserRole.Owner => Octokit.TeamRole.Maintainer,
+                ProjectUserRole.Member => Octokit.TeamRole.Member,
+                _ => user.IsAdmin() ? Octokit.TeamRole.Maintainer : throw new NotSupportedException($"User '{user.Id}' has an unsupported role '{user.Role}'")
             };
         }
     }

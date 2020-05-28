@@ -17,6 +17,7 @@ using TeamCloud.Azure;
 using TeamCloud.Configuration;
 using TeamCloud.Http;
 using TeamCloud.Model.Commands;
+using TeamCloud.Orchestration;
 using TeamCloud.Orchestration.Auditing;
 using TeamCloud.Providers.Azure;
 using TeamCloud.Providers.Core;
@@ -55,8 +56,7 @@ namespace TeamCloud.Providers.GitHub
                         .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
                         .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
                         .IgnoreCommand<IProviderCommand>();
-                })
-                ;
+                });
 
             builder.Services
                 .AddSingleton<GitHubService>();
