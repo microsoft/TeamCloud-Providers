@@ -107,7 +107,7 @@ namespace TeamCloud.Providers.Core
             return commandResult.ApplyStatus(commandStatus);
         }
 
-        public static IDictionary<Guid, IEnumerable<Guid>> ToRoleAssignments(this IList<User> users, Guid projectId, Func<ProjectUserRole, Guid> roleIdCallback)
+        public static IDictionary<string, IEnumerable<Guid>> ToRoleAssignments(this IList<User> users, string projectId, Func<ProjectUserRole, Guid> roleIdCallback)
             => users.ToDictionary(user => user.Id, user => Enumerable.Repeat(roleIdCallback(user.RoleFor(projectId)), 1));
 
         public static Task SetInstrumentationKeyAsync(this IDurableOrchestrationContext functionContext, Guid instrumentationKey)
@@ -147,7 +147,7 @@ namespace TeamCloud.Providers.Core
                 .ToArray());
 
             if (sanitizedHubName.Length < MinTaskHubNameSize)
-                sanitizedHubName = sanitizedHubName + TaskHubPadding;
+                sanitizedHubName += TaskHubPadding;
 
             return sanitizedHubName;
         }

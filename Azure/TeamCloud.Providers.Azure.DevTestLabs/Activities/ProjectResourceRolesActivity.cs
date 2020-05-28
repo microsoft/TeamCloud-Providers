@@ -61,7 +61,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
                 }
             }
 
-            static Guid GetRoleDefinitionId(User user, Guid projectId) => user.RoleFor(projectId) switch
+            static Guid GetRoleDefinitionId(User user, string projectId) => user.RoleFor(projectId) switch
             {
                 ProjectUserRole.Owner => AzureRoleDefinition.Contributor,
                 ProjectUserRole.Member => AzureRoleDefinition.DevTestLabUser,
