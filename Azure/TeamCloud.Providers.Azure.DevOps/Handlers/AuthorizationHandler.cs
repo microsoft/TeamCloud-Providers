@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
+using Flurl;
 using Flurl.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -18,81 +19,155 @@ using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using TeamCloud.Http;
 using TeamCloud.Orchestration;
-using TeamCloud.Providers.Azure.DevOps.Model;
+using TeamCloud.Providers.Azure.DevOps.Data;
+using TeamCloud.Providers.Azure.DevOps.Services;
 
 namespace TeamCloud.Providers.Azure.DevOps.Handlers
 {
     public sealed class AuthorizationHandler
     {
-        private const string AuthUrl = "https://app.vssps.visualstudio.com/oauth2/authorize";
-        private const string TokenUrl = "https://app.vssps.visualstudio.com/oauth2/token";
+        private const string VisualStudioAuthUrl = "https://app.vssps.visualstudio.com/oauth2/authorize";
+        private const string VisualStudioTokenUrl = "https://app.vssps.visualstudio.com/oauth2/token";
 
-        private static async Task<AuthorizationToken> GetAuthorizationTokenAsync(CloudTable authorizationTokenTable, Guid sessionId)
+        private readonly IAuthenticationService authorizationService;
+
+        private static async Task<AuthorizationSession> GetAuthorizationSessionAsync(CloudTable sessionTable, Guid sessionId)
         {
-            if (authorizationTokenTable is null)
-                throw new ArgumentNullException(nameof(authorizationTokenTable));
+            if (sessionTable is null)
+                throw new ArgumentNullException(nameof(sessionTable));
 
-            var authorizationTokenResult = await authorizationTokenTable
-                .ExecuteAsync(TableOperation.Retrieve(AuthorizationToken.PartitionKeyPropertyValue, sessionId.ToString()))
+            var sessionResult = await sessionTable
+                .ExecuteAsync(TableOperation.Retrieve<AuthorizationSession>(AuthorizationSession.PartitionKeyPropertyValue, sessionId.ToString()))
                 .ConfigureAwait(false);
 
-            if (authorizationTokenResult.HttpStatusCode == (int)HttpStatusCode.OK)
-                return authorizationTokenResult.Result as AuthorizationToken;
+            if (sessionResult.HttpStatusCode == (int)HttpStatusCode.OK)
+                return sessionResult.Result as AuthorizationSession;
 
             return null;
         }
 
-        private static async Task<AuthorizationToken> SetAuthorizationTokenAsync(CloudTable authorizationTokenTable, AuthorizationToken session)
+        private static async Task<AuthorizationSession> SetAuthorizationSessionAsync(CloudTable sessionTable, AuthorizationSession session)
         {
-            if (authorizationTokenTable is null)
-                throw new ArgumentNullException(nameof(authorizationTokenTable));
+            if (sessionTable is null)
+                throw new ArgumentNullException(nameof(sessionTable));
 
             if (session is null)
                 throw new ArgumentNullException(nameof(session));
 
-            var authorizationTokenResult = await authorizationTokenTable
+            var sessionResult = await sessionTable
                 .ExecuteAsync(TableOperation.InsertOrReplace(session))
                 .ConfigureAwait(false);
 
-            return authorizationTokenResult.Result as AuthorizationToken;
+            return sessionResult.Result as AuthorizationSession;
         }
 
+        private static Task ClearAuthorizationSessionAsync(CloudTable sessionTable, AuthorizationSession session)
+        {
+            if (sessionTable is null)
+                throw new ArgumentNullException(nameof(sessionTable));
+
+            if (session is null)
+                throw new ArgumentNullException(nameof(session));
+
+            return sessionTable
+                    .ExecuteAsync(TableOperation.Delete(session));
+        }
+
+        private static Task<string> GetAuthorizeUrl()
+            => FunctionsEnvironment.GetFunctionUrlAsync(nameof(AuthorizationHandler));
+
+        private static Task<string> GetCallbackUrl()
+            => FunctionsEnvironment.GetFunctionUrlAsync(nameof(AuthorizationHandler) + nameof(Callback));
+
+        public static async Task<AuthorizationToken> RefreshAsync(AuthorizationToken token)
+        {
+            if (token is null)
+                throw new ArgumentNullException(nameof(token));
+
+            if (string.IsNullOrEmpty(token.ClientSecret))
+                throw new ArgumentException("Missing client secret.", nameof(token));
+
+            if (token.RefreshTokenExpires.GetValueOrDefault(DateTime.UtcNow) <= DateTime.UtcNow)
+                throw new ArgumentException("Refresh token expired.", nameof(token));
+
+            var form = new
+            {
+                client_assertion_type = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+                client_assertion = token.ClientSecret,
+                grant_type = "refresh_token",
+                assertion = token.RefreshToken,
+                redirect_uri = await GetCallbackUrl().ConfigureAwait(false)
+            };
+
+            var response = await VisualStudioTokenUrl
+                .WithHeaders(new MediaTypeWithQualityHeaderValue("application/json"))
+                .AllowAnyHttpStatus()
+                .PostUrlEncodedAsync(form)
+                .ConfigureAwait(false);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content
+                    .ReadAsStringAsync()
+                    .ConfigureAwait(false);
+
+                JsonConvert.PopulateObject(json, token);
+            }
+            else
+            {
+                throw new Exception(response.ReasonPhrase);
+            }
+
+            return token;
+        }
+
+        public AuthorizationHandler(IAuthenticationService authorizationService)
+        {
+            this.authorizationService = authorizationService ?? throw new ArgumentNullException(nameof(authorizationService));
+        }
 
         [FunctionName(nameof(AuthorizationHandler))]
         public Task<IActionResult> Authorize(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "authorize")] HttpRequestMessage requestMessage,
-            [Table(nameof(AuthorizationToken))] CloudTable authorizationTokenTable)
-            => requestMessage.Method switch
+            [Table(nameof(AuthorizationSession))] CloudTable sessionTable)
+        {
+            if (requestMessage is null)
+                throw new ArgumentNullException(nameof(requestMessage));
+
+            if (sessionTable is null)
+                throw new ArgumentNullException(nameof(sessionTable));
+
+            return requestMessage.Method switch
             {
-                HttpMethod m when m == HttpMethod.Get => AuthorizeGet(authorizationTokenTable, requestMessage),
-                HttpMethod m when m == HttpMethod.Post => AuthorizePost(authorizationTokenTable, requestMessage),
+                HttpMethod m when m == HttpMethod.Get => AuthorizeGet(requestMessage),
+                HttpMethod m when m == HttpMethod.Post => AuthorizePost(requestMessage, sessionTable),
                 _ => throw new NotImplementedException(),
             };
+        }
 
-        private Task<IActionResult> AuthorizeGet(CloudTable authorizationTokenTable, HttpRequestMessage requestMessage)
+        private Task<IActionResult> AuthorizeGet(HttpRequestMessage requestMessage)
         {
             using var stream = Assembly.GetExecutingAssembly()
                 .GetManifestResourceStream($"{this.GetType().FullName}.html");
+
+            using var streamReader = new StreamReader(stream);
 
             return Task.FromResult<IActionResult>(new ContentResult
             {
                 StatusCode = (int)HttpStatusCode.OK,
                 ContentType = "text/html",
-                Content = ReplaceTokens(new StreamReader(stream).ReadToEnd())
+                Content = ReplaceTokens(streamReader.ReadToEnd())
             });
 
             string ReplaceTokens(string content) => Regex.Replace(content, "{@(\\w+)}", (match) => match.Groups[1].Value switch
             {
-                "ApplicationState" => Guid.NewGuid().ToString(),
+                "Error" => requestMessage.RequestUri.ParseQueryString().GetValues("error")?.FirstOrDefault(),
                 _ => match.Value
             });
         }
 
-        private async Task<IActionResult> AuthorizePost(CloudTable authorizationTokenTable, HttpRequestMessage requestMessage)
+        private async Task<IActionResult> AuthorizePost(HttpRequestMessage requestMessage, CloudTable sessionTable)
         {
-            var token = await SetAuthorizationTokenAsync(authorizationTokenTable, new AuthorizationToken())
-                .ConfigureAwait(false);
-
             var payload = await requestMessage.Content
                 .ReadAsStringAsync()
                 .ConfigureAwait(false);
@@ -101,15 +176,22 @@ namespace TeamCloud.Providers.Azure.DevOps.Handlers
                 .ParseQueryString(payload)
                 .ToDictionary();
 
+            var session = await SetAuthorizationSessionAsync(sessionTable, new AuthorizationSession()
+            {
+                ClientId = fields.GetValueOrDefault("client_id")?.SingleOrDefault(),
+                ClientSecret = fields.GetValueOrDefault("client_secret")?.SingleOrDefault()
+
+            }).ConfigureAwait(false);
+
             var queryParams = HttpUtility.ParseQueryString(string.Empty);
 
-            queryParams["client_id"] = fields.GetValueOrDefault("applicationId")?.SingleOrDefault();
+            queryParams["client_id"] = fields.GetValueOrDefault("client_id")?.SingleOrDefault();
             queryParams["response_type"] = "Assertion";
-            queryParams["state"] = token.Id.ToString();
-            queryParams["scope"] = string.Join(' ', AuthorizationToken.Scopes);
+            queryParams["state"] = session.Id.ToString();
+            queryParams["scope"] = string.Join(' ', AuthorizationSession.Scopes);
             queryParams["redirect_uri"] = await GetCallbackUrl().ConfigureAwait(false);
 
-            var uriBuilder = new UriBuilder(AuthUrl)
+            var uriBuilder = new UriBuilder(VisualStudioAuthUrl)
             {
                 Query = queryParams.ToString()
             };
@@ -118,89 +200,110 @@ namespace TeamCloud.Providers.Azure.DevOps.Handlers
         }
 
 
-        public static Task<string> GetCallbackUrl()
-            => FunctionsEnvironment.GetFunctionUrlAsync(nameof(AuthorizationHandler) + nameof(Callback));
-
         [FunctionName(nameof(AuthorizationHandler) + nameof(Callback))]
         public async Task<ActionResult> Callback(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "authorize/callback")] HttpRequestMessage requestMessage,
-            [Table(nameof(AuthorizationToken))] CloudTable authorizationTokenTable,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "authorize/callback")] HttpRequestMessage requestMessage,
+            [Table(nameof(AuthorizationSession))] CloudTable sessionTable,
             ILogger log)
         {
             if (requestMessage is null)
                 throw new ArgumentNullException(nameof(requestMessage));
 
-            if (authorizationTokenTable is null)
-                throw new ArgumentNullException(nameof(authorizationTokenTable));
+            if (sessionTable is null)
+                throw new ArgumentNullException(nameof(sessionTable));
+
+            string error;
 
             try
             {
                 var queryParams = requestMessage.RequestUri.ParseQueryString();
 
-                var code = queryParams.Get("code");
-
-                if (string.IsNullOrEmpty(code))
-                    return new BadRequestResult();
-
-                var state = queryParams.Get("state");
-
-                if (Guid.TryParse(state, out var sessionId))
+                if (!queryParams.TryGetValue("error", out error) &&
+                    queryParams.TryGetValue("code", out string code) && !string.IsNullOrEmpty(code) &&
+                    queryParams.TryGetValue("state", out string state) && Guid.TryParse(state, out Guid sessionId))
                 {
-                    var authorizationToken = await GetAuthorizationTokenAsync(authorizationTokenTable, sessionId)
+                    var session = await GetAuthorizationSessionAsync(sessionTable, sessionId)
                         .ConfigureAwait(false);
 
-                    if (authorizationToken is null)
-                        return new BadRequestResult();
-                    else
-                        authorizationToken.IsPending = false;
-
-                    var callbackUrl = await GetCallbackUrl()
-                        .ConfigureAwait(false);
-
-                    var form = new
+                    if (session is null)
                     {
-                        client_assertion_type = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-                        client_assertion = "TooManySecrets",
-                        grant_type = "urn:ietf:params:oauth:grant-type:jwt-bearer",
-                        assertion = queryParams.Get("code"),
-                        redirect_uri = callbackUrl
-                    };
-
-                    var response = await TokenUrl
-                        .WithHeaders(new MediaTypeWithQualityHeaderValue("application/json"))
-                        .AllowAnyHttpStatus()
-                        .PostUrlEncodedAsync(form)
-                        .ConfigureAwait(false);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var json = await response.Content
-                            .ReadAsStringAsync()
-                            .ConfigureAwait(false);
-
-                        JsonConvert.PopulateObject(json, authorizationToken);
-
-                        _ = await SetAuthorizationTokenAsync(authorizationTokenTable, authorizationToken)
-                            .ConfigureAwait(false);
-
-                        return new OkResult();
+                        error = "Authorization session invalid";
                     }
                     else
                     {
-                        return new StatusCodeResult((int)response.StatusCode);
+                        try
+                        {
+                            var form = new
+                            {
+                                client_assertion_type = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+                                client_assertion = session.ClientSecret,
+                                grant_type = "urn:ietf:params:oauth:grant-type:jwt-bearer",
+                                assertion = queryParams.Get("code"),
+                                redirect_uri = await GetCallbackUrl().ConfigureAwait(false)
+                            };
+
+                            var response = await VisualStudioTokenUrl
+                                .WithHeaders(new MediaTypeWithQualityHeaderValue("application/json"))
+                                .AllowAnyHttpStatus()
+                                .PostUrlEncodedAsync(form)
+                                .ConfigureAwait(false);
+
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var json = await response.Content
+                                    .ReadAsStringAsync()
+                                    .ConfigureAwait(false);
+
+                                var token = session.ToAuthorizationToken();
+
+                                JsonConvert.PopulateObject(json, token);
+
+                                if (authorizationService is IAuthorizationSetup authorizationSetup)
+                                {
+                                    await authorizationSetup
+                                        .SetupAuthorizationAsync(token)
+                                        .ConfigureAwait(false);
+                                }
+                            }
+                            else
+                            {
+                                error = response.ReasonPhrase;
+                            }
+                        }
+                        finally
+                        {
+                            await ClearAuthorizationSessionAsync(sessionTable, session)
+                                .ConfigureAwait(false);
+                        }
                     }
                 }
                 else
                 {
-                    return new BadRequestResult();
+                    error = "Bad request";
                 }
             }
             catch (Exception exc)
             {
                 log.LogError(exc, $"Processing authorization callback failed: {exc.Message}");
 
-                throw;
+                error = exc.Message;
             }
+
+            var authorizationUrl = await GetAuthorizeUrl()
+                .ConfigureAwait(false);
+
+            if (string.IsNullOrEmpty(error))
+            {
+                authorizationUrl = authorizationUrl
+                    .SetQueryParam("succeded", null, Flurl.NullValueHandling.NameOnly);
+            }
+            else
+            {
+                authorizationUrl = authorizationUrl
+                    .SetQueryParam("error", error);
+            }
+
+            return new RedirectResult(authorizationUrl);
         }
     }
 }

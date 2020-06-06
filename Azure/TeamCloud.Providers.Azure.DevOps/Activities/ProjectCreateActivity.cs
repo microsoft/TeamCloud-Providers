@@ -5,20 +5,31 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
+using Microsoft.TeamFoundation.Core.WebApi;
 using TeamCloud.Model;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
+using TeamCloud.Providers.Azure.DevOps.Services;
 using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Azure.DevOps.Activities
 {
-    public static class ProjectCreateActivity
+    public sealed class ProjectCreateActivity
     {
+        private readonly IAuthenticationService authenticationService;
+
+        public ProjectCreateActivity(IAuthenticationService authenticationService)
+        {
+            this.authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
+        }
+
         [FunctionName(nameof(ProjectCreateActivity)), RetryOptions(10, FirstRetryInterval = "00:02:00")]
-        public static Dictionary<string, string> RunActivity(
+        public async Task<string> RunActivity(
             [ActivityTrigger] Project project,
             ILogger log)
         {
@@ -29,7 +40,48 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
             {
                 try
                 {
-                    return new Dictionary<string, string>();
+                    var connection = await authenticationService
+                        .GetConnectionAsync()
+                        .ConfigureAwait(false);
+
+                    var processClient = await connection
+                        .GetClientAsync<ProcessHttpClient>()
+                        .ConfigureAwait(false);
+
+                    var processTemplates = await processClient
+                        .GetProcessesAsync()
+                        .ConfigureAwait(false);
+
+                    var processCapabilities = new Dictionary<string, string>()
+                    {
+                        { TeamProjectCapabilitiesConstants.ProcessTemplateCapabilityTemplateTypeIdAttributeName, processTemplates.Single(pt => pt.Name.Equals("Agile", StringComparison.OrdinalIgnoreCase)).Id.ToString() }
+                    };
+
+                    var versionControlCapabilities = new Dictionary<string, string>()
+                    {
+                        { TeamProjectCapabilitiesConstants.VersionControlCapabilityAttributeName, SourceControlTypes.Git.ToString() }
+                    };
+
+                    var projectTemplate = new TeamProject()
+                    {
+                        Name = project.Name,
+                        Description = string.Empty,
+                        Capabilities = new Dictionary<string, Dictionary<string, string>>()
+                        {
+                            { TeamProjectCapabilitiesConstants.VersionControlCapabilityName, versionControlCapabilities },
+                            { TeamProjectCapabilitiesConstants.ProcessTemplateCapabilityName, processCapabilities }
+                        }
+                    };
+
+                    var projectClient = await connection
+                        .GetClientAsync<ProjectHttpClient>()
+                        .ConfigureAwait(false);
+
+                    var projectOperation = await projectClient
+                        .QueueCreateProject(projectTemplate)
+                        .ConfigureAwait(false);
+
+                    return projectOperation.Id.ToString();
                 }
                 catch (Exception exc)
                 {

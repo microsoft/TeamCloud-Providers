@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Text;
+using Microsoft.VisualStudio.Services.Operations;
 
 namespace TeamCloud.Providers.Azure.DevOps
 {
@@ -10,27 +10,30 @@ namespace TeamCloud.Providers.Azure.DevOps
     {
         public static Dictionary<string, string[]> ToDictionary(this NameValueCollection collection)
             => collection.Cast<string>().ToDictionary(key => key, key => collection.GetValues(key));
-        public static string ToQueryString(this NameValueCollection nvc)
+
+
+        public static bool TryGetValue(this NameValueCollection collection, string key, out string value)
         {
-            if (nvc == null) return string.Empty;
+            value = collection.AllKeys.Contains(key)
+                ? collection.Get(key) : default;
 
-            var sb = new StringBuilder();
-
-            foreach (string key in nvc.Keys)
-            {
-                var values = nvc.GetValues(key);
-
-                if (string.IsNullOrWhiteSpace(key) || values is null)
-                    continue;
-
-                foreach (string value in values)
-                {
-                    sb.Append(sb.Length == 0 ? "?" : "&");
-                    sb.AppendFormat("{0}={1}", Uri.EscapeDataString(key), Uri.EscapeDataString(value));
-                }
-            }
-
-            return sb.ToString();
+            return value != default;
         }
+
+        public static bool IsProgressStatus(this OperationStatus instance)
+            => instance == OperationStatus.Queued
+            || instance == OperationStatus.InProgress;
+
+        public static bool IsErrorStatus(this OperationStatus instance)
+            => instance == OperationStatus.Cancelled
+            || instance == OperationStatus.Failed
+            || instance == OperationStatus.NotSet;
+
+        public static bool IsFinalStatus(this OperationStatus instance)
+            => instance == OperationStatus.Cancelled
+            || instance == OperationStatus.Failed
+            || instance == OperationStatus.NotSet
+            || instance == OperationStatus.Succeeded;
+
     }
 }

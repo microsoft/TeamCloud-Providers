@@ -12,7 +12,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 
-namespace TeamCloud.Providers.Azure.DevOps.Model
+namespace TeamCloud.Providers.Azure.DevOps.Data
 {
     public abstract class TableEntityBase : ITableEntity
     {
