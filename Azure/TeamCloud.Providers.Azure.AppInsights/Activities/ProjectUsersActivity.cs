@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -11,7 +12,6 @@ using Microsoft.Extensions.Logging;
 using TeamCloud.Azure.Resources;
 using TeamCloud.Model;
 using TeamCloud.Model.Data;
-using TeamCloud.Providers.Core;
 using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Azure.AppInsights.Activities
@@ -43,10 +43,8 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
                         .GetResourceAsync(resourceId, throwIfNotExists: true)
                         .ConfigureAwait(false);
 
-                    var roleAssignments = project.Users
-                        .ToRoleAssignments(project.Id, role => role == ProjectUserRole.Owner
-                            ? AzureRoleDefinition.Contributor
-                            : AzureRoleDefinition.Reader);
+                    var roleAssignments = (project.Users ?? Enumerable.Empty<User>())
+                        .ToDictionary(user => user.Id, user => Enumerable.Repeat((user.ProjectMembership(project.Id)?.Role ?? ProjectUserRole.None).ToRoleDefinitionId(), 1));
 
                     await resource
                         .SetRoleAssignmentsAsync(roleAssignments)
@@ -59,6 +57,8 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
                     throw exc.AsSerializable();
                 }
             }
+
+
         }
     }
 }

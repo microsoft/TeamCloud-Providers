@@ -40,7 +40,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
                 try
                 {
                     var roleAssignments = (project.Users ?? Enumerable.Empty<User>())
-                        .ToDictionary(usr => usr.Id, usr => Enumerable.Repeat(GetRoleDefinitionId(usr, project.Id), 1));
+                        .ToDictionary(user => user.Id, user => Enumerable.Repeat((user.ProjectMembership(project.Id)?.Role ?? ProjectUserRole.None).ToRoleDefinitionId(), 1));
 
                     if (roleAssignments.Any())
                     {
@@ -60,13 +60,6 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
                     throw exc.AsSerializable();
                 }
             }
-
-            static Guid GetRoleDefinitionId(User user, string projectId) => user.RoleFor(projectId) switch
-            {
-                ProjectUserRole.Owner => AzureRoleDefinition.Contributor,
-                ProjectUserRole.Member => AzureRoleDefinition.DevTestLabUser,
-                _ => throw new NotSupportedException($"User '{user.Id}' has an unsupported role '{user.RoleFor(projectId)}'")
-            };
         }
     }
 }
