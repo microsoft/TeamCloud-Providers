@@ -2,55 +2,59 @@ name: Build & Test
 
 on:
   push:
-    branches-ignore: [ master ]
+    branches-ignore: [master]
 
 jobs:
-
   build:
     name: Build Providers
     runs-on: ubuntu-latest
 
     strategy:
-      matrix: 
-        target: [ 'Shared/TeamCloud.Providers.Core/TeamCloud.Providers.Core.csproj', 'Azure/TeamCloud.Providers.Azure.sln' ]
-              
+      matrix:
+        target:
+          [
+            'Shared/TeamCloud.Providers.Core/TeamCloud.Providers.Core.csproj',
+            'Azure/TeamCloud.Providers.Azure.sln',
+            'GitHub/TeamCloud.Providers.GitHub/TeamCloud.Providers.GitHub.csproj',
+          ]
+
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
-    - name: Checkout Code
-      uses: actions/checkout@v2
+      - name: Validate License Headers
+        run: |
+          LIC_HEADER_COUNT=$(find . -name '*.cs' -exec grep -H -E -o -c "Copyright \(c\) Microsoft Corporation\." {} \; -exec grep -H -E -o -c "Licensed under the MIT License\." {} \;)
+          LIC_HEADER_MISSING="$( echo "$LIC_HEADER_COUNT" | grep ':0$' || : )"
+          #[ ! -z "$LIC_HEADER_MISSING" ] && echo -e "Missing License Header:\n$LIC_HEADER_MISSING" && exit 1
 
-    - name: Validate License Headers
-      run: |
-        LIC_HEADER_COUNT=$(find . -name '*.cs' -exec grep -H -E -o -c "Copyright \(c\) Microsoft Corporation\." {} \; -exec grep -H -E -o -c "Licensed under the MIT License\." {} \;)
-        LIC_HEADER_MISSING="$( echo "$LIC_HEADER_COUNT" | grep ':0$' || : )"
-        #[ ! -z "$LIC_HEADER_MISSING" ] && echo -e "Missing License Header:\n$LIC_HEADER_MISSING" && exit 1
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.101'
 
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '3.1.101'
-
-    - name: Build Providers
-      run: dotnet build ${{ matrix.target }} -c Release
+      - name: Build Providers
+        run: dotnet build ${{ matrix.target }} -c Release
 
   test:
     name: Test Providers
     runs-on: ubuntu-latest
 
     strategy:
-      matrix: 
-        target: [ 'Shared/TeamCloud.Providers.Core.Tests/TeamCloud.Providers.Core.Tests.csproj' ]
-              
+      matrix:
+        target:
+          [
+            'Shared/TeamCloud.Providers.Core.Tests/TeamCloud.Providers.Core.Tests.csproj',
+          ]
+
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
-    - name: Checkout Code
-      uses: actions/checkout@v2
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.101'
 
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '3.1.101'
-
-    - name: Test Provider
-      run: dotnet test ${{ matrix.target }} -c Release
-
+      - name: Test Provider
+        run: dotnet test ${{ matrix.target }} -c Release

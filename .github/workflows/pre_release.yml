@@ -75,13 +75,13 @@ jobs:
             zip -r ../TeamCloud.Providers.Azure.DevTestLabs.zip *
           popd
 
-      # - name: Create Release Asset - TeamCloud.Providers.GitHub
-      #   run: |
-      #     dotnet publish GitHub/TeamCloud.Providers.GitHub/TeamCloud.Providers.GitHub.csproj -o TeamCloud.Providers.GitHub -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true
+      - name: Create Release Asset - TeamCloud.Providers.GitHub
+        run: |
+          dotnet publish GitHub/TeamCloud.Providers.GitHub/TeamCloud.Providers.GitHub.csproj -o TeamCloud.Providers.GitHub -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true
 
-      #     pushd TeamCloud.Providers.GitHub
-      #       zip -r ../TeamCloud.Providers.GitHub.zip *
-      #     popd
+          pushd TeamCloud.Providers.GitHub
+            zip -r ../TeamCloud.Providers.GitHub.zip *
+          popd
 
       - name: Generate index.json
         shell: python
@@ -110,13 +110,13 @@ jobs:
               'deployUrl': 'https://github.com/microsoft/TeamCloud-Providers/releases/download/v${{ steps.gitversion.outputs.majorMinorPatch }}/teamcloud.providers.azure.devtestlabs.json',
               'version': 'v${{ steps.gitversion.outputs.majorMinorPatch }}'
           }
-          # providers['github'] = {
-          #     'name': 'TeamCloud.Providers.GitHub',
-          #     'description': 'GitHub Provider for TeamCloud',
-          #     'zipUrl': 'https://github.com/microsoft/TeamCloud-Providers/releases/download/v${{ steps.gitversion.outputs.majorMinorPatch }}/TeamCloud.Providers.GitHub.zip',
-          #     'deployUrl': 'https://github.com/microsoft/TeamCloud-Providers/releases/download/v${{ steps.gitversion.outputs.majorMinorPatch }}/teamcloud.providers.github.json',
-          #     'version': 'v${{ steps.gitversion.outputs.majorMinorPatch }}'
-          # }
+          providers['github'] = {
+              'name': 'TeamCloud.Providers.GitHub',
+              'description': 'GitHub Provider for TeamCloud',
+              'zipUrl': 'https://github.com/microsoft/TeamCloud-Providers/releases/download/v${{ steps.gitversion.outputs.majorMinorPatch }}/TeamCloud.Providers.GitHub.zip',
+              'deployUrl': 'https://github.com/microsoft/TeamCloud-Providers/releases/download/v${{ steps.gitversion.outputs.majorMinorPatch }}/teamcloud.providers.github.json',
+              'version': 'v${{ steps.gitversion.outputs.majorMinorPatch }}'
+          }
           index['providers'] = providers
           with open('index.json', 'w') as f:
               json.dump(index, f, ensure_ascii=False, indent=4, sort_keys=True)
@@ -202,25 +202,25 @@ jobs:
           asset_name: teamcloud.providers.azure.devtestlabs.json
           asset_content_type: application/json
 
-      # - name: Upload Release Asset - TeamCloud.Providers.GitHub.zip
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: TeamCloud.Providers.GitHub.zip
-      #     asset_name: TeamCloud.Providers.GitHub.zip
-      #     asset_content_type: application/zip
+      - name: Upload Release Asset - TeamCloud.Providers.GitHub.zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: TeamCloud.Providers.GitHub.zip
+          asset_name: TeamCloud.Providers.GitHub.zip
+          asset_content_type: application/zip
 
-      # - name: Upload Release Asset - teamcloud.providers.github.json
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: Azure/TeamCloud.Providers.GitHub/teamcloud.providers.github.json
-      #     asset_name: teamcloud.providers.github.json
-      #     asset_content_type: application/json
+      - name: Upload Release Asset - teamcloud.providers.github.json
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: Azure/TeamCloud.Providers.GitHub/teamcloud.providers.github.json
+          asset_name: teamcloud.providers.github.json
+          asset_content_type: application/json
 
       - name: Upload Release Asset - index.json
         uses: actions/upload-release-asset@v1
