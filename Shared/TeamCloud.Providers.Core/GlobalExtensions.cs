@@ -11,7 +11,6 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TeamCloud.Model.Commands.Core;
-using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.AppInsights;
 using TeamCloud.Providers.Core.Activities;
@@ -19,7 +18,7 @@ using TeamCloud.Providers.Core.Configuration;
 
 namespace TeamCloud.Providers.Core
 {
-    public static class TeamCloudProvidersCoreExtensions
+    public static class GlobalExtensions
     {
         public static ICommandResult ApplyStatus(this ICommandResult commandResult, DurableOrchestrationStatus orchestrationStatus)
         {
@@ -106,9 +105,6 @@ namespace TeamCloud.Providers.Core
 
             return commandResult.ApplyStatus(commandStatus);
         }
-
-        public static IDictionary<string, IEnumerable<Guid>> ToRoleAssignments(this IList<User> users, string projectId, Func<ProjectUserRole, Guid> roleIdCallback)
-            => users.ToDictionary(user => user.Id, user => Enumerable.Repeat(roleIdCallback(user.RoleFor(projectId)), 1));
 
         public static Task SetInstrumentationKeyAsync(this IDurableOrchestrationContext functionContext, Guid instrumentationKey)
             => instrumentationKey.ToString().Equals(Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY"), StringComparison.OrdinalIgnoreCase)

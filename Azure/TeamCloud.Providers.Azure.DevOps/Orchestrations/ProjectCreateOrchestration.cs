@@ -38,11 +38,11 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
             {
                 try
                 {
-                    var properties = await functionContext
-                        .CallActivityWithRetryAsync<Dictionary<string, string>>(nameof(ProjectCreateActivity), command.Payload)
+                    await functionContext
+                        .CallOperationAsync(nameof(ProjectCreateActivity), command.Payload)
                         .ConfigureAwait(true);
 
-                    commandResult.Result = new ProviderOutput { Properties = properties };
+                    commandResult.Result = new ProviderOutput { Properties = new Dictionary<string, string>() };
                 }
                 catch (Exception exc)
                 {
