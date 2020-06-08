@@ -22,32 +22,6 @@ namespace TeamCloud.Providers.GitHub
 
         public static Octokit.User Installer { get; set; }
 
-        // public static void InitWorkaround()
-        // {
-        //     if (Installation is null)
-        //         throw new InvalidOperationException("Installation must be set for the workaround.");
-
-        //     App = new GitHubAppManifest(Installation.AppId, Workaround.AppName, Installation.Account, "", Workaround.ExternalUrl, Workaround.HtmlUrl, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow)
-        //     {
-        //         Slug = Installation.AppSlug,
-        //         ClientId = Workaround.ClientId,
-        //         ClientSecret = Workaround.ClientSecret,
-        //         WebhookSecret = Workaround.WebhookSecret,
-        //         Pem = Workaround.Pem
-        //     };
-        // }
-
-        // public static class Workaround
-        // {
-        //     public static string ExternalUrl = "";
-        //     public static string HtmlUrl = "";
-        //     public static string AppName = "";
-        //     public static string ClientId = "";
-        //     public static string ClientSecret = "";
-        //     public static string WebhookSecret = "";
-        //     public static string Pem = "";
-        // }
-
         public static string Log()
         {
             var serializer = new Octokit.Internal.SimpleJsonSerializer();

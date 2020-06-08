@@ -218,7 +218,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: Azure/TeamCloud.Providers.GitHub/teamcloud.providers.github.json
+          asset_path: GitHub/TeamCloud.Providers.GitHub/teamcloud.providers.github.json
           asset_name: teamcloud.providers.github.json
           asset_content_type: application/json
 
