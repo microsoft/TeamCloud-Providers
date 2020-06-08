@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -19,17 +20,14 @@ namespace TeamCloud.Providers.GitHub
     {
         readonly GitHubService github;
 
-        readonly GitHubOptions options;
-
-        public TestTrigger(GitHubService github, GitHubOptions options)
+        public TestTrigger(GitHubService github)
         {
             this.github = github ?? throw new ArgumentNullException(nameof(github));
-            this.options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
         [FunctionName(nameof(TestTrigger))]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "test/{projectName}")] HttpRequestMessage httpRequest,
+            [HttpTrigger(AuthorizationLevel.Function, "get", "delete", Route = "test/{projectName}")] HttpRequestMessage httpRequest,
             string projectName,
             ILogger log)
         {
@@ -38,22 +36,47 @@ namespace TeamCloud.Providers.GitHub
 
             log.LogWarning(Secrets.Log());
 
+            var guid = Guid.NewGuid().ToString();
             var project = new Project
             {
-                Name = projectName
+                Id = guid,
+                Name = projectName,
+                Users = new List<User> {
+                    new User {
+                        Id = "1ab004bb-57c6-4217-b3cf-f63d090e5b28",
+                        Role = TeamCloudUserRole.Admin,
+                        ProjectMemberships = new List<ProjectMembership> {
+                            new ProjectMembership {
+                                ProjectId = guid,
+                                Role = ProjectUserRole.Owner,
+                                Properties = new Dictionary<string, string> {
+                                    { "GitHubLogin", "colbylwilliams" }
+                                }
+                            }
+                        },
+                        Properties = new Dictionary<string, string> {
+                            { "GitHubLogin", "colbylwilliams" }
+                        }
+                    }
+                }
             };
 
-            var team = await github.CreateTeam(project).ConfigureAwait(false);
+            if (httpRequest.Method == HttpMethod.Get)
+            {
+                var (team, repo, proj) = await github.CreateTeamCloudProject(project, log)
+                    .ConfigureAwait(false);
 
-            log.LogWarning(team.ToString());
+                log.LogWarning(team.ToString());
 
-            var repo = await github.CreateRepository(project).ConfigureAwait(false);
+                log.LogWarning(repo.ToString());
 
-            log.LogWarning(repo.ToString());
-
-            var githubProject = await github.CreateProject(project, repo.Id).ConfigureAwait(false);
-
-            log.LogWarning(githubProject.ToString());
+                log.LogWarning(proj.ToString());
+            }
+            else if (httpRequest.Method == HttpMethod.Delete)
+            {
+                await github.DeleteTeamCloudProject(project, log)
+                    .ConfigureAwait(false);
+            }
 
             return new OkResult();
         }

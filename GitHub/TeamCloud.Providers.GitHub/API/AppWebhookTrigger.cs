@@ -74,7 +74,7 @@ namespace TeamCloud.Providers.GitHub
             Secrets.Installation = hook?.Installation;
             Secrets.Installer = hook?.Sender;
 
-            Secrets.InitWorkaround();
+            // Secrets.InitWorkaround();
 
             return Task.FromResult(hook.Installation);
 

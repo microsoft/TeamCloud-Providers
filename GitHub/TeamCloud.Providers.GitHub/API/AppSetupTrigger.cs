@@ -4,14 +4,12 @@
  */
 
 using System;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
-using Octokit;
 
 namespace TeamCloud.Providers.GitHub
 {
@@ -25,7 +23,8 @@ namespace TeamCloud.Providers.GitHub
         }
 
         [FunctionName(nameof(AppSetupTrigger))]
-        public async Task<IActionResult> Run(
+        // public async Task<IActionResult> Run(
+        public IActionResult Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "setup")] HttpRequestMessage httpRequest,
             ILogger log)
         {

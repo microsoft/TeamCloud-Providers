@@ -43,7 +43,8 @@ namespace TeamCloud.Providers.GitHub.Activities
 
                     var registration = new ProviderRegistration
                     {
-                        PrincipalId = identity?.ObjectId
+                        PrincipalId = identity?.ObjectId,
+                        CommandMode = ProviderCommandMode.Extended
                     };
 
                     return registration;

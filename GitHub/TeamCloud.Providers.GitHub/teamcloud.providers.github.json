@@ -150,6 +150,10 @@
         "principalId": {
             "type": "string",
             "value": "[reference(resourceId('Microsoft.Web/sites', variables('functionAppNameLower')), '2018-11-01', 'Full').identity.principalId]"
+        },
+        "setupUrl": {
+            "type": "string",
+            "value": "[concat('https://', variables('functionAppNameLower'), '.azurewebsites.net', '/api/start')]"
         }
     }
 }

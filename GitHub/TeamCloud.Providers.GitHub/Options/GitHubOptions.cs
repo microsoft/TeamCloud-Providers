@@ -15,6 +15,6 @@ namespace TeamCloud.Providers.GitHub.Options
 
         public string ProductHeaderVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
-        public string OrganizationName = "";
+        public string OrganizationName = "TeamCloudMSFT";
     }
 }

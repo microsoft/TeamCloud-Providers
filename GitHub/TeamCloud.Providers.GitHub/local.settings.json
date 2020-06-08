@@ -9,5 +9,10 @@
   },
   "ConnectionStrings": {
     "ConfigurationService": "file:///C:/Users/%USERNAME%/Desktop/ConfigurationService.json"
+  },
+  "Host": {
+    "LocalHttpPort": 7104,
+    "CORS": "*",
+    "CORSCredentials": false
   }
 }

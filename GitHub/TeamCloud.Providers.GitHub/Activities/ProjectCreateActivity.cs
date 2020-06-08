@@ -37,7 +37,7 @@ namespace TeamCloud.Providers.GitHub.Activities
             {
                 try
                 {
-                    await github.CreateProject(project)
+                    await github.CreateTeamCloudProject(project, log)
                         .ConfigureAwait(false);
                 }
                 catch (Exception exc)

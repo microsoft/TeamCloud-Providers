@@ -7,7 +7,9 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Flurl.Http;
+using Microsoft.Extensions.Logging;
 using Octokit;
+using TeamCloud.Model.Data;
 using TeamCloud.Providers.GitHub.Data;
 using TeamCloud.Providers.GitHub.Options;
 
@@ -15,6 +17,12 @@ namespace TeamCloud.Providers.GitHub
 {
     public class GitHubService
     {
+        private const string AdminTeamName = "TeamCloud Admins";
+        private const string RootTeamName = "TeamCloud";
+
+        private static Team RootTeam;
+        private static Team AdminTeam;
+
         private GitHubClient _client;
 
         private DateTimeOffset? _clientExpiresAt;
@@ -63,30 +71,6 @@ namespace TeamCloud.Providers.GitHub
             return _client;
         }
 
-        public async Task CreateTeamCloudProject(Model.Data.Project project)
-        {
-            var team = await CreateTeam(project)
-                .ConfigureAwait(false);
-
-            var repository = await CreateRepository(project, team.Id)
-                .ConfigureAwait(false);
-
-            _ = await CreateProject(project, repository.Id)
-                .ConfigureAwait(false);
-        }
-
-        public async Task DeleteTeamCloudProject(Model.Data.Project project)
-        {
-            await DeleteTeam(project)
-                .ConfigureAwait(false);
-
-            await DeleteRepository(project)
-                .ConfigureAwait(false);
-
-            // I assume it'll be implicitly deleted by deleting the repo
-            // var githubProject = await DeleteProject(project)
-            //     .ConfigureAwait(false);
-        }
 
         public async Task<GitHubAppManifest> GetManifest(string code)
         {
@@ -110,52 +94,96 @@ namespace TeamCloud.Providers.GitHub
             return app;
         }
 
-        public async Task<Team> CreateTeam(Model.Data.Project project)
+
+        public async Task<(Team, Repository, Octokit.Project)> CreateTeamCloudProject(Model.Data.Project project, ILogger log)
+        {
+            log?.LogWarning("Creating GitHub Team...");
+            var team = await CreateTeam(project, log)
+                .ConfigureAwait(false);
+
+            log?.LogWarning("Creating GitHub Repository");
+            var repo = await CreateRepository(project, team, log)
+                .ConfigureAwait(false);
+
+            log?.LogWarning("Creating GitHub Project");
+            var proj = await CreateProject(project, team, log)
+                .ConfigureAwait(false);
+
+            return (team, repo, proj);
+        }
+
+
+        public async Task DeleteTeamCloudProject(Model.Data.Project project, ILogger log)
+        {
+            log?.LogWarning("Deleting GitHub Team");
+            await DeleteTeam(project)
+                .ConfigureAwait(false);
+
+            log?.LogWarning("Deleting GitHub Repository");
+            await DeleteRepository(project)
+                .ConfigureAwait(false);
+
+            log?.LogWarning("Deleting GitHub Project");
+            await DeleteProject(project)
+                .ConfigureAwait(false);
+        }
+
+        public async Task<Team> CreateTeam(Model.Data.Project project, ILogger log)
         {
             var client = await GetAppClient().ConfigureAwait(false);
 
-            var team = await client
-                .Organization
-                .Team
-                .Create(options.OrganizationName, new NewTeam(project.Name)
-                {
-                    // Description
-                    // Maintainers = new List<string> { Secrets.Installer.Login }
-                    // ParentTeamId
-                    // Permission
-                    // Privacy
-                    // RepoNames
-                })
+            var team = await CreateTeamInternal(project.Name, Permission.Push, log)
+                .ConfigureAwait(false);
+
+            var members = project.Users
+                .Where(u => u.IsMember(project.Id) && u.ProjectProperties(project.Id).ContainsKey("GitHubLogin"))
+                .Select(u => (login: u.ProjectProperties(project.Id)["GitHubLogin"], role: u.IsOwner(project.Id) ? TeamRole.Maintainer : TeamRole.Member));
+
+            if (members.Any())
+            {
+                var tasks = members.Select(u => client
+                    .Organization
+                    .Team
+                    .AddOrEditMembership(team.Id, u.login, new UpdateTeamMembership(u.role)
+                ));
+
+                log?.LogWarning($"Adding Memberships to Team: {team.Name}");
+                await Task.WhenAll(tasks)
+                    .ConfigureAwait(false);
+            }
+
+            await EnsureAdminUsers(project, log)
                 .ConfigureAwait(false);
 
             return team;
         }
 
-        public async Task DeleteTeam(Model.Data.Project project, int teamId = default)
+        public async Task DeleteTeam(Model.Data.Project project, int id = default)
         {
             var client = await GetAppClient().ConfigureAwait(false);
 
-            if (teamId == default)
+            if (id == default)
             {
-                var teams = await client
-                    .Organization
-                    .Team
-                    .GetAll(Secrets.Owner.Login)
+                var team = await GetTeam(project)
                     .ConfigureAwait(false);
 
-                var team = teams.FirstOrDefault(t => t.Name == project.Name);
-
-                teamId = team.Id;
+                id = team?.Id ?? default;
             }
+
+            if (id == default)
+                return; // already deleted
 
             await client
                 .Organization
                 .Team
-                .Delete(teamId)
+                .Delete(id)
                 .ConfigureAwait(false);
         }
 
-        public async Task<Repository> CreateRepository(Model.Data.Project project, int teamId = default)
+        public Task<Team> GetTeam(Model.Data.Project project, int id = default)
+            => GetTeamInternal(project.Name, id);
+
+        public async Task<Repository> CreateRepository(Model.Data.Project project, Team team, ILogger log)
         {
             var client = await GetAppClient().ConfigureAwait(false);
 
@@ -167,12 +195,27 @@ namespace TeamCloud.Providers.GitHub
                 GitignoreTemplate = "VisualStudio" // TODO: use provider property
             };
 
-            if (teamId != default)
-                newRepository.TeamId = teamId;
-
+            log?.LogWarning($"Creating Repository: {newRepository.Name}");
             var repository = await client
                 .Repository
-                .Create(Secrets.Owner.Login, newRepository)
+                .Create(options.OrganizationName, newRepository)
+                .ConfigureAwait(false);
+
+            var adminTeam = await EnsureAdminTeam(log)
+                .ConfigureAwait(false);
+
+            log?.LogWarning($"Adding Repository '{newRepository.Name}' to Team: {adminTeam.Name}");
+            await client
+                .Organization
+                .Team
+                .AddRepository(adminTeam.Id, options.OrganizationName, repository.Name, new RepositoryPermissionRequest(Permission.Admin))
+                .ConfigureAwait(false);
+
+            log?.LogWarning($"Adding Repository '{newRepository.Name}' to Team: {team.Name}");
+            await client
+                .Organization
+                .Team
+                .AddRepository(team.Id, options.OrganizationName, repository.Name, new RepositoryPermissionRequest(Permission.Push))
                 .ConfigureAwait(false);
 
             return repository;
@@ -184,60 +227,222 @@ namespace TeamCloud.Providers.GitHub
 
             await client
                 .Repository
-                .Delete(Secrets.Owner.Login, project.Name)
+                .Delete(options.OrganizationName, project.Name)
                 .ConfigureAwait(false);
         }
 
-        public async Task<Project> CreateProject(Model.Data.Project project, long repositoryId = default)
+        public async Task<Octokit.Project> CreateProject(Model.Data.Project project, Team team, ILogger log)
         {
             var client = await GetAppClient().ConfigureAwait(false);
 
-            if (repositoryId == default)
-            {
-                var repository = await client
-                    .Repository
-                    .Get(Secrets.Owner.Login, project.Name)
-                    .ConfigureAwait(false);
-
-                repositoryId = repository.Id;
-            }
-
+            // only org level projects can be added to teams
+            // repo level projects cannot
+            log?.LogWarning($"Creating Project '{project.Name}'");
             var githubProject = await client
                 .Repository
                 .Project
-                .CreateForRepository(repositoryId, new NewProject(project.Name)
-                {
-                    // Body
-                })
+                .CreateForOrganization(options.OrganizationName, new NewProject(project.Name))
+                .ConfigureAwait(false);
+
+            var url = new Uri($"/orgs/{options.OrganizationName}/teams/{team.Slug}/projects/{githubProject.Id}", UriKind.Relative);
+
+            log?.LogWarning($"Adding Project '{githubProject.Name}' to Team '{team.Name}'");
+            await client
+                .Connection
+                .Put(url, accepts: "application/vnd.github.inertia-preview+json")
+                // .Put<string>(url, body: new { Permission = "write" }, accepts: "application/vnd.github.inertia-preview+json")
+                .ConfigureAwait(false);
+
+            var adminTeam = await EnsureAdminTeam(log)
+                .ConfigureAwait(false);
+
+            url = new Uri($"/orgs/{options.OrganizationName}/teams/{adminTeam.Slug}/projects/{githubProject.Id}", UriKind.Relative);
+
+            log?.LogWarning($"Adding Project '{githubProject.Name}' to Team '{adminTeam.Name}'");
+            await client
+                .Connection
+                .Put(url, accepts: "application/vnd.github.inertia-preview+json")
+                // .Put<string>(url, body: new { Permission = "admin" })
                 .ConfigureAwait(false);
 
             return githubProject;
         }
 
-        public async Task<bool> DeleteProject(Model.Data.Project project, int githubProjectId = default)
+        public async Task<bool> DeleteProject(Model.Data.Project project, int id = default)
         {
             var client = await GetAppClient().ConfigureAwait(false);
 
-            if (githubProjectId == default)
+            if (id == default)
             {
-                var githubProjects = await client
-                    .Repository
-                    .Project
-                    .GetAllForRepository(Secrets.Owner.Login, project.Name)
+                var githubProject = await GetProjectInternal(project.Name)
                     .ConfigureAwait(false);
 
-                var githubProject = githubProjects.FirstOrDefault(p => p.Name == project.Name);
-
-                githubProjectId = githubProject.Id;
+                id = githubProject?.Id ?? default;
             }
+
+            if (id == default)
+                return false; // already deleted
 
             var deleted = await client
                 .Repository
                 .Project
-                .Delete(githubProjectId)
+                .Delete(id)
                 .ConfigureAwait(false);
 
             return deleted;
+        }
+
+
+        private async Task<Team> CreateTeamInternal(string name, Permission permission, ILogger log)
+        {
+            var client = await GetAppClient().ConfigureAwait(false);
+
+            log?.LogWarning("Ensuring Root Team");
+            var rootTeam = await EnsureRootTeam()
+                .ConfigureAwait(false);
+            log?.LogWarning($"Found or created Root Team with id: {rootTeam.Id}");
+
+            log?.LogWarning($"Creating New Team: {name}");
+            return await client
+                .Organization
+                .Team
+                .Create(options.OrganizationName, new NewTeam(name)
+                {
+                    ParentTeamId = rootTeam.Id,
+                    Permission = permission,
+                    Privacy = TeamPrivacy.Closed // Parent and nested child teams must use Closed
+                })
+                .ConfigureAwait(false);
+        }
+
+        private async Task<Team> GetTeamInternal(string name, int id = default)
+        {
+            var client = await GetAppClient().ConfigureAwait(false);
+
+            if (id == default)
+            {
+                var teams = await client
+                    .Organization
+                    .Team
+                    .GetAll(options.OrganizationName)
+                    .ConfigureAwait(false);
+
+                return teams.FirstOrDefault(t => t.Name == name);
+            }
+
+            try
+            {
+                return await client
+                    .Organization
+                    .Team
+                    .Get(id)
+                    .ConfigureAwait(false);
+            }
+            catch (NotFoundException)
+            {
+                return null;
+            }
+        }
+
+        private async Task<Team> EnsureRootTeam()
+        {
+            if (RootTeam is null)
+                RootTeam = await GetTeamInternal(RootTeamName)
+                    .ConfigureAwait(false);
+
+            if (RootTeam is null)
+            {
+                // CreateTeamInternal calls this method so we cannot use
+                // it here
+                var client = await GetAppClient().ConfigureAwait(false);
+
+                RootTeam = await client
+                    .Organization
+                    .Team
+                    .Create(options.OrganizationName, new NewTeam(RootTeamName)
+                    {
+                        Privacy = TeamPrivacy.Closed // Parent and nested child teams must use Closed
+                    })
+                    .ConfigureAwait(false);
+            }
+
+            return RootTeam;
+        }
+
+        // TODO: Admin users
+
+        private async Task<Team> EnsureAdminTeam(ILogger log)
+        {
+            log?.LogWarning("Ensuring Admin Team");
+
+            if (AdminTeam is null)
+                AdminTeam = await GetTeamInternal(AdminTeamName)
+                    .ConfigureAwait(false);
+
+            if (AdminTeam is null)
+                AdminTeam = await CreateTeamInternal(AdminTeamName, Permission.Admin, log)
+                    .ConfigureAwait(false);
+
+            return AdminTeam;
+        }
+
+
+        private async Task<Team> EnsureAdminUsers(Model.Data.Project project, ILogger log)
+        {
+            log?.LogWarning("Ensuring Admin Team Users");
+
+            var client = await GetAppClient().ConfigureAwait(false);
+
+            var adminTeam = await EnsureAdminTeam(log)
+                .ConfigureAwait(false);
+
+            var members = project.Users
+                .Where(u => u.IsAdmin() && u.ProjectProperties(project.Id).ContainsKey("GitHubLogin"))
+                .Select(u => (login: u.ProjectProperties(project.Id)["GitHubLogin"], role: TeamRole.Member));
+
+            if (members.Any())
+            {
+                var tasks = members.Select(u => client
+                    .Organization
+                    .Team
+                    .AddOrEditMembership(adminTeam.Id, u.login, new UpdateTeamMembership(u.role)
+                ));
+
+                log?.LogWarning($"Adding Memberships to Team: {adminTeam.Name}");
+                await Task.WhenAll(tasks)
+                    .ConfigureAwait(false);
+            }
+
+            return adminTeam;
+        }
+
+        private async Task<Octokit.Project> GetProjectInternal(string name, int id = default)
+        {
+            var client = await GetAppClient().ConfigureAwait(false);
+
+            if (id == default)
+            {
+                var projects = await client
+                    .Repository
+                    .Project
+                    .GetAllForOrganization(options.OrganizationName)
+                    .ConfigureAwait(false);
+
+                return projects.FirstOrDefault(t => t.Name == name);
+            }
+
+            try
+            {
+                return await client
+                    .Repository
+                    .Project
+                    .Get(id)
+                    .ConfigureAwait(false);
+            }
+            catch (NotFoundException)
+            {
+                return null;
+            }
         }
     }
 }
