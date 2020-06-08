@@ -28,7 +28,7 @@ namespace TeamCloud.Providers.GitHub
 
         [FunctionName(nameof(AppWebhookTrigger))]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "events")] HttpRequestMessage httpRequest,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "events")] HttpRequestMessage httpRequest,
             ILogger log)
         {
             if (httpRequest is null)

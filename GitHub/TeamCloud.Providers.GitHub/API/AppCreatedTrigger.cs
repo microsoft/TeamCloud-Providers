@@ -24,7 +24,7 @@ namespace TeamCloud.Providers.GitHub
 
         [FunctionName(nameof(AppCreatedTrigger))]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "created")] HttpRequestMessage httpRequest,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "created")] HttpRequestMessage httpRequest,
             ILogger log)
         {
             if (httpRequest is null)

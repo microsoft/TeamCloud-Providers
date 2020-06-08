@@ -29,7 +29,7 @@ namespace TeamCloud.Providers.GitHub
 
         [FunctionName(nameof(StartTrigger))]
         public IActionResult Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "start")] HttpRequestMessage httpRequest,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "start")] HttpRequestMessage httpRequest,
             ILogger log)
         {
             if (httpRequest is null)

@@ -25,7 +25,7 @@ namespace TeamCloud.Providers.GitHub
         [FunctionName(nameof(AppSetupTrigger))]
         // public async Task<IActionResult> Run(
         public IActionResult Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "setup")] HttpRequestMessage httpRequest,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "setup")] HttpRequestMessage httpRequest,
             ILogger log)
         {
             if (httpRequest is null)

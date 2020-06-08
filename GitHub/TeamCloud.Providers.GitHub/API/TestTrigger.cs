@@ -12,7 +12,6 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using TeamCloud.Model.Data;
-using TeamCloud.Providers.GitHub.Options;
 
 namespace TeamCloud.Providers.GitHub
 {
@@ -27,7 +26,7 @@ namespace TeamCloud.Providers.GitHub
 
         [FunctionName(nameof(TestTrigger))]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "delete", Route = "test/{projectName}")] HttpRequestMessage httpRequest,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "delete", Route = "test/{projectName}")] HttpRequestMessage httpRequest,
             string projectName,
             ILogger log)
         {
