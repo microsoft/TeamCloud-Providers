@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using TeamCloud.Model;
 using TeamCloud.Model.Data;
 using TeamCloud.Serialization;
+using TeamCloud.Providers.GitHub.Services;
 
 namespace TeamCloud.Providers.GitHub.Activities
 {

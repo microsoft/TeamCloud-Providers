@@ -1,11 +1,11 @@
-
+/**
+ *  Copyright (c) Microsoft Corporation.
+ *  Licensed under the MIT License.
+ */
 
 using System.Reflection;
-/**
-*  Copyright (c) Microsoft Corporation.
-*  Licensed under the MIT License.
-*/
-namespace TeamCloud.Providers.GitHub
+
+namespace TeamCloud.Providers.GitHub.Services
 {
     internal static class GitHubServiceConstants
     {

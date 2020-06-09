@@ -11,6 +11,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using TeamCloud.Providers.GitHub.Data;
+using TeamCloud.Providers.GitHub.Services;
 
 namespace TeamCloud.Providers.GitHub
 {
@@ -40,7 +41,7 @@ namespace TeamCloud.Providers.GitHub
             log.LogWarning($"GitHub code: {code ?? "null"}");
 
             var app = await github
-                .GetManifest(code)
+                .GetAppManifest(code)
                 .ConfigureAwait(false);
 
             if (app is null)

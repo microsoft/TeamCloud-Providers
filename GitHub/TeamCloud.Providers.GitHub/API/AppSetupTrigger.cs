@@ -8,6 +8,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using TeamCloud.Providers.GitHub.Services;
 
 namespace TeamCloud.Providers.GitHub
 {

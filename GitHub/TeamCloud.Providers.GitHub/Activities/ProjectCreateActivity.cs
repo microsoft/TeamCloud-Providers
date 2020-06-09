@@ -11,8 +11,8 @@ using Microsoft.Extensions.Logging;
 using TeamCloud.Model;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
-// using TeamCloud.Providers.GitHub.Templates;
 using TeamCloud.Serialization;
+using TeamCloud.Providers.GitHub.Services;
 
 namespace TeamCloud.Providers.GitHub.Activities
 {
@@ -37,7 +37,7 @@ namespace TeamCloud.Providers.GitHub.Activities
             {
                 try
                 {
-                    await github.CreateTeamCloudProject(project, log)
+                    await github.CreateTeamCloudProject(project)
                         .ConfigureAwait(false);
                 }
                 catch (Exception exc)

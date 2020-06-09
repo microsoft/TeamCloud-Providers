@@ -37,7 +37,7 @@ using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.OpenSsl;
 
-namespace TeamCloud.Providers.GitHub
+namespace TeamCloud.Providers.GitHub.Services
 {
     public interface IGitHubJwtFactory
     {

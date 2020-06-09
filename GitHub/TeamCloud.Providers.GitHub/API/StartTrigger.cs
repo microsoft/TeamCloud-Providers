@@ -8,10 +8,10 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using TeamCloud.Providers.GitHub.Options;
 using TeamCloud.Orchestration;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using TeamCloud.Providers.GitHub.Services;
 
 namespace TeamCloud.Providers.GitHub
 {
@@ -19,12 +19,9 @@ namespace TeamCloud.Providers.GitHub
     {
         readonly GitHubService github;
 
-        readonly GitHubOptions options;
-
-        public StartTrigger(GitHubService github, GitHubOptions options)
+        public StartTrigger(GitHubService github)
         {
             this.github = github ?? throw new ArgumentNullException(nameof(github));
-            this.options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
         [FunctionName(nameof(StartTrigger))]

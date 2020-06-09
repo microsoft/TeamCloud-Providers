@@ -10,8 +10,8 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using TeamCloud.Model;
 using TeamCloud.Model.Data;
-using TeamCloud.Providers.Core;
 using TeamCloud.Serialization;
+using TeamCloud.Providers.GitHub.Services;
 
 namespace TeamCloud.Providers.GitHub.Activities
 {
