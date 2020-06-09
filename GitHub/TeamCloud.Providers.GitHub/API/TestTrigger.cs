@@ -33,7 +33,7 @@ namespace TeamCloud.Providers.GitHub
             if (httpRequest is null)
                 throw new ArgumentNullException(nameof(httpRequest));
 
-            log.LogWarning(Secrets.Log());
+            // log.LogWarning(Secrets.Log());
 
             var guid = Guid.NewGuid().ToString();
             var project = new Project

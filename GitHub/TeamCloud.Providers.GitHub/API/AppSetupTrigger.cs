@@ -5,11 +5,9 @@
 
 using System;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Extensions.Logging;
 
 namespace TeamCloud.Providers.GitHub
 {
@@ -23,30 +21,51 @@ namespace TeamCloud.Providers.GitHub
         }
 
         [FunctionName(nameof(AppSetupTrigger))]
-        // public async Task<IActionResult> Run(
         public IActionResult Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "setup")] HttpRequestMessage httpRequest,
-            ILogger log)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "setup")] HttpRequestMessage httpRequest)
         {
             if (httpRequest is null)
                 throw new ArgumentNullException(nameof(httpRequest));
 
-            var query = httpRequest.RequestUri.ParseQueryString();
-            var installation_id = query["installation_id"];
-            var setup_action = query["setup_action"];
-            log.LogWarning($"GitHub installation_id: {installation_id ?? "null"}");
-            log.LogWarning($"GitHub setup_action: {setup_action ?? "null"}");
+            // var query = httpRequest.RequestUri.ParseQueryString();
+            // var installation_id = query["installation_id"];
+            // var setup_action = query["setup_action"];
 
-            log.LogWarning(Secrets.Log());
-
-            // var html = $"<html><head><title>Test</title></head><body><p>GitHub app successfully installed. Click <a href=\"https://github.com/login/oauth/authorize?client_id={Secrets.App.ClientId}&redirect_uri={Secrets.ProviderUrl}/api/installed&login={Secrets.Installer.Login}\">here</a> to install the app into your user and complete the setup.</p></body>";
-            var html = $"<html><head><title>Test</title></head><body><p>GitHub app successfully installed. Return to the CLI.</p></body>";
+            // log.LogWarning($"GitHub installation_id: {installation_id ?? "null"}");
+            // log.LogWarning($"GitHub setup_action: {setup_action ?? "null"}");
 
             return new ContentResult
             {
-                Content = html,
+                Content = Html,
                 ContentType = "text/html"
             };
         }
+
+        private string Html =>
+$@"
+<!DOCTYPE html>
+<html lang=""en-US"">
+<head>
+    <meta charset=""utf-8"">
+    <title>GitHub Provider Setup</title>
+    <style>
+        .form_box, p, h1, .intro {{ width: 400px; text-align: center; }}
+        h1 {{ font-size: 1.5em; display: inline-block; text-align: center; }}
+        .intro, .form_box {{ margin: 0 auto; padding: 1em; }}
+        .form_box {{ border: 1px solid #CCC; border-radius: 1em; }}
+        .form_box li+li {{ margin-top: 1em; }}
+    </style>
+</head>
+<body>
+    <div class=""intro"">
+        <h1>GitHub Provider Setup</h1>
+    </div>
+    <div class=""form_box"">
+        <p>GitHub Provider setup is complete!</p>
+        <p>You can safely close this window and return to the CLI.</p>
+    </div>
+</body>
+</html>
+";
     }
 }

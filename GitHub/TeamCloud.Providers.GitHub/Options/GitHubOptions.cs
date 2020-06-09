@@ -11,10 +11,5 @@ namespace TeamCloud.Providers.GitHub.Options
     [Options]
     public class GitHubOptions
     {
-        public string ProductHeaderName = "TeamCloud";
-
-        public string ProductHeaderVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-
-        public string OrganizationName = "TeamCloudMSFT";
     }
 }

@@ -7,12 +7,10 @@ using Octokit;
 
 namespace TeamCloud.Providers.GitHub.Data
 {
-    public class GitHubAppInstallationHook
+    public class GitHubHookPayload : ActivityPayload
     {
         public string Action { get; set; }
 
-        public InstallationWithSlug Installation { get; set; }
-
-        public User Sender { get; set; }
+        public Organization Organization { get; set; }
     }
 }

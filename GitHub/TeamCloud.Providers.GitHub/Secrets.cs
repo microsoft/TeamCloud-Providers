@@ -10,8 +10,6 @@ namespace TeamCloud.Providers.GitHub
 {
     public class Secrets
     {
-        public static string ProviderUrl = "";
-
         public static string AppCode { get; set; }
 
         public static GitHubAppManifest App { get; set; }
@@ -29,7 +27,6 @@ namespace TeamCloud.Providers.GitHub
             var builder = new System.Text.StringBuilder();
             builder.AppendLine("");
             builder.AppendLine("Secrets:");
-            builder.AppendLine($"ProviderUrl: {ProviderUrl}");
             builder.AppendLine($"AppCode: {AppCode}");
             builder.AppendLine($"App: {(App is null ? null : serializer.Serialize(App))}");
             builder.AppendLine($"Installation: {(Installation is null ? null : serializer.Serialize(Installation))}");

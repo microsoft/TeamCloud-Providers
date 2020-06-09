@@ -4,14 +4,12 @@
  */
 
 using System;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
-using Octokit;
 using Octokit.Internal;
 using TeamCloud.Providers.GitHub.Data;
 
@@ -34,21 +32,13 @@ namespace TeamCloud.Providers.GitHub
             if (httpRequest is null)
                 throw new ArgumentNullException(nameof(httpRequest));
 
-
             // json payload from the received webhook
             var eventType = httpRequest.GitHubEventType();
             var payload = await httpRequest.Content.ReadAsStringAsync();
 
-            var serializer = new SimpleJsonSerializer();
-
-            await Handle(serializer, payload, eventType, log);
-
-            log.LogWarning($"GitHub eventType:{eventType ?? "null"}\nGitHub payload:\n{payload ?? "null"}");
-
-            log.LogWarning(Secrets.Log());
+            await Handle(new SimpleJsonSerializer(), payload, eventType, log);
 
             return new OkResult();
-            // return new OkObjectResult("hi");
         }
 
         private Task Handle(SimpleJsonSerializer serializer, string payload, string eventType, ILogger log)
@@ -56,13 +46,14 @@ namespace TeamCloud.Providers.GitHub
             {
                 "ping" => HandlePing(serializer, payload, log),
                 "installation" => HandleInstallation(serializer, payload, log),
-                // "integration_installation" => HandleInstallation(serializer, payload, log),
-                _ => HandleOther(serializer, payload, log)
+                _ => HandleOther(serializer, eventType, payload, log)
             };
 
         private Task HandlePing(SimpleJsonSerializer serializer, string payload, ILogger log)
         {
             var ping = serializer.Deserialize<GitHubPing>(payload);
+
+            log?.LogWarning($"Received GitHub Webhook: [ EventType: ping, Zen: {ping.Zen ?? "null"} ]");
 
             return Task.FromResult(ping);
         }
@@ -74,26 +65,18 @@ namespace TeamCloud.Providers.GitHub
             Secrets.Installation = hook?.Installation;
             Secrets.Installer = hook?.Sender;
 
-            // Secrets.InitWorkaround();
+            log?.LogWarning($"Received GitHub Webhook: [ EventType: installation, Action: {hook.Action ?? "null"} ]");
 
             return Task.FromResult(hook.Installation);
-
-            // if (Secrets.Installer is null && hook?.Sender != null)
-            // {
-            //     Secrets.Installer = activity.Sender;
-            // }
         }
 
-        private Task HandleOther(SimpleJsonSerializer serializer, string payload, ILogger log)
+        private Task HandleOther(SimpleJsonSerializer serializer, string eventType, string payload, ILogger log)
         {
-            // var activity = serializer.Deserialize<ActivityPayload>(payload);
+            var hook = serializer.Deserialize<GitHubHookPayload>(payload);
 
-            // if (Secrets.Installer is null && activity?.Sender != null)
-            // {
-            //     Secrets.Installer = activity.Sender;
-            // }
+            log?.LogWarning($"Received GitHub Webhook: [ EventType: {eventType}, Action: {hook.Action ?? "null"} ]");
 
-            return Task.FromResult("");
+            return Task.FromResult(hook);
         }
     }
 }
