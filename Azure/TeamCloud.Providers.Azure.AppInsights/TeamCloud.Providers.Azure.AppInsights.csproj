@@ -48,17 +48,8 @@
     <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 
-  <Choose>
-    <When Condition="'$(Configuration)' == 'Debug'">
-      <ItemGroup>
-        <ProjectReference Include="..\..\Shared\TeamCloud.Providers.Core\TeamCloud.Providers.Core.csproj"  />
-      </ItemGroup>
-    </When>
-    <Otherwise>
-      <ItemGroup>
-        <PackageReference Include="TeamCloud.Providers.Core" />
-      </ItemGroup>
-    </Otherwise>
-  </Choose>
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <ProjectReference Include="..\..\Shared\TeamCloud.Providers.Core\TeamCloud.Providers.Core.csproj"  />
+  </ItemGroup>
 
 </Project>
