@@ -27,7 +27,7 @@
     <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="16.153.0" />
     <PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="16.153.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.5.0" />
-    <PackageReference Include="TeamCloud.Configuration" Version="0.1.437-pre" />
+    <PackageReference Include="TeamCloud.Configuration" Version="0.1.438-pre" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
   </ItemGroup>
   <ItemGroup>

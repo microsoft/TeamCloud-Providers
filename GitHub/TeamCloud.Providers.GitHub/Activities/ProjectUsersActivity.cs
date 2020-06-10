@@ -38,18 +38,7 @@ namespace TeamCloud.Providers.GitHub.Activities
             {
                 try
                 {
-                    // var resource = await azureResourceService
-                    //     .GetResourceAsync(resourceId, throwIfNotExists: true)
-                    //     .ConfigureAwait(false);
 
-                    // var permissions = project.Users
-                    //     .ToRoleAssignments(role => role.Equals(UserRoles.Project.Owner, StringComparison.OrdinalIgnoreCase)
-                    //         ? new Octokit.RepositoryPermissions(true, true, true)
-                    //         : new Octokit.RepositoryPermissions(false, true, true);
-
-                    // await resource
-                    //     .SetRoleAssignmentsAsync(roleAssignments)
-                    //     .ConfigureAwait(false);
                 }
                 catch (Exception exc)
                 {
