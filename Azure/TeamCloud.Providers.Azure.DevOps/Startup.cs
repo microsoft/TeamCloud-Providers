@@ -62,6 +62,10 @@ namespace TeamCloud.Providers.Azure.DevOps
             }
             else
             {
+                // we use the managed identity of the service to authenticate at the KeyVault
+                builder.Services
+                    .AddSingleton<IKeyVaultClient>(provider => new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(new AzureServiceTokenProvider().KeyVaultTokenCallback)));
+
                 builder.Services
                     .AddSingleton<ISecretsService, VaultSecretsServices>();
             }

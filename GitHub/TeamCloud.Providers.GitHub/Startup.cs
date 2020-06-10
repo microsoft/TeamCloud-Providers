@@ -5,6 +5,8 @@
 
 using System;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Azure.KeyVault;
+using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TeamCloud.Http;
@@ -61,6 +63,10 @@ namespace TeamCloud.Providers.GitHub
             }
             else
             {
+                // we use the managed identity of the service to authenticate at the KeyVault
+                builder.Services
+                    .AddSingleton<IKeyVaultClient>(provider => new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(new AzureServiceTokenProvider().KeyVaultTokenCallback)));
+
                 builder.Services
                     .AddSingleton<ISecretsService, VaultSecretsServices>();
             }
