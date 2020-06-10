@@ -5,6 +5,8 @@
 
 using System;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Azure.KeyVault;
+using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TeamCloud.Http;
