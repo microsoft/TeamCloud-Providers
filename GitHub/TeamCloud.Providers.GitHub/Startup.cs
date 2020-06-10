@@ -1,4 +1,4 @@
-﻿/**
+/**
  *  Copyright (c) Microsoft Corporation.
  *  Licensed under the MIT License.
  */
@@ -13,17 +13,17 @@ using TeamCloud.Http;
 using TeamCloud.Model.Commands;
 using TeamCloud.Orchestration;
 using TeamCloud.Orchestration.Auditing;
-using TeamCloud.Providers.Azure.DevOps;
-using TeamCloud.Providers.Azure.DevOps.Orchestrations;
-using TeamCloud.Providers.Azure.DevOps.Services;
 using TeamCloud.Providers.Core;
+using TeamCloud.Providers.GitHub;
+using TeamCloud.Providers.GitHub.Orchestrations;
+using TeamCloud.Providers.GitHub.Services;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 [assembly: FunctionsImport(typeof(TeamCloudProvidersCoreStartup))]
 [assembly: FunctionsImport(typeof(TeamCloudOrchestrationStartup))]
 [assembly: FunctionsImport(typeof(TeamCloudOrchestrationAuditingStartup))]
 
-namespace TeamCloud.Providers.Azure.DevOps
+namespace TeamCloud.Providers.GitHub
 {
     public class Startup : FunctionsStartup
     {
@@ -52,7 +52,6 @@ namespace TeamCloud.Providers.Azure.DevOps
                         .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration), (command) => TimeSpan.FromMinutes(5))
                         .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
                         .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
-                        .MapCommand<ProviderProjectDeleteCommand>(nameof(ProjectDeleteOrchestration))
                         .IgnoreCommand<IProviderCommand>();
                 });
 
@@ -72,8 +71,11 @@ namespace TeamCloud.Providers.Azure.DevOps
                     .AddSingleton<ISecretsService, VaultSecretsServices>();
             }
 
+            // builder.Services
+            //     .AddSingleton<IAuthenticationService, AuthenticationService>();
+
             builder.Services
-                .AddSingleton<IAuthenticationService, AuthenticationService>();
+                .AddSingleton<GitHubService>();
         }
     }
 }

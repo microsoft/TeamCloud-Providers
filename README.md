@@ -2,6 +2,10 @@
 
 [TeamCloud](https://github.com/microsoft/TeamCloud) is a tool that enables enterprise IT organizations to provide application development teams "self-serve" access to secure compliant cloud development environments.
 
+![TeamCloud-Providers Build & Packaging](https://github.com/microsoft/TeamCloud-Providers/workflows/Create%20Pre-release/badge.svg)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/microsoft/teamcloud-providers?label=Release%20%28main%29)
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/microsoft/teamcloud-providers?include_prereleases&label=Release%20%28dev%29)
+
 This repository contains TeamCloud Providers.  In the context of TeamCloud, a Provider represents an abstract implementation of a service that manages a resource or resources (i.e. a GitHub repository or an Azure resource) for a cloud development environment (or "Project").
 
 An organization creates and deploys its own Providers or deploys Providers from this repo to Azure.  It then registers the Providers with its TeamCloud instance.  When a development team sends a request to TeamCloud to create a new (or update an existing) Project, TeamCloud invokes each registered Provider to create, update, or delete it's corresponding resource(s).
