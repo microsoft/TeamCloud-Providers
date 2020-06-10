@@ -48,8 +48,8 @@ jobs:
       # - name: Build & Package Core for Release
       #  run: dotnet build Shared/TeamCloud.Providers.Core/TeamCloud.Providers.Core.csproj -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true
 
-      - name: Build Azure for Release
-        run: dotnet build Azure/TeamCloud.Providers.Azure.sln -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true
+      # - name: Build Azure for Release
+      #  run: dotnet build Azure/TeamCloud.Providers.Azure.sln -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true
 
       - name: Create Release Asset - TeamCloud.Providers.Azure.AppInsights
         run: |
