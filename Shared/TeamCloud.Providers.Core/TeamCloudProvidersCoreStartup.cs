@@ -5,7 +5,6 @@
 
 using System;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TeamCloud.Providers.Core;
 using TeamCloud.Providers.Core.Configuration;
@@ -21,9 +20,9 @@ namespace TeamCloud.Providers.Core
             if (builder is null)
                 throw new ArgumentNullException(nameof(builder));
 
-            builder.Services
-                .AddMvcCore()
-                .AddNewtonsoftJson();
+            //builder.Services
+            //    .AddMvcCore()
+            //    .AddNewtonsoftJson();
 
             builder.Services
                 .TryAddSingleton<IOrchestrationConfiguration>(new OrchestrationConfiguration());
