@@ -47,7 +47,7 @@ jobs:
           tee ./Directory.Build.targets << END
             <Project>
               <ItemGroup>
-                <PackageReference Include="TeamCloud.Providers.Core" Version="${{ steps.gitversion.outputs.majorMinorPatch }}-*" />
+                <PackageReference Include="TeamCloud.Providers.Core" Version="${{ steps.gitversion.outputs.majorMinorPatch }}-pre" />
               </ItemGroup>
             </Project>
           END
