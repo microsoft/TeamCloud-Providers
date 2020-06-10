@@ -42,6 +42,10 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
                         .CallOperationAsync(nameof(ProjectCreateActivity), command.Payload)
                         .ConfigureAwait(true);
 
+                    await functionContext
+                        .CallSubOrchestratorAsync(nameof(UserSyncOrchestration), (command.ProjectId, command.Payload.Users))
+                        .ConfigureAwait(true);
+
                     commandResult.Result = new ProviderOutput { Properties = new Dictionary<string, string>() };
                 }
                 catch (Exception exc)

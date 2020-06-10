@@ -1,4 +1,9 @@
-﻿using System;
+﻿/**
+ *  Copyright (c) Microsoft Corporation.
+ *  Licensed under the MIT License.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -178,6 +183,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Handlers
 
             var session = await SetAuthorizationSessionAsync(sessionTable, new AuthorizationSession()
             {
+                Organization = fields.GetValueOrDefault("organization")?.SingleOrDefault(),
                 ClientId = fields.GetValueOrDefault("client_id")?.SingleOrDefault(),
                 ClientSecret = fields.GetValueOrDefault("client_secret")?.SingleOrDefault()
 
