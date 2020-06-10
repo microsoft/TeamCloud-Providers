@@ -36,20 +36,17 @@ jobs:
         with:
           dotnet-version: '3.1.300'
 
-      # - name: Build & Package Core for Pre-release
-      #   run: dotnet build Shared/TeamCloud.Providers.Core/TeamCloud.Providers.Core.csproj -o Prerelease -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true --version-suffix "pre"
+      - name: Build & Package Core for Pre-release
+        run: dotnet build Shared/TeamCloud.Providers.Core/TeamCloud.Providers.Core.csproj -o Prerelease -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true --version-suffix "pre"
 
-      # - name: Publish Core Pre-release NuGet Packages
-      #   run: dotnet nuget push 'Prerelease/*.nupkg' --api-key '${{ secrets.MYGET_DEV_TOKEN }}' --source 'https://www.myget.org/F/teamcloud-dev/api/v2/package' --symbol-api-key '${{ secrets.MYGET_DEV_TOKEN }}' --symbol-source 'https://www.myget.org/F/teamcloud-dev/symbols/api/v2/package' --skip-duplicate
+      - name: Publish Core Pre-release NuGet Packages
+        run: dotnet nuget push 'Prerelease/*.nupkg' --api-key '${{ secrets.MYGET_DEV_TOKEN }}' --source 'https://www.myget.org/F/teamcloud-dev/api/v2/package' --symbol-api-key '${{ secrets.MYGET_DEV_TOKEN }}' --symbol-source 'https://www.myget.org/F/teamcloud-dev/symbols/api/v2/package' --skip-duplicate
 
-      - name: Build & Package Core for Release
-        run: dotnet build Shared/TeamCloud.Providers.Core/TeamCloud.Providers.Core.csproj -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true
+      - name: Create Release Asset - NuGet
+        run: zip -r -j NuGet.zip src -i '*.nupkg'
 
-      - name: Publish Core NuGet Packages
-        run: dotnet nuget push '**/*.nupkg' --api-key '${{ secrets.MYGET_DEV_TOKEN }}' --source 'https://www.myget.org/F/teamcloud-dev/api/v2/package' --symbol-api-key '${{ secrets.MYGET_DEV_TOKEN }}' --symbol-source 'https://www.myget.org/F/teamcloud-dev/symbols/api/v2/package' --skip-duplicate
-
-      # - name: Create Release Asset - NuGet
-      #   run: zip -r -j NuGet.zip src -i '*.nupkg'
+      # - name: Build & Package Core for Release
+      #  run: dotnet build Shared/TeamCloud.Providers.Core/TeamCloud.Providers.Core.csproj -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true
 
       - name: Build Azure for Release
         run: dotnet build Azure/TeamCloud.Providers.Azure.sln -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true
