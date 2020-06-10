@@ -62,30 +62,32 @@ $@"
     <meta charset=""utf-8"">
     <title>GitHub Provider Setup</title>
     <style>
-        form, p, h1, button, .intro {{ width: 400px; text-align: center; }}
-        h1 {{ font-size: 1.5em; }}
+        body {{ font-family: Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.5; color: #24292e; margin: 0; }}
+        .intro {{ display: flex; padding-bottom: 8px; padding-top: 40px; margin-bottom: 16px; border-bottom: 1px solid #e1e4e8; flex-flow: row wrap; }}
+        form, h1, button, .intro, .note {{ width: 474px; }}
+        h1 {{ font-size: 24px; font-weight: 400; flex: 1 1 auto; margin: 0; padding: 0; }}
         .note, h1 {{ display: inline-block; }}
-        .note {{ padding-top: 0.5em; }}
-        .intro, form {{ margin: 0 auto; padding: 1em; }}
-        form {{ border: 1px solid #CCC; border-radius: 1em; }}
-        ul {{ list-style: none; padding: 1em 0 0; margin: 0; }}
-        form li+li {{ margin-top: 1em; }}
-        button {{ padding: 0.5em; }}
+        .note {{ min-height: 17px; margin: 4px 0 18px; font-size: 12px; color: #586069; }}
+        .intro, form {{ margin: 0 auto; }}
+        ul {{ list-style: none; padding: 2em 0 0; margin: 0; }}
+        a {{ color: #0366d6; text-decoration: none; }}
+        button {{ color: #fff; background-color: #28a745; background-image: linear-gradient(-180deg, #34d058, #28a745 90%); padding: 6px 12px; font-size: 14px; font-weight: 600; line-height: 20px; white-space: nowrap; vertical-align: middle; cursor: pointer; user-select: none; background-repeat: repeat-x; background-position: -1px -1px; background-size: 110% 110%; border: 1px solid rgba(27, 31, 35, .2); border-radius: .25em; -webkit-appearance: none; }}
+        header {{ background-color: #24292e; height: 53px; }}
     </style>
 </head>
 <body>
+    <header></header>
     <div class=""intro"">
         <h1>GitHub Provider Setup</h1>
     </div>
     <form id=""manifest_form"" action=""https://github.com/apps/{app.Slug}/installations/new/permissions"">
-        <p>The GitHub App was successfully created! Click the button below to install the App into your GitHub Organization.</p>
         <ul>
             <input type=""hidden"" name=""target_id"" value=""{app.Owner.Id}"">
             <li class=""button"">
-                <button type=""submit"">Install App</button>
+                <button type=""submit"">Install GitHub App on {app.Owner.Login}</button>
             </li>
             <li>
-                <p class=""note""><b><em>Note: To install the app, you must be an organization owner or have <a href=""https://help.github.com/en/github/setting-up-and-managing-organizations-and-teams/permission-levels-for-an-organization#github-app-managers"">GitHub App manager</a> permissions.</em></b></p>
+                <p class=""note"">To install the app, you must be an organization owner or have <a href=""https://help.github.com/en/github/setting-up-and-managing-organizations-and-teams/permission-levels-for-an-organization#github-app-managers"">GitHub App manager</a> permissions.</p>
             </li>
         </ul>
     </form>
