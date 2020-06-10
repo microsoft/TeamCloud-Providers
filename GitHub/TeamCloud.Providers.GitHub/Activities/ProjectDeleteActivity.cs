@@ -1,4 +1,4 @@
-﻿/**
+/**
  *  Copyright (c) Microsoft Corporation.
  *  Licensed under the MIT License.
  */
@@ -16,16 +16,16 @@ using TeamCloud.Providers.GitHub.Services;
 
 namespace TeamCloud.Providers.GitHub.Activities
 {
-    public class ProjectCreateActivity
+    public class ProjectDeleteActivity
     {
         private readonly GitHubService github;
 
-        public ProjectCreateActivity(GitHubService github)
+        public ProjectDeleteActivity(GitHubService github)
         {
             this.github = github ?? throw new ArgumentNullException(nameof(github));
         }
 
-        [FunctionName(nameof(ProjectCreateActivity)), RetryOptions(10, FirstRetryInterval = "00:02:00")]
+        [FunctionName(nameof(ProjectDeleteActivity)), RetryOptions(10, FirstRetryInterval = "00:02:00")]
         public async Task RunActivity(
             [ActivityTrigger] Project project,
             ILogger log)
@@ -38,12 +38,12 @@ namespace TeamCloud.Providers.GitHub.Activities
                 try
                 {
                     await github
-                        .CreateTeamCloudProject(project)
+                        .DeleteTeamCloudProject(project)
                         .ConfigureAwait(false);
                 }
                 catch (Exception exc)
                 {
-                    log.LogError(exc, $"{nameof(ProjectCreateActivity)} failed: {exc.Message}");
+                    log.LogError(exc, $"{nameof(ProjectDeleteActivity)} failed: {exc.Message}");
 
                     throw exc.AsSerializable();
                 }

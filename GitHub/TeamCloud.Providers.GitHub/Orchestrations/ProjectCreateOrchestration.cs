@@ -4,7 +4,6 @@
  */
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -16,7 +15,6 @@ using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.GitHub.Activities;
-using TeamCloud.Providers.Core;
 using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.GitHub.Orchestrations
@@ -45,15 +43,9 @@ namespace TeamCloud.Providers.GitHub.Orchestrations
                         .CallActivityWithRetryAsync(nameof(ProjectCreateActivity), command.Payload)
                         .ConfigureAwait(true);
 
-                    functionContext.SetCustomStatus("Updating user permissions", commandLog);
-
-                    await functionContext
-                        .CallActivityWithRetryAsync(nameof(ProjectUsersActivity), (command.Payload, 0/*, resourceId?.ToString()*/))
-                        .ConfigureAwait(true);
-
                     commandResult.Result = new ProviderOutput
                     {
-                        //Properties = deploymentOutput.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString())
+
                     };
                 }
                 catch (Exception exc)

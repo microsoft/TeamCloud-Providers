@@ -4,21 +4,21 @@
  */
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using TeamCloud.Model;
 using TeamCloud.Model.Commands;
-using TeamCloud.Model.Data;
 using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.GitHub.Activities
 {
-    public class ProviderRegisterActivity
+    public static class ProjectUpdateActivity
     {
-        [FunctionName(nameof(ProviderRegisterActivity))]
-        public static ProviderRegistration RunActivity(
-            [ActivityTrigger] ProviderRegisterCommand command,
+        [FunctionName(nameof(ProjectUpdateActivity))]
+        public static Dictionary<string, string> RunActivity(
+            [ActivityTrigger] ProviderProjectUpdateCommand command,
             ILogger log)
         {
             if (command is null)
@@ -28,17 +28,11 @@ namespace TeamCloud.Providers.GitHub.Activities
             {
                 try
                 {
-                    var registration = new ProviderRegistration
-                    {
-                        PrincipalId = null, // this provider does not talk to any azure resources yet
-                        CommandMode = ProviderCommandMode.Extended
-                    };
-
-                    return registration;
+                    return new Dictionary<string, string>();
                 }
                 catch (Exception exc)
                 {
-                    log.LogError(exc, $"{nameof(ProviderRegisterActivity)} failed: {exc.Message}");
+                    log.LogError(exc, $"{nameof(ProviderProjectUpdateCommand)} failed: {exc.Message}");
 
                     throw exc.AsSerializable();
                 }
