@@ -26,8 +26,8 @@
     <PackageReference Include="TeamCloud.Orchestration" Version="0.1.445-pre" />
     <PackageReference Include="TeamCloud.Orchestration.Auditing" Version="0.1.445-pre" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Shared\TeamCloud.Providers.Core\TeamCloud.Providers.Core.csproj" />
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <ProjectReference Include="..\..\Shared\TeamCloud.Providers.Core\TeamCloud.Providers.Core.csproj"  />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">

@@ -44,14 +44,13 @@ jobs:
 
       - name: Create Directory.Build.targets
         run: |
-          tee ./Directory.Build.targets << END
+          sleep 30 && tee ./Directory.Build.targets << END
             <Project>
               <ItemGroup>
                 <PackageReference Include="TeamCloud.Providers.Core" Version="${{ steps.gitversion.outputs.majorMinorPatch }}-pre" />
               </ItemGroup>
             </Project>
           END
-          sleep 30
 
       - name: Create Release Asset - NuGet
         run: zip -r -j NuGet.zip src -i '*.nupkg'
@@ -59,12 +58,12 @@ jobs:
       # - name: Build & Package Core for Release
       #  run: dotnet build Shared/TeamCloud.Providers.Core/TeamCloud.Providers.Core.csproj -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true
 
-      # - name: Build Azure for Release
-      #  run: dotnet build Azure/TeamCloud.Providers.Azure.sln -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true
+      - name: Build Azure for Release
+        run: dotnet build Azure/TeamCloud.Providers.Azure.sln -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true
 
       - name: Create Release Asset - TeamCloud.Providers.Azure.AppInsights
         run: |          
-          dotnet publish Azure/TeamCloud.Providers.Azure.AppInsights/TeamCloud.Providers.Azure.AppInsights.csproj -o TeamCloud.Providers.Azure.AppInsights -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true
+          dotnet publish Azure/TeamCloud.Providers.Azure.AppInsights/TeamCloud.Providers.Azure.AppInsights.csproj -o TeamCloud.Providers.Azure.AppInsights -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true --no-build
 
           pushd TeamCloud.Providers.Azure.AppInsights
             zip -r ../TeamCloud.Providers.Azure.AppInsights.zip *
