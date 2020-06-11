@@ -42,16 +42,16 @@ jobs:
       - name: Publish Core Pre-release NuGet Packages
         run: dotnet nuget push 'Prerelease/*.nupkg' --api-key '${{ secrets.MYGET_DEV_TOKEN }}' --source 'https://www.myget.org/F/teamcloud-dev/api/v2/package' --symbol-api-key '${{ secrets.MYGET_DEV_TOKEN }}' --symbol-source 'https://www.myget.org/F/teamcloud-dev/symbols/api/v2/package' --skip-duplicate
 
-      - name: Create Directory.Build.targets
-        run: |
-          sleep 30 && tee ./Directory.Build.targets << END
-            <Project>
-              <ItemGroup>
-                $(grep -Po '<PackageReference\s+Include="TeamCloud\..*\/>' Shared/TeamCloud.Providers.Core/TeamCloud.Providers.Core.csproj)
-                <PackageReference Include="TeamCloud.Providers.Core" Version="${{ steps.gitversion.outputs.majorMinorPatch }}-pre" />
-              </ItemGroup>
-            </Project>
-          END
+      # - name: Create Directory.Build.targets
+      #   run: |
+      #     sleep 30 && tee ./Directory.Build.targets << END
+      #       <Project>
+      #         <ItemGroup>
+      #           $(grep -Po '<PackageReference\s+Include="TeamCloud\..*\/>' Shared/TeamCloud.Providers.Core/TeamCloud.Providers.Core.csproj)
+      #           <PackageReference Include="TeamCloud.Providers.Core" Version="${{ steps.gitversion.outputs.majorMinorPatch }}-pre" />
+      #         </ItemGroup>
+      #       </Project>
+      #     END
 
       - name: Create Release Asset - NuGet
         run: zip -r -j NuGet.zip src -i '*.nupkg'

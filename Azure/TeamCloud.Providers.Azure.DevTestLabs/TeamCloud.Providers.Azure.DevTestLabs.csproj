@@ -40,7 +40,7 @@
     <PackageReference Include="TeamCloud.Azure.Deployment" Version="0.1.447-pre" />
     <PackageReference Include="TeamCloud.Orchestration.Deployment" Version="0.1.447-pre" />
   </ItemGroup>
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+  <ItemGroup>
     <ProjectReference Include="..\..\Shared\TeamCloud.Providers.Core\TeamCloud.Providers.Core.csproj"  />
   </ItemGroup>
   <ItemGroup>
