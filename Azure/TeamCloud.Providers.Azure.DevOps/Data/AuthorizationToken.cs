@@ -10,11 +10,6 @@ using Newtonsoft.Json;
 
 namespace TeamCloud.Providers.Azure.DevOps.Data
 {
-    public interface IAuthorizationSetup
-    {
-        Task SetupAuthorizationAsync(AuthorizationToken authorizationToken);
-    }
-
     public sealed class AuthorizationToken
     {
         private static string FormatOrganizationUrl(string organization)
