@@ -47,11 +47,7 @@ jobs:
           sleep 30 && tee ./Directory.Build.targets << END
             <Project>
               <ItemGroup>
-                <PackageReference Include="TeamCloud.Http" Version="0.1.447-pre" />
-                <PackageReference Include="TeamCloud.Model" Version="0.1.447-pre" />
-                <PackageReference Include="TeamCloud.Model.Validation" Version="0.1.447-pre" />
-                <PackageReference Include="TeamCloud.Orchestration" Version="0.1.447-pre" />
-                <PackageReference Include="TeamCloud.Orchestration.Auditing" Version="0.1.447-pre" />
+                $(grep -Po '<PackageReference\s+Include="TeamCloud\..*\/>' Shared/TeamCloud.Providers.Core/TeamCloud.Providers.Core.csproj)
                 <PackageReference Include="TeamCloud.Providers.Core" Version="${{ steps.gitversion.outputs.majorMinorPatch }}-pre" />
               </ItemGroup>
             </Project>
