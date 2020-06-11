@@ -12,7 +12,6 @@
     },
     "variables": {
         "functionAppNameLower": "[toLower(parameters('functionAppName'))]",
-        "keyVaultName": "[concat('keyvault', uniqueString(resourceGroup().id))]",
         "webjobsStorageAccountName": "[concat('wjstorage', uniqueString(resourceGroup().id))]",
         "taskhubStorageAccountName": "[concat('thstorage', uniqueString(resourceGroup().id))]",
         "functionAppRoleAssignmentId": "[guid(concat(resourceGroup().id, variables('functionAppNameLower'), 'contributor'))]",
@@ -78,7 +77,6 @@
                     "properties": {
                         "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('webjobsStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('webjobsStorageAccountName')), '2017-06-01').keys[0].value)]",
                         "DurableFunctionsHubStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('taskhubStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('taskhubStorageAccountName')), '2017-06-01').keys[0].value)]",
-                        "KeyVaultName": "[variables('keyVaultName')]",
                         "FUNCTION_APP_EDIT_MODE": "readonly",
                         "FUNCTIONS_EXTENSION_VERSION": "~3",
                         "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('webjobsStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('webjobsStorageAccountName')), '2017-06-01').keys[0].value)]",
@@ -134,67 +132,6 @@
             "properties": {
                 "name": "[variables('taskhubStorageAccountName')]"
             }
-        },
-        {
-            "type": "Microsoft.KeyVault/vaults",
-            "name": "[variables('keyVaultName')]",
-            "apiVersion": "2016-10-01",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "sku": {
-                    "family": "A",
-                    "name": "Standard"
-                },
-                "tenantId": "[reference(concat('Microsoft.Web/sites/', variables('functionAppNameLower')), '2018-02-01', 'Full').identity.tenantId]",
-                "accessPolicies": [
-                    {
-                        "tenantId": "[reference(concat('Microsoft.Web/sites/', variables('functionAppNameLower')), '2018-02-01', 'Full').identity.tenantId]",
-                        "objectId": "[reference(concat('Microsoft.Web/sites/', variables('functionAppNameLower')), '2018-02-01', 'Full').identity.principalId]",
-                        "permissions": {
-                            "keys": [
-                                "Get",
-                                "List",
-                                "Update",
-                                "Create",
-                                "Import",
-                                "Delete",
-                                "Recover",
-                                "Backup",
-                                "Restore"
-                            ],
-                            "secrets": [
-                                "Get",
-                                "List",
-                                "Set",
-                                "Delete",
-                                "Recover",
-                                "Backup",
-                                "Restore"
-                            ],
-                            "certificates": [
-                                "Get",
-                                "List",
-                                "Update",
-                                "Create",
-                                "Import",
-                                "Delete",
-                                "Recover",
-                                "ManageContacts",
-                                "ManageIssuers",
-                                "GetIssuers",
-                                "ListIssuers",
-                                "SetIssuers",
-                                "DeleteIssuers"
-                            ]
-                        }
-                    }
-                ],
-                "enabledForDeployment": false
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', variables('functionAppNameLower'))]",
-                "[resourceId('Microsoft.Web/serverfarms', variables('functionAppNameLower'))]"
-            ]
         }
     ],
     "outputs": {
