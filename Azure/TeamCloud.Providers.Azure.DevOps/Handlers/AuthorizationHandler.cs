@@ -301,7 +301,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Handlers
             if (string.IsNullOrEmpty(error))
             {
                 authorizationUrl = authorizationUrl
-                    .SetQueryParam("succeded", null, Flurl.NullValueHandling.NameOnly);
+                    .SetQueryParam("succeeded", null, Flurl.NullValueHandling.NameOnly);
             }
             else
             {
