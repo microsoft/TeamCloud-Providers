@@ -36,12 +36,8 @@
     <PackageReference Include="System.Linq.Async" Version="4.1.1" />
     <PackageReference Include="TeamCloud.Azure.Resources" Version="0.1.447-pre" />
     <PackageReference Include="TeamCloud.Configuration" Version="0.1.447-pre" />
-    <PackageReference Include="TeamCloud.Http" Version="0.1.447-pre" />
     <PackageReference Include="TeamCloud.Azure" Version="0.1.447-pre" />
     <PackageReference Include="TeamCloud.Azure.Deployment" Version="0.1.447-pre" />
-    <PackageReference Include="TeamCloud.Model.Validation" Version="0.1.447-pre" />
-    <PackageReference Include="TeamCloud.Orchestration" Version="0.1.447-pre" />
-    <PackageReference Include="TeamCloud.Orchestration.Auditing" Version="0.1.447-pre" />
     <PackageReference Include="TeamCloud.Orchestration.Deployment" Version="0.1.447-pre" />
   </ItemGroup>
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
