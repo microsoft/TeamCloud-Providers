@@ -51,6 +51,7 @@ jobs:
               </ItemGroup>
             </Project>
           END
+          sleep 30
 
       - name: Create Release Asset - NuGet
         run: zip -r -j NuGet.zip src -i '*.nupkg'
