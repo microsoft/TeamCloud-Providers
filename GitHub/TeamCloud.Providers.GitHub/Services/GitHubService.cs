@@ -181,8 +181,11 @@ namespace TeamCloud.Providers.GitHub.Services
                 .ConfigureAwait(false);
 
             var members = project.Users
-                .Where(u => u.IsMember(project.Id) && u.ProjectProperties(project.Id).ContainsKey(AvailableUserProperties.GitHubLogin))
-                .Select(u => (login: u.ProjectProperties(project.Id)[AvailableUserProperties.GitHubLogin], role: u.IsOwner(project.Id) ? TeamRole.Maintainer : TeamRole.Member));
+                .Where(u => u.IsMember(project.Id) && u.ProjectProperties(project.Id).ContainsKeyInsensitive(AvailableUserProperties.GitHubLogin))
+                .Select(u => (
+                    login: u.ProjectProperties(project.Id).GetValueInsensitive(AvailableUserProperties.GitHubLogin),
+                    role: u.IsOwner(project.Id) ? TeamRole.Maintainer : TeamRole.Member)
+                );
 
             if (members.Any())
             {
@@ -201,7 +204,6 @@ namespace TeamCloud.Providers.GitHub.Services
 
             return team;
         }
-
 
         public async Task DeleteTeam(Model.Data.Project project, int id = default)
         {
@@ -242,22 +244,14 @@ namespace TeamCloud.Providers.GitHub.Services
             var client = await GetAppClient().ConfigureAwait(false);
             var app = await GetAppManifest().ConfigureAwait(false);
 
-
-            // set some defaults
-            var licenseTemplate = "mit";
-            var gitignoreTemplate = "VisualStudio";
-
             var gitHubProvider = project?.Type?.Providers?.FirstOrDefault(p => p.Id == "github");
-
-            gitHubProvider?.Properties.TryGetValue(AvailableProperties.LicenseTemplate, out licenseTemplate);
-            gitHubProvider?.Properties.TryGetValue(AvailableProperties.GitignoreTemplate, out gitignoreTemplate);
 
             var newRepository = new NewRepository(project.Name)
             {
                 AutoInit = true,
                 Description = $"Repository for TeamCloud project {project.Name}",
-                LicenseTemplate = licenseTemplate,
-                GitignoreTemplate = gitignoreTemplate
+                LicenseTemplate = gitHubProvider?.Properties.GetValueInsensitive(AvailableProperties.LicenseTemplate),
+                GitignoreTemplate = gitHubProvider?.Properties.GetValueInsensitive(AvailableProperties.GitignoreTemplate)
             };
 
             var repository = await client
@@ -472,8 +466,11 @@ namespace TeamCloud.Providers.GitHub.Services
                 .ConfigureAwait(false);
 
             var members = project.Users
-                .Where(u => u.IsAdmin() && u.ProjectProperties(project.Id).ContainsKey(AvailableUserProperties.GitHubLogin))
-                .Select(u => (login: u.ProjectProperties(project.Id)[AvailableUserProperties.GitHubLogin], role: TeamRole.Member));
+                .Where(u => u.IsAdmin() && u.ProjectProperties(project.Id).ContainsKeyInsensitive(AvailableUserProperties.GitHubLogin))
+                .Select(u => (
+                    login: u.ProjectProperties(project.Id).GetValueInsensitive(AvailableUserProperties.GitHubLogin),
+                    role: TeamRole.Member)
+                );
 
             if (members.Any())
             {
