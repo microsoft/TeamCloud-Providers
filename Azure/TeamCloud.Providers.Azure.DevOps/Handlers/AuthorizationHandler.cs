@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.Services.WebApi;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using TeamCloud.Http;
@@ -34,7 +35,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Handlers
         private const string VisualStudioAuthUrl = "https://app.vssps.visualstudio.com/oauth2/authorize";
         private const string VisualStudioTokenUrl = "https://app.vssps.visualstudio.com/oauth2/token";
 
-        private readonly IAuthenticationService authorizationService;
+        private readonly IAuthenticationService authenticationService;
 
         private static async Task<AuthorizationSession> GetAuthorizationSessionAsync(CloudTable sessionTable, Guid sessionId)
         {
@@ -126,9 +127,9 @@ namespace TeamCloud.Providers.Azure.DevOps.Handlers
             return token;
         }
 
-        public AuthorizationHandler(IAuthenticationService authorizationService)
+        public AuthorizationHandler(IAuthenticationService authenticationService)
         {
-            this.authorizationService = authorizationService ?? throw new ArgumentNullException(nameof(authorizationService));
+            this.authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
         }
 
         [FunctionName(nameof(AuthorizationHandler))]
@@ -164,9 +165,14 @@ namespace TeamCloud.Providers.Azure.DevOps.Handlers
                 Content = ReplaceTokens(streamReader.ReadToEnd())
             });
 
+
             string ReplaceTokens(string content) => Regex.Replace(content, "{@(\\w+)}", (match) => match.Groups[1].Value switch
             {
                 "Error" => requestMessage.RequestUri.ParseQueryString().GetValues("error")?.FirstOrDefault(),
+                "ApplicationWebsite" => FunctionsEnvironment.GetHostUrlAsync().SyncResult(),
+                "ApplicationCallback" => FunctionsEnvironment.GetFunctionUrlAsync(nameof(AuthorizationHandler) + nameof(Callback)).SyncResult(),
+                "Organization" => authenticationService.GetConnectionUrlAsync().SyncResult() ?? string.Empty,
+                "ClientId" => string.Empty,
                 _ => match.Value
             });
         }
@@ -264,10 +270,10 @@ namespace TeamCloud.Providers.Azure.DevOps.Handlers
 
                                 JsonConvert.PopulateObject(json, token);
 
-                                if (authorizationService is IAuthorizationSetup authorizationSetup)
+                                if (authenticationService is IAuthenticationSetup authenticationSetup)
                                 {
-                                    await authorizationSetup
-                                        .SetupAuthorizationAsync(token)
+                                    await authenticationSetup
+                                        .SetupAsync(token)
                                         .ConfigureAwait(false);
                                 }
                             }

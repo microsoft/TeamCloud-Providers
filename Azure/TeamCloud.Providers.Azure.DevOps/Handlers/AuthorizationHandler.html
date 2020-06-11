@@ -9,8 +9,8 @@
         html, body { 
             height: 100% 
         }
-        form {
-            margin: 5% 10%;
+        h2 {
+            margin-top: 2rem;
         }
         #content {
             height: 100%;
@@ -19,6 +19,10 @@
             border-left: 1px solid lightgray;
             border-right: 1px solid lightgray;
         }
+        .table-borderless td,
+        .table-borderless th {
+            border: 0;
+        }
     </style>
 </head>
 <body>
@@ -26,25 +30,40 @@
     <div class="container-fluid h-100">
         <div class="row justify-content-center h-100">
             <div class="col-3"></div>
-            <div class="col-6" id="content">
-                <h1>TeamCloud Azure DevOps Provider</h1>
-                <p>Click <a target="_blank" href="https://app.vsaex.visualstudio.com/app/register">here</a> to register a new Azure DevOps application.</p>
+            <div class="col-6 jumbotron" id="content">
+                <h1 class="display-4">TeamCloud Azure DevOps Provider</h1>
+                <p class="lead">...</p>
+                <hr class="my-4">
+                <h2>Register provider</h2>
+                <p>Click <a target="_blank" href="https://app.vsaex.visualstudio.com/app/register">here</a> to register a new Azure DevOps application. Please fill out the form with the following 2 <b>required</b> values set and <b>all</b> scopes selected:</p>
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td>Application website</td>
+                            <td>{@ApplicationWebsite}</td>
+                        </tr>
+                        <tr>
+                            <td>Authorization callback URL</td>
+                            <td>{@ApplicationCallback}</td>
+                        </tr>
+                    </tbody>
+                </table>
                 <h2>Authorize provider</h2>
-                <div id="error" class="alert alert-danger" style="display: none;">
-                    <strong>Error:</strong> {@Error}.
-                </div>
-                <div id="success" class="alert alert-success" style="display: none;">
-                    Successfully authorized TeamCloud Azure DevOps provider.
-                </div>
                 <form method="post" enctype="application/x-www-form-urlencoded">
+                    <div id="error" class="alert alert-danger" style="display: none;">
+                        <strong>Error:</strong> {@Error}.
+                    </div>
+                    <div id="success" class="alert alert-success" style="display: none;">
+                        Successfully authorized TeamCloud Azure DevOps provider.
+                    </div>
                     <div id="registrationForm">
                         <div class="form-group">
                             <label for="client_id">Organization</label>
-                            <input type="text" class="form-control" name="organization" id="organization" placeholder="Enter your Azure DevOps organization name" />
+                            <input type="text" class="form-control" name="organization" id="organization" placeholder="Enter your Azure DevOps organization name" value="{@Organization}" />
                         </div>
                         <div class="form-group">
                             <label for="client_id">Application/Client Id</label>
-                            <input type="text" class="form-control" name="client_id" id="client_id" placeholder="Enter your id" />
+                            <input type="text" class="form-control" name="client_id" id="client_id" placeholder="Enter your id" value="{@ClientId}" />
                         </div>
                         <div class="form-group">
                             <label for="client_secret">Appliation/Client Secret</label>

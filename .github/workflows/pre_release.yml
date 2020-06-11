@@ -42,25 +42,11 @@ jobs:
       - name: Publish Core Pre-release NuGet Packages
         run: dotnet nuget push 'Prerelease/*.nupkg' --api-key '${{ secrets.MYGET_DEV_TOKEN }}' --source 'https://www.myget.org/F/teamcloud-dev/api/v2/package' --symbol-api-key '${{ secrets.MYGET_DEV_TOKEN }}' --symbol-source 'https://www.myget.org/F/teamcloud-dev/symbols/api/v2/package' --skip-duplicate
 
-      # - name: Create Directory.Build.targets
-      #   run: |
-      #     sleep 30 && tee ./Directory.Build.targets << END
-      #       <Project>
-      #         <ItemGroup>
-      #           $(grep -Po '<PackageReference\s+Include="TeamCloud\..*\/>' Shared/TeamCloud.Providers.Core/TeamCloud.Providers.Core.csproj)
-      #           <PackageReference Include="TeamCloud.Providers.Core" Version="${{ steps.gitversion.outputs.majorMinorPatch }}-pre" />
-      #         </ItemGroup>
-      #       </Project>
-      #     END
+      - name: Build & Package Core for Release
+        run: dotnet build Shared/TeamCloud.Providers.Core/TeamCloud.Providers.Core.csproj -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true
 
       - name: Create Release Asset - NuGet
         run: zip -r -j NuGet.zip src -i '*.nupkg'
-
-      # - name: Build & Package Core for Release
-      #  run: dotnet build Shared/TeamCloud.Providers.Core/TeamCloud.Providers.Core.csproj -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true
-
-      # - name: Build Azure for Release
-      #   run: dotnet build Azure/TeamCloud.Providers.Azure.sln -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true
 
       - name: Create Release Asset - TeamCloud.Providers.Azure.AppInsights
         run: |          
@@ -143,15 +129,15 @@ jobs:
           body: 'Pre-release build.'
           prerelease: true
 
-      # - name: Upload Release Assets - NuGet
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: NuGet.zip
-      #     asset_name: NuGet.zip
-      #     asset_content_type: application/zip
+      - name: Upload Release Assets - NuGet
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: NuGet.zip
+          asset_name: NuGet.zip
+          asset_content_type: application/zip
 
       - name: Upload Release Asset - TeamCloud.Providers.Azure.AppInsights.zip
         uses: actions/upload-release-asset@v1

@@ -22,7 +22,12 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
         Task<VssConnection> GetConnectionAsync();
     }
 
-    internal class AuthenticationService : IAuthenticationService, IAuthorizationSetup
+    public interface IAuthenticationSetup
+    {
+        Task SetupAsync(AuthorizationToken authorizationToken);
+    }
+
+    internal class AuthenticationService : IAuthenticationService, IAuthenticationSetup
     {
         private readonly ISecretsService secretsService;
 
@@ -48,8 +53,8 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
                     .RefreshAsync(token)
                     .ConfigureAwait(false);
 
-                await ((IAuthorizationSetup)this)
-                    .SetupAuthorizationAsync(token)
+                await ((IAuthenticationSetup)this)
+                    .SetupAsync(token)
                     .ConfigureAwait(false);
             }
 
@@ -86,8 +91,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
             return token?.Organization;
         }
 
-
-        async Task IAuthorizationSetup.SetupAuthorizationAsync(AuthorizationToken authorizationToken)
+        async Task IAuthenticationSetup.SetupAsync(AuthorizationToken authorizationToken)
         {
             var secret = authorizationToken is null ? null : JsonConvert.SerializeObject(authorizationToken);
 
@@ -95,6 +99,5 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
                 .SetSecretAsync(nameof(AuthenticationService), secret)
                 .ConfigureAwait(false);
         }
-
     }
 }
