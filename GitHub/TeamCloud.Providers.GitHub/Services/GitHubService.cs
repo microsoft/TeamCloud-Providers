@@ -41,6 +41,13 @@ namespace TeamCloud.Providers.GitHub.Services
             this.secretsService = secretsService ?? throw new ArgumentNullException(nameof(secretsService));
         }
 
+        public async Task<bool> IsConfigured()
+        {
+            var app = await GetAppManifest()
+                .ConfigureAwait(false);
+
+            return app != default;
+        }
 
         private async Task<GitHubClient> GetAppClient()
         {
@@ -105,7 +112,6 @@ namespace TeamCloud.Providers.GitHub.Services
             return _app;
         }
 
-
         public async Task<GitHubAppManifest> GetAppManifest()
         {
             if (_app is null)
@@ -144,7 +150,6 @@ namespace TeamCloud.Providers.GitHub.Services
                 .ConfigureAwait(false);
         }
 
-
         public async Task<(Team, Repository, Octokit.Project)> CreateTeamCloudProject(Model.Data.Project project)
         {
             var team = await CreateTeam(project)
@@ -159,7 +164,6 @@ namespace TeamCloud.Providers.GitHub.Services
             return (team, repo, proj);
         }
 
-
         public async Task DeleteTeamCloudProject(Model.Data.Project project)
         {
             await DeleteTeam(project)
@@ -171,7 +175,6 @@ namespace TeamCloud.Providers.GitHub.Services
             await DeleteProject(project)
                 .ConfigureAwait(false);
         }
-
 
         public async Task<Team> CreateTeam(Model.Data.Project project)
         {
@@ -234,10 +237,8 @@ namespace TeamCloud.Providers.GitHub.Services
             }
         }
 
-
         public Task<Team> GetTeam(Model.Data.Project project, int id = default)
             => GetTeamInternal(project.Name, id);
-
 
         public async Task<Repository> CreateRepository(Model.Data.Project project, Team team)
         {
@@ -277,7 +278,6 @@ namespace TeamCloud.Providers.GitHub.Services
             return repository;
         }
 
-
         public async Task DeleteRepository(Model.Data.Project project)
         {
             var client = await GetAppClient().ConfigureAwait(false);
@@ -295,7 +295,6 @@ namespace TeamCloud.Providers.GitHub.Services
                 return; // already deleted, swallow execption
             }
         }
-
 
         public async Task<Octokit.Project> CreateProject(Model.Data.Project project, Team team)
         {
@@ -333,7 +332,6 @@ namespace TeamCloud.Providers.GitHub.Services
             return githubProject;
         }
 
-
         public async Task<bool> DeleteProject(Model.Data.Project project, int id = default)
         {
             var client = await GetAppClient().ConfigureAwait(false);
@@ -363,7 +361,6 @@ namespace TeamCloud.Providers.GitHub.Services
             }
         }
 
-
         private async Task<Team> CreateTeamInternal(string name, Permission permission)
         {
             var client = await GetAppClient().ConfigureAwait(false);
@@ -384,7 +381,6 @@ namespace TeamCloud.Providers.GitHub.Services
                 })
                 .ConfigureAwait(false);
         }
-
 
         private async Task<Team> GetTeamInternal(string name, int id = default)
         {
@@ -416,7 +412,6 @@ namespace TeamCloud.Providers.GitHub.Services
             }
         }
 
-
         private async Task<Team> EnsureRootTeam()
         {
             if (RootTeam is null)
@@ -443,7 +438,6 @@ namespace TeamCloud.Providers.GitHub.Services
             return RootTeam;
         }
 
-
         private async Task<Team> EnsureAdminTeam()
         {
             if (AdminTeam is null)
@@ -456,7 +450,6 @@ namespace TeamCloud.Providers.GitHub.Services
 
             return AdminTeam;
         }
-
 
         private async Task<Team> EnsureAdminUsers(Model.Data.Project project)
         {

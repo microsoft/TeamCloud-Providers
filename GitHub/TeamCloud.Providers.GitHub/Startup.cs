@@ -52,6 +52,7 @@ namespace TeamCloud.Providers.GitHub
                         .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration), (command) => TimeSpan.FromMinutes(5))
                         .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
                         .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
+                        .MapCommand<ProviderProjectDeleteCommand>(nameof(ProjectDeleteOrchestration))
                         .IgnoreCommand<IProviderCommand>();
                 });
 

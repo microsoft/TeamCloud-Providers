@@ -37,7 +37,7 @@ namespace TeamCloud.Providers.GitHub.Orchestrations
             {
                 try
                 {
-                    functionContext.SetCustomStatus("Creating resources", commandLog);
+                    functionContext.SetCustomStatus("Deleting resources", commandLog);
 
                     await functionContext
                         .CallActivityWithRetryAsync(nameof(ProjectDeleteActivity), command.Payload)
