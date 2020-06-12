@@ -59,6 +59,8 @@ namespace TeamCloud.Providers.GitHub
 
             if (hostingEnvironment.IsDevelopment())
             {
+                throw new Exception("WTF App Service!!");
+
                 builder.Services
                     .AddSingleton<ISecretsService, StorageSecretsService>();
             }
