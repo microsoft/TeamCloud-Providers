@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TeamFoundation.Core.WebApi;
 using TeamCloud.Model;
 using TeamCloud.Model.Data;
+using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.DevOps.Services;
 using TeamCloud.Serialization;
 
@@ -25,7 +26,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
             this.authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
         }
 
-        [FunctionName(nameof(ProjectDeleteActivity))]
+        [FunctionName(nameof(ProjectDeleteActivity)), RetryOptions(5)]
         public async Task<string> RunActivityAsync(
             [ActivityTrigger] Project project,
             ILogger log)
@@ -49,18 +50,38 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
                         .GetProject(project.Name)
                         .ConfigureAwait(false);
 
-                    if (projectInstance is null)
+                    if (projectInstance.State == ProjectState.WellFormed)
+                    {
+                        var projectOperation = await projectClient
+                            .QueueDeleteProject(projectInstance.Id)
+                            .ConfigureAwait(false);
+
+                        return projectOperation.Id.ToString();
+                    }
+                    else if (projectInstance.State == ProjectState.Deleted)
+                    {
                         return null;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Project {project.Name} is in state {projectInstance.State} and can't be deleted.");
+                    }
+                }
+                catch (ProjectDoesNotExistException)
+                {
+                    log.LogWarning($"Could not find project by name or id '{project.Name}'");
 
-                    var projectOperation = await projectClient
-                        .QueueDeleteProject(projectInstance.Id)
-                        .ConfigureAwait(false);
+                    return null;
+                }
+                catch (ProjectDoesNotExistWithNameException)
+                {
+                    log.LogWarning($"Could not find project by name or id '{project.Name}'");
 
-                    return projectOperation.Id.ToString();
+                    return null;
                 }
                 catch (Exception exc)
                 {
-                    log.LogError(exc, $"{nameof(ProjectCreateActivity)} failed: {exc.Message}");
+                    log.LogError(exc, $"{nameof(ProjectDeleteActivity)} failed: {exc.Message}");
 
                     throw exc.AsSerializable();
                 }

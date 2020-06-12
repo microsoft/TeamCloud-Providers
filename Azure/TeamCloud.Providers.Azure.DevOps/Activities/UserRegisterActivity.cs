@@ -32,6 +32,9 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
             [ActivityTrigger] User user,
             ILogger log)
         {
+            if (user is null)
+                throw new ArgumentNullException(nameof(user));
+
             try
             {
                 var connection = await authenticationService
@@ -56,13 +59,13 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
 
                 if (string.IsNullOrEmpty(descriptor))
                 {
-                    var graphUser = await graphClient.CreateUserAsync(new GraphUserOriginIdCreationContext()
-                    {
-                        OriginId = user.Id
+                    //var graphUser = await graphClient.CreateUserAsync(new GraphUserOriginIdCreationContext()
+                    //{
+                    //    OriginId = user.Id
 
-                    }).ConfigureAwait(false);
+                    //}).ConfigureAwait(false);
 
-                    descriptor = graphUser.Descriptor;
+                    //descriptor = graphUser.Descriptor;
                 }
             }
             catch (Exception exc)
