@@ -90,10 +90,6 @@
                         {
                             "name": "WEBSITE_NODE_DEFAULT_VERSION",
                             "value": "~12"
-                        },
-                        {
-                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                            "value": "[reference(resourceId('Microsoft.Insights/components', variables('functionAppNameLower')), '2015-05-01').InstrumentationKey]"
                         }
                     ]
                 }
@@ -102,23 +98,6 @@
                 "[resourceId('Microsoft.Web/serverfarms', variables('functionAppNameLower'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('webjobsStorageAccountName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('taskhubStorageAccountName'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Insights/components",
-            "kind": "web",
-            "name": "[variables('functionAppNameLower')]",
-            "apiVersion": "2014-04-01",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "ApplicationId": "[variables('functionAppNameLower')]"
-            },
-            "tags": {
-                "[concat('hidden-link:', resourceId('Microsoft.Web/sites', variables('functionAppNameLower')))]": "Resource"
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', variables('functionAppNameLower'))]",
-                "[resourceId('Microsoft.Web/serverfarms', variables('functionAppNameLower'))]"
             ]
         },
         {
