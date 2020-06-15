@@ -107,6 +107,19 @@
     },
     {
       "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('webjobsStorageAccountName')]",
+      "apiVersion": "2019-04-01",
+      "kind": "StorageV2",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Standard_RAGRS"
+      },
+      "properties": {
+        "name": "[variables('webjobsStorageAccountName')]"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
       "name": "[variables('taskhubStorageAccountName')]",
       "apiVersion": "2019-04-01",
       "kind": "StorageV2",
