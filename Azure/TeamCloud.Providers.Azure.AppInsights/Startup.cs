@@ -26,9 +26,9 @@ using TeamCloud.Orchestration.Deployment;
 using TeamCloud.Providers.Azure.AppInsights;
 using TeamCloud.Providers.Azure.AppInsights.Orchestrations;
 using TeamCloud.Providers.Core;
+using TeamCloud.Providers.Core.Configuration;
 
 [assembly: FunctionsStartup(typeof(Startup))]
-
 [assembly: FunctionsImport(typeof(TeamCloudProvidersCoreStartup))]
 [assembly: FunctionsImport(typeof(TeamCloudOrchestrationStartup))]
 [assembly: FunctionsImport(typeof(TeamCloudOrchestrationAuditingStartup))]

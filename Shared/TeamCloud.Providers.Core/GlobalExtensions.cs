@@ -36,7 +36,7 @@ namespace TeamCloud.Providers.Core
             return commandResult;
         }
 
-        public static IServiceCollection AddTeamCloudCommandOrchestration(this IServiceCollection services, Action<OrchestrationConfiguration> config)
+        public static IServiceCollection AddTeamCloudCommandOrchestration(this IServiceCollection services, Action<IOrchestrationConfiguration> config)
         {
             if (services is null)
                 throw new ArgumentNullException(nameof(services));

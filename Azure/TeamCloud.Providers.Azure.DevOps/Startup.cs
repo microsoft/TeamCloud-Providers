@@ -17,6 +17,7 @@ using TeamCloud.Providers.Azure.DevOps;
 using TeamCloud.Providers.Azure.DevOps.Orchestrations;
 using TeamCloud.Providers.Azure.DevOps.Services;
 using TeamCloud.Providers.Core;
+using TeamCloud.Providers.Core.Configuration;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 [assembly: FunctionsImport(typeof(TeamCloudProvidersCoreStartup))]

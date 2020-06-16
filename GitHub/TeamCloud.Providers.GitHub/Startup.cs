@@ -14,6 +14,7 @@ using TeamCloud.Model.Commands;
 using TeamCloud.Orchestration;
 using TeamCloud.Orchestration.Auditing;
 using TeamCloud.Providers.Core;
+using TeamCloud.Providers.Core.Configuration;
 using TeamCloud.Providers.GitHub;
 using TeamCloud.Providers.GitHub.Orchestrations;
 using TeamCloud.Providers.GitHub.Services;

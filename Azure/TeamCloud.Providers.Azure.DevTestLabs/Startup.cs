@@ -26,6 +26,7 @@ using TeamCloud.Orchestration.Deployment;
 using TeamCloud.Providers.Azure.DevTestLabs;
 using TeamCloud.Providers.Azure.DevTestLabs.Orchestrations;
 using TeamCloud.Providers.Core;
+using TeamCloud.Providers.Core.Configuration;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 [assembly: FunctionsImport(typeof(TeamCloudProvidersCoreStartup))]
