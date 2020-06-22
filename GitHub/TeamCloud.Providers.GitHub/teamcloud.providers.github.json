@@ -213,14 +213,6 @@
         "setupUrl": {
             "type": "string",
             "value": "[concat('https://', variables('functionAppNameLower'), '.azurewebsites.net', '/api/start')]"
-        },
-        "localSettings": {
-            "type": "object",
-            "value": {
-                "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('webjobsStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('webjobsStorageAccountName')), '2017-06-01').keys[0].value)]",
-                "DurableFunctionsHubStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('taskhubStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('taskhubStorageAccountName')), '2017-06-01').keys[0].value)]",
-                "KeyVaultName": "[variables('keyVaultName')]"
-            }
         }
     }
 }
