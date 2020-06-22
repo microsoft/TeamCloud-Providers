@@ -10,6 +10,7 @@ using Flurl.Http;
 using Octokit;
 using Octokit.Internal;
 using TeamCloud.Model.Data;
+using TeamCloud.Model.Data.Core;
 using TeamCloud.Providers.GitHub.Data;
 
 namespace TeamCloud.Providers.GitHub.Services

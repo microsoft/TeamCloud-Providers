@@ -12,6 +12,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using TeamCloud.Model.Data;
+using TeamCloud.Model.Data.Core;
 using TeamCloud.Providers.GitHub.Services;
 
 namespace TeamCloud.Providers.GitHub
