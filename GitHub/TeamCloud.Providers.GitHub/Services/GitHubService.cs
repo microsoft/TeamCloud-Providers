@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Flurl.Http;
 using Octokit;
 using Octokit.Internal;
-using TeamCloud.Model.Data;
+using TeamCloud.Model.Data.Core;
 using TeamCloud.Providers.GitHub.Data;
 
 namespace TeamCloud.Providers.GitHub.Services
@@ -296,7 +296,7 @@ namespace TeamCloud.Providers.GitHub.Services
             }
         }
 
-        public async Task<Octokit.Project> CreateProject(Model.Data.Project project, Team team)
+        public async Task<Project> CreateProject(Model.Data.Project project, Team team)
         {
             var client = await GetAppClient().ConfigureAwait(false);
             var app = await GetAppManifest().ConfigureAwait(false);
@@ -480,7 +480,7 @@ namespace TeamCloud.Providers.GitHub.Services
             return adminTeam;
         }
 
-        private async Task<Octokit.Project> GetProjectInternal(string name, int id = default)
+        private async Task<Project> GetProjectInternal(string name, int id = default)
         {
             var client = await GetAppClient().ConfigureAwait(false);
             var app = await GetAppManifest().ConfigureAwait(false);

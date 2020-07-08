@@ -10,8 +10,7 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using TeamCloud.Model;
 using TeamCloud.Model.Commands;
-using TeamCloud.Model.Data;
-using TeamCloud.Providers.Azure.DevOps.Services;
+using TeamCloud.Model.Data.Core;
 using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Azure.DevOps.Activities
