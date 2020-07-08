@@ -9,6 +9,7 @@ using NSubstitute;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
+using TeamCloud.Model.Data.Core;
 using TeamCloud.Providers.Core.Configuration;
 using Xunit;
 
@@ -154,7 +155,7 @@ namespace TeamCloud.Providers.Core.Activities
 
             configuration.Orchestrations.Returns(new Dictionary<Type, IOrchestrationSettings>()
             {
-                { typeof(ICommand<TestPayload, TestCommandResult>), settings }
+                { typeof(IProviderCommand<TestPayload, TestCommandResult>), settings }
             });
 
             var dispatcher = new ProviderCommandDispatchActivity(configuration);
@@ -171,7 +172,7 @@ namespace TeamCloud.Providers.Core.Activities
 
             configuration.Ignored.Returns(new List<Type>()
             {
-                typeof(ICommand<TestPayload, TestCommandResult>)
+                typeof(IProviderCommand<TestPayload, TestCommandResult>)
             });
 
             var dispatcher = new ProviderCommandDispatchActivity(configuration);

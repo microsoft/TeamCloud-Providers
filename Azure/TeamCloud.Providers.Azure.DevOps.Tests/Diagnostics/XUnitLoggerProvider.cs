@@ -1,4 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿/**
+ *  Copyright (c) Microsoft Corporation.
+ *  Licensed under the MIT License.
+ */
+
+using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
 namespace TeamCloud.Providers.Azure.DevOps.Diagnostics
@@ -15,13 +20,8 @@ namespace TeamCloud.Providers.Azure.DevOps.Diagnostics
         public ILogger CreateLogger(string categoryName)
             => new XUnitLogger(testOutputHelper, categoryName);
 
-#pragma warning disable CA1063 // Implement IDisposable Correctly
-
         void System.IDisposable.Dispose()
         { }
-
-#pragma warning restore CA1063 // Implement IDisposable Correctly
-
     }
 
 }

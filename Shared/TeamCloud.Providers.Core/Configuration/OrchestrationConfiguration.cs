@@ -5,9 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using TeamCloud.Model.Commands;
-using TeamCloud.Model.Commands.Core;
-using TeamCloud.Orchestration;
 
 namespace TeamCloud.Providers.Core.Configuration
 {
