@@ -5,6 +5,7 @@
 
 using System;
 using System.Threading.Tasks;
+using FluentValidation;
 using Microsoft.VisualStudio.Services.OAuth;
 using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
@@ -15,11 +16,13 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
 {
     public interface IAuthenticationService
     {
-        Task<string> GetConnectionTokenAsync();
+        Task<string> GetTokenAsync();
 
-        Task<string> GetConnectionUrlAsync();
+        Task<string> GetUrlAsync();
 
         Task<VssConnection> GetConnectionAsync();
+
+        Task<bool> IsAuthorizedAsync();
     }
 
     public interface IAuthenticationSetup
@@ -36,7 +39,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
             this.secretsService = secretsService ?? throw new ArgumentNullException(nameof(secretsService));
         }
 
-        private async Task<AuthorizationToken> GetTokenAsync()
+        private async Task<AuthorizationToken> GetAuthorizationTokenAsync()
         {
             var secret = await secretsService
                 .GetSecretAsync(nameof(AuthenticationService))
@@ -63,7 +66,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
 
         public async Task<VssConnection> GetConnectionAsync()
         {
-            var token = await GetTokenAsync()
+            var token = await GetAuthorizationTokenAsync()
                 .ConfigureAwait(false);
 
             if (token is null)
@@ -75,28 +78,55 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
             return new VssConnection(connectionUri, connectionCred);
         }
 
-        public async Task<string> GetConnectionTokenAsync()
+        public async Task<string> GetTokenAsync()
         {
-            var token = await GetTokenAsync()
+            var authorizationToken = await GetAuthorizationTokenAsync()
                 .ConfigureAwait(false);
 
-            return token?.AccessToken;
+            return authorizationToken?.AccessToken;
         }
 
-        public async Task<string> GetConnectionUrlAsync()
+        public async Task<string> GetUrlAsync()
         {
-            var token = await GetTokenAsync()
+            var authorizationToken = await GetAuthorizationTokenAsync()
                 .ConfigureAwait(false);
 
-            return token?.Organization;
+            return authorizationToken?.Organization;
+        }
+
+        public async Task<bool> IsAuthorizedAsync()
+        {
+            var authorizationToken = await GetAuthorizationTokenAsync()
+                .ConfigureAwait(false);
+
+            if (authorizationToken is null)
+                return false;
+
+            var result = await new AuthorizationValidator()
+                .ValidateAsync(authorizationToken)
+                .ConfigureAwait(false);
+
+            return result.IsValid;
         }
 
         async Task IAuthenticationSetup.SetupAsync(AuthorizationToken authorizationToken)
         {
-            var secret = authorizationToken is null ? null : JsonConvert.SerializeObject(authorizationToken);
+            if (authorizationToken != null)
+            {
+                var result = await new AuthorizationValidator()
+                    .ValidateAsync(authorizationToken)
+                    .ConfigureAwait(false);
+
+                if (!result.IsValid)
+                    throw new ValidationException(result.Errors);
+            }
+
+            var authorizationSecret = authorizationToken is null
+                ? null
+                : JsonConvert.SerializeObject(authorizationToken);
 
             _ = await secretsService
-                .SetSecretAsync(nameof(AuthenticationService), secret)
+                .SetSecretAsync(nameof(AuthenticationService), authorizationSecret)
                 .ConfigureAwait(false);
         }
     }

@@ -5,7 +5,6 @@
 
 using System;
 using System.IdentityModel.Tokens.Jwt;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace TeamCloud.Providers.Azure.DevOps.Data

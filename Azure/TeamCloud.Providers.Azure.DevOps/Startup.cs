@@ -35,6 +35,9 @@ namespace TeamCloud.Providers.Azure.DevOps
 
 #pragma warning disable CS0618 // Type or member is obsolete
 
+            // yeah, IHostingEnvironment is obsolete,
+            // but this is what we get from the functions runtime.
+
             var hostingEnvironment = builder.Services
                 .BuildServiceProvider()
                 .GetService<IHostingEnvironment>();
@@ -56,7 +59,6 @@ namespace TeamCloud.Providers.Azure.DevOps
                         .MapCommand<ProviderProjectDeleteCommand>(nameof(ProjectDeleteOrchestration))
                         .IgnoreCommand<IProviderCommand>();
                 });
-
 
             if (hostingEnvironment.IsDevelopment())
             {

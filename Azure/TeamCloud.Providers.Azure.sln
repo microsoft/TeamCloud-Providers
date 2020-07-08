@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TeamCloud.Providers.Core", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TeamCloud.Providers.Core.Tests", "..\Shared\TeamCloud.Providers.Core.Tests\TeamCloud.Providers.Core.Tests.csproj", "{23D34F99-E305-46F8-BAAE-71451464A64E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeamCloud.Providers.Azure.DevOps.Tests", "TeamCloud.Providers.Azure.DevOps.Tests\TeamCloud.Providers.Azure.DevOps.Tests.csproj", "{9E1045E7-4D56-4917-80AC-3FB37B827E6A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{23D34F99-E305-46F8-BAAE-71451464A64E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23D34F99-E305-46F8-BAAE-71451464A64E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{23D34F99-E305-46F8-BAAE-71451464A64E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E1045E7-4D56-4917-80AC-3FB37B827E6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E1045E7-4D56-4917-80AC-3FB37B827E6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E1045E7-4D56-4917-80AC-3FB37B827E6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E1045E7-4D56-4917-80AC-3FB37B827E6A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

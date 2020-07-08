@@ -102,9 +102,14 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
             var blob = await GetSecretsBlobAsync(key)
                 .ConfigureAwait(false);
 
-            return await blob
-                .DownloadTextAsync()
-                .ConfigureAwait(false);
+            if (await blob.ExistsAsync().ConfigureAwait(false))
+            {
+                return await blob
+                    .DownloadTextAsync()
+                    .ConfigureAwait(false);
+            }
+
+            return null;
         }
 
         public async Task<string> SetSecretAsync(string key, string value)

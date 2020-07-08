@@ -1,0 +1,63 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>TeamCloud.Providers.Azure.DevOps</RootNamespace>
+    <UserSecretsId>2fd23c94-d592-47b5-a687-681ec3ae6bbf</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Commands\ProviderProjectCreateCommandTests.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DotNetSeleniumExtras.WaitHelpers" Version="3.11.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.5" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.1.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.5" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
+    <PackageReference Include="Selenium.Support" Version="3.141.0" />
+    <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="83.0.4103.3900" />
+    <PackageReference Include="System.Management" Version="4.7.0" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="1.2.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NSubstitute" Version="4.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
+    <EmbeddedResource Include="Commands\ProviderProjectCreateCommandTests.json" />
+    <PackageReference Include="Flurl.Http" Version="2.4.2" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\TeamCloud.Providers.Azure.DevOps\TeamCloud.Providers.Azure.DevOps.csproj">
+      <FunctionApp>true</FunctionApp> 
+    </ProjectReference>
+  </ItemGroup>
+
+  <Target Name="CleanupTestFunctionHost">
+    <CombinePath BasePath="$(MSBuildProjectDirectory)" Paths="$(OutDir)FunctionHost">
+      <Output TaskParameter="CombinedPaths" PropertyName="FunctionHostDir" />
+    </CombinePath>
+    <RemoveDir Directories="$(FunctionHostDir)" ContinueOnError="true" />
+  </Target>
+  
+  <Target Name="PrepareTestFunctionHost" BeforeTargets="_CopyFilesMarkedCopyLocal" DependsOnTargets="CleanupTestFunctionHost" Outputs="%(ProjectReference.Identity)">
+    <CombinePath BasePath="$(MSBuildProjectDirectory)" Paths="$(OutDir)FunctionHost\%(ProjectReference.Filename)">
+      <Output TaskParameter="CombinedPaths" PropertyName="FunctionHostDir" />
+    </CombinePath>
+    <MSBuild Projects="%(ProjectReference.Identity)" Targets="Pack" Properties="Configuration=$(Configuration);PublishDir=$(FunctionHostDir)" Condition=" '%(ProjectReference.FunctionApp)' == 'true' " />
+    <Copy SourceFiles="%(ProjectReference.RelativeDir)local.settings.json" DestinationFolder="$(FunctionHostDir)" ContinueOnError="true" Condition=" '%(ProjectReference.FunctionApp)' == 'true' " />
+  </Target>
+  
+</Project>

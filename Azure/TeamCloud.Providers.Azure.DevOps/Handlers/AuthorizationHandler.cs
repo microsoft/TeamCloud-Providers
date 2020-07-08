@@ -106,7 +106,8 @@ namespace TeamCloud.Providers.Azure.DevOps.Handlers
             };
 
             var response = await VisualStudioTokenUrl
-                .WithHeaders(new MediaTypeWithQualityHeaderValue("application/json"))
+                .WithHeader("Accept", "application/json")
+                //.WithHeaders(new MediaTypeWithQualityHeaderValue("application/json"))
                 .AllowAnyHttpStatus()
                 .PostUrlEncodedAsync(form)
                 .ConfigureAwait(false);
@@ -165,13 +166,12 @@ namespace TeamCloud.Providers.Azure.DevOps.Handlers
                 Content = ReplaceTokens(streamReader.ReadToEnd())
             });
 
-
             string ReplaceTokens(string content) => Regex.Replace(content, "{@(\\w+)}", (match) => match.Groups[1].Value switch
             {
                 "Error" => requestMessage.RequestUri.ParseQueryString().GetValues("error")?.FirstOrDefault(),
                 "ApplicationWebsite" => FunctionsEnvironment.GetHostUrlAsync().SyncResult(),
                 "ApplicationCallback" => FunctionsEnvironment.GetFunctionUrlAsync(nameof(AuthorizationHandler) + nameof(Callback)).SyncResult(),
-                "Organization" => authenticationService.GetConnectionUrlAsync().SyncResult() ?? string.Empty,
+                "Organization" => authenticationService.GetUrlAsync().SyncResult() ?? string.Empty,
                 "ClientId" => string.Empty,
                 _ => match.Value
             });

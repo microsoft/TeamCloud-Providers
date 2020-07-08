@@ -45,11 +45,11 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
                             .ConfigureAwait(true);
                     }
 
-                    var providerRegistraion = await functionContext
+                    var providerRegistration = await functionContext
                         .CallActivityWithRetryAsync<ProviderRegistration>(nameof(ProviderRegisterActivity), command)
                         .ConfigureAwait(true);
 
-                    commandResult.Result = providerRegistraion;
+                    commandResult.Result = providerRegistration;
                 }
                 catch (Exception exc)
                 {

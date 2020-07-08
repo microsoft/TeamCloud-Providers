@@ -72,9 +72,18 @@ namespace TeamCloud.Providers.Core.Orchestrations
                         .ConfigureAwait(true);
                 }
 
-                commandResult = await functionContext
-                    .CallActivityWithRetryAsync<ICommandResult>(nameof(ProviderCommandResultAugmentActivity), (commandResult, commandOrchestrationInstanceId))
-                    .ConfigureAwait(true);
+                do
+                {
+                    // there is a chance that the suborchestration used to agument the command result
+                    // doesn't reflect the final runtime status (completed / failed / canceled) because
+                    // of timing issues in the durable functions runtime. to void a none final runtime 
+                    // status reported back to the orchestrator we loop / wait for this runtime status.
+
+                    commandResult = await functionContext
+                        .CallActivityWithRetryAsync<ICommandResult>(nameof(ProviderCommandResultAugmentActivity), (commandResult, commandOrchestrationInstanceId))
+                        .ConfigureAwait(true);
+                }
+                while (commandResult.RuntimeStatus.IsActive());
             }
             catch (Exception exc)
             {

@@ -1,0 +1,32 @@
+{
+	"$type": "TeamCloud.Model.Commands.ProviderProjectCreateCommand, TeamCloud.Model",
+	"commandId": "54abb388-407c-40f5-a9d9-b17e90528dcd",
+	"projectId": "1fadd467-95fe-4e6b-a109-e7915527a784",
+	"payload": {
+		"tenant": "TeamCloud",
+		"id": "1fadd467-95fe-4e6b-a109-e7915527a784",
+		"name": "Project_159226208201645",
+		"type": {
+			"tenant": "TeamCloud",
+			"default": false,
+			"region": "EastUS",
+			"subscriptions": [
+				"929097d0-4c3c-47d7-b59e-e5e609f1d71f"
+			],
+			"subscriptionCapacity": 10,
+			"resourceGroupNamePrefix": "TC_DEMO_ADVANCED_",
+			"providers": [
+				{
+					"id": "azure.appinsights"
+				},
+				{
+					"id": "azure.devops"
+				},
+				{
+					"id": "azure.devtestlabs"
+				}
+			],
+			"id": "demo.advanced"
+		}
+	}
+}
