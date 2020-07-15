@@ -29,11 +29,11 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.5.0" />
     <PackageReference Include="System.Interactive.Async" Version="4.1.1" />
     <PackageReference Include="System.Linq.Async" Version="4.1.1" />
-    <PackageReference Include="TeamCloud.Configuration" Version="0.2.27-pre" />
+    <PackageReference Include="TeamCloud.Configuration" Version="0.2.60-pre" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Shared\TeamCloud.Providers.Core\TeamCloud.Providers.Core.csproj"  />
+    <ProjectReference Include="..\..\Shared\TeamCloud.Providers.Core\TeamCloud.Providers.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">

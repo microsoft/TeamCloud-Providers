@@ -12,15 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNetSeleniumExtras.WaitHelpers" Version="3.11.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.5" />
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.1.5" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.5" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
-    <PackageReference Include="Selenium.Support" Version="3.141.0" />
-    <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
-    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="83.0.4103.3900" />
-    <PackageReference Include="System.Management" Version="4.7.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
       <PrivateAssets>all</PrivateAssets>
@@ -30,6 +22,17 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="DotNetSeleniumExtras.WaitHelpers" Version="3.11.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.5" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.1.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.5" />
+    <PackageReference Include="Selenium.Support" Version="3.141.0" />
+    <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="83.0.4103.3900" />
+    <PackageReference Include="System.Management" Version="4.7.0" />
     <PackageReference Include="NSubstitute" Version="4.2.1" />
   </ItemGroup>
 

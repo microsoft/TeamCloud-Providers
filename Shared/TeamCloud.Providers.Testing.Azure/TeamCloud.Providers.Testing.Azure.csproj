@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <RootNamespace>TeamCloud.Providers.Testing</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Company>Microsoft Corporation</Company>
+    <Product>TeamCloud</Product>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <Description>...</Description>
+    <Authors>Microsoft</Authors>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Copyright>Microsoft Corporation</Copyright>
+    <PackageLicenseExpression></PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/microsoft/TeamCloud-Providers.git</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/microsoft/TeamCloud-Providers</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <VersionPrefix>0.0.0</VersionPrefix>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+    <FileVersion>0.0.0.0</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TeamCloud.Azure" Version="0.2.60-pre" />
+    <PackageReference Include="TeamCloud.Azure.Deployment" Version="0.2.60-pre" />
+    <PackageReference Include="TeamCloud.Azure.Resources" Version="0.2.60-pre" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\TeamCloud.Providers.Testing\TeamCloud.Providers.Testing.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+  
+</Project>

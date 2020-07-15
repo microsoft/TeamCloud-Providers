@@ -28,7 +28,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
             this.authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
         }
 
-        [FunctionName(nameof(ProjectCreateActivity)), RetryOptions(10, FirstRetryInterval = "00:02:00")]
+        [FunctionName(nameof(ProjectCreateActivity)), RetryOptions(3, FirstRetryInterval = "00:02:00")]
         public async Task<string> RunActivity(
             [ActivityTrigger] Project project,
             ILogger log)
