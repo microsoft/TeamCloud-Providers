@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Commands\ProviderProjectCreateCommandTests.json" />
+    <None Remove="Commands\ProviderProjectCreateCommandTests.ProviderProjectCreateCommand.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,6 +25,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <PackageReference Include="Flurl.Http" Version="2.4.2" />
     <PackageReference Include="DotNetSeleniumExtras.WaitHelpers" Version="3.11.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.5" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.1.5" />
@@ -37,30 +38,25 @@
   </ItemGroup>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
-    <EmbeddedResource Include="Commands\ProviderProjectCreateCommandTests.json" />
-    <PackageReference Include="Flurl.Http" Version="2.4.2" />
+    <EmbeddedResource Include="Commands\ProviderProjectCreateCommandTests.ProviderProjectCreateCommand.json" />
   </ItemGroup>
-  
+   
   <ItemGroup>
-    <ProjectReference Include="..\TeamCloud.Providers.Azure.DevOps\TeamCloud.Providers.Azure.DevOps.csproj">
-      <FunctionApp>true</FunctionApp> 
+
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
+
+    <ProjectReference Include="..\..\Shared\TeamCloud.Providers.Testing\TeamCloud.Providers.Testing.csproj">
+      <!-- this references the provider testing framework - usually this is done by a package reference -->
     </ProjectReference>
+
+    <ProjectReference Include="..\TeamCloud.Providers.Azure.DevOps\TeamCloud.Providers.Azure.DevOps.csproj">
+      <TeamCloudProvider>true</TeamCloudProvider>
+    </ProjectReference>
+
   </ItemGroup>
 
-  <Target Name="CleanupTestFunctionHost">
-    <CombinePath BasePath="$(MSBuildProjectDirectory)" Paths="$(OutDir)FunctionHost">
-      <Output TaskParameter="CombinedPaths" PropertyName="FunctionHostDir" />
-    </CombinePath>
-    <RemoveDir Directories="$(FunctionHostDir)" ContinueOnError="true" />
-  </Target>
-  
-  <Target Name="PrepareTestFunctionHost" BeforeTargets="_CopyFilesMarkedCopyLocal" DependsOnTargets="CleanupTestFunctionHost" Outputs="%(ProjectReference.Identity)">
-    <CombinePath BasePath="$(MSBuildProjectDirectory)" Paths="$(OutDir)FunctionHost\%(ProjectReference.Filename)">
-      <Output TaskParameter="CombinedPaths" PropertyName="FunctionHostDir" />
-    </CombinePath>
-    <MSBuild Projects="%(ProjectReference.Identity)" Targets="Pack" Properties="Configuration=$(Configuration);PublishDir=$(FunctionHostDir)" Condition=" '%(ProjectReference.FunctionApp)' == 'true' " />
-    <Copy SourceFiles="%(ProjectReference.RelativeDir)local.settings.json" DestinationFolder="$(FunctionHostDir)" ContinueOnError="true" Condition=" '%(ProjectReference.FunctionApp)' == 'true' " />
-  </Target>
+  <Import Project="..\..\Shared\TeamCloud.Providers.Testing\build\*" Condition="Exists('..\..\Shared\TeamCloud.Providers.Testing\build')">
+    <!-- we need to import the build targets manually because we reference the provider testing framework as project and not package -->
+  </Import>
   
 </Project>

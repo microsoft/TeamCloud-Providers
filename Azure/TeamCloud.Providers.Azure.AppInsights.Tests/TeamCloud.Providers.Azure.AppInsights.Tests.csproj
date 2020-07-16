@@ -34,6 +34,8 @@
   </ItemGroup>
   
   <ItemGroup>
+
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
     
     <ProjectReference Include="..\..\Shared\TeamCloud.Providers.Testing\TeamCloud.Providers.Testing.csproj">
       <!-- this references the provider testing framework - usually this is done by a package reference -->

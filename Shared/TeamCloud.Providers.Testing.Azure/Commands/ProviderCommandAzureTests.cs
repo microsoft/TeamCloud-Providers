@@ -23,9 +23,9 @@ using Xunit;
 using Xunit.Abstractions;
 using AzureResourceGroup = TeamCloud.Model.Data.Core.AzureResourceGroup;
 
-namespace TeamCloud.Providers.Azure.AppInsights.Commands
+namespace TeamCloud.Providers.Testing.Commands
 {
-    public abstract class ProviderAzureTests : ProviderCoreTests
+    public abstract class ProviderCommandAzureTests : ProviderCommandCoreTests
     {
         protected static readonly IAzureSessionService AzureSessionService = new AzureSessionService();
 
@@ -37,26 +37,9 @@ namespace TeamCloud.Providers.Azure.AppInsights.Commands
 
         protected static readonly IAzureDeploymentService AzureDeploymentService = new AzureDeploymentService(AzureDeploymentOptions, AzureSessionService, NoneStorageArtifactsProvider.Instance);
 
-        protected ProviderAzureTests(ProviderService providerService, ITestOutputHelper outputHelper)
+        protected ProviderCommandAzureTests(ProviderService providerService, ITestOutputHelper outputHelper)
             : base(providerService, outputHelper)
         { }
-
-        protected async Task RegisterAsync()
-        {
-            var user = await GetUserAsync()
-                .ConfigureAwait(false);
-
-            var command = new ProviderRegisterCommand(user, new ProviderConfiguration()
-            {
-                TeamCloudApplicationInsightsKey = Guid.Empty.ToString()
-            });
-
-            var commandResult = await SendCommandAsync(command, true)
-                .ConfigureAwait(false);
-
-            Assert.Equal(command.CommandId, commandResult.CommandId);
-            Assert.Equal(CommandRuntimeStatus.Completed, commandResult.RuntimeStatus);
-        }
 
         protected Guid? ResourceGroupSubscriptionId
             => Guid.TryParse(Configuration.GetValue<string>("subscriptionId"), out var subscriptionId) ? subscriptionId : default;

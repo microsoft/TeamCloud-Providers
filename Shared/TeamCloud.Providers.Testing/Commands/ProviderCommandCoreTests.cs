@@ -21,16 +21,17 @@ using Newtonsoft.Json.Linq;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
+using TeamCloud.Model.Data.Core;
 using TeamCloud.Model.Validation;
 using TeamCloud.Providers.Testing.Diagnostics;
 using TeamCloud.Providers.Testing.Services;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace TeamCloud.Providers.Testing
+namespace TeamCloud.Providers.Testing.Commands
 {
 
-    public abstract class ProviderCoreTests : IAsyncLifetime
+    public abstract class ProviderCommandCoreTests : IAsyncLifetime
     {
         public static TimeSpan DefaultCallbackResultTimeout { get; set; } = TimeSpan.FromMinutes(5);
 
@@ -78,10 +79,10 @@ namespace TeamCloud.Providers.Testing
 
         private readonly Lazy<IConfiguration> configuration;
 
-        protected ProviderCoreTests(ProviderService providerService, ITestOutputHelper outputHelper)
+        protected ProviderCommandCoreTests(ProviderService providerService, ITestOutputHelper outputHelper)
         {
             ProviderService = providerService ?? throw new ArgumentNullException(nameof(providerService));
-            Logger = XUnitLogger.Create(this.GetType(), outputHelper);
+            Logger = XUnitLogger.Create(GetType(), outputHelper);
             Test = outputHelper.GetTest();
 
             configuration = new Lazy<IConfiguration>(() => BuildConfiguration(new ConfigurationBuilder()));
@@ -100,8 +101,25 @@ namespace TeamCloud.Providers.Testing
 
         protected virtual IConfiguration BuildConfiguration(IConfigurationBuilder configurationBuilder)
             => (configurationBuilder ?? throw new ArgumentNullException(nameof(configurationBuilder)))
-            .AddUserSecrets(this.GetType().Assembly)
+            .AddUserSecrets(GetType().Assembly)
             .Build();
+
+        protected async Task RegisterAsync()
+        {
+            var user = await GetUserAsync()
+                .ConfigureAwait(false);
+
+            var command = new ProviderRegisterCommand(user, new ProviderConfiguration()
+            {
+                TeamCloudApplicationInsightsKey = Guid.Empty.ToString()
+            });
+
+            var commandResult = await SendCommandAsync(command, true)
+                .ConfigureAwait(false);
+
+            Assert.Equal(command.CommandId, commandResult.CommandId);
+            Assert.Equal(CommandRuntimeStatus.Completed, commandResult.RuntimeStatus);
+        }
 
         protected async Task<User> GetUserAsync()
         {
@@ -261,7 +279,5 @@ namespace TeamCloud.Providers.Testing
 
         public virtual Task DisposeAsync()
             => Task.CompletedTask;
-
-        public abstract Task ExecuteAsync();
     }
 }

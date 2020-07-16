@@ -150,13 +150,20 @@ namespace TeamCloud.Providers.Testing.Services
                 .FirstOrDefault();
         }
 
-        private static IEnumerable<string> GetFunctionAppPaths()
+        private static string GetFunctionAppRoot()
         {
             var binPath = Directory.GetCurrentDirectory();
-            var funcPath = Path.Combine(binPath, "FunctionHost");
+            var funcRoot = Path.Combine(binPath, "FunctionHost");
 
-            return Directory.Exists(funcPath)
-                ? Directory.GetDirectories(funcPath)
+            return Directory.CreateDirectory(funcRoot).FullName;
+        }
+
+        private static IEnumerable<string> GetFunctionAppPaths()
+        {
+            var funcRoot = GetFunctionAppRoot();
+
+            return Directory.Exists(funcRoot)
+                ? Directory.GetDirectories(funcRoot)
                 : Enumerable.Empty<string>();
         }
 
@@ -182,7 +189,7 @@ namespace TeamCloud.Providers.Testing.Services
                     RedirectStandardError = true,
                     FileName = hostPath,
                     Arguments = "host start",
-                    WorkingDirectory = appPaths.Single() // for now we support just a one hosted function app during testing
+                    WorkingDirectory = appPaths.SingleOrDefault() ?? throw new DirectoryNotFoundException($"Missing function app folder under '{GetFunctionAppRoot()}'")
                 });
 
                 process.BeginOutputReadLine();
@@ -268,6 +275,8 @@ namespace TeamCloud.Providers.Testing.Services
         {
             if (hostProcess.IsValueCreated)
             {
+#pragma warning disable CA1031 // Do not catch general exception types
+
                 try
                 {
                     hostProcess.Value.Kill(true);
@@ -285,6 +294,8 @@ namespace TeamCloud.Providers.Testing.Services
                 {
                     // swallow
                 }
+
+#pragma warning restore CA1031 // Do not catch general exception types
             }
 
             return Task.CompletedTask;

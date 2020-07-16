@@ -9,24 +9,23 @@ using Newtonsoft.Json.Linq;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Providers.Azure.DevOps.Conditional;
-using TeamCloud.Providers.Azure.DevOps.Diagnostics;
+using TeamCloud.Providers.Testing.Services;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace TeamCloud.Providers.Azure.DevOps.Commands
 {
     [Collection(nameof(ProviderContext))]
-    public class ProviderProjectCreateCommandTests : ProviderCommandTests
+    public class ProviderProjectCreateCommandTests : ProviderCommandDevOpsTests
     {
         public ProviderProjectCreateCommandTests(ProviderService providerService, ITestOutputHelper outputHelper)
-            : base(providerService, XUnitLogger.Create<ProviderProjectCreateCommandTests>(outputHelper))
+            : base(providerService, outputHelper)
         { }
 
         [ConditionalFact(ConditionalFactPlatforms.Windows)]
-        public async Task Execute()
+        public async Task ExecuteAsync()
         {
-            await new ProviderCoreTests(ProviderService, Logger)
-                .Authorize()
+            await AuthorizeAsync()
                 .ConfigureAwait(false);
 
             var command = await CreateCommandAsync<ProviderProjectCreateCommand>(modifyCommandJson: ModifyCommandPayload)
@@ -42,7 +41,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Commands
 
             Assert.Equal(CommandRuntimeStatus.Completed, commandResult.RuntimeStatus);
 
-            void ModifyCommandPayload(JObject commandJson)
+            static void ModifyCommandPayload(JObject commandJson)
             {
                 (commandJson.SelectToken("$.payload.id") as JValue)?.SetValue(Guid.NewGuid());
                 (commandJson.SelectToken("$.payload.name") as JValue)?.SetValue($"Project_{DateTime.UtcNow.Ticks}");

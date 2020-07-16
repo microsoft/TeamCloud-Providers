@@ -11,9 +11,9 @@ using TeamCloud.Azure.Resources;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data.Core;
-using TeamCloud.Providers.Azure.AppInsights.Commands;
 using TeamCloud.Providers.Azure.DevTestLabs.Conditional;
 using TeamCloud.Providers.Testing;
+using TeamCloud.Providers.Testing.Commands;
 using TeamCloud.Providers.Testing.Services;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,14 +21,14 @@ using Xunit.Abstractions;
 namespace TeamCloud.Providers.Azure.DevTestLabs.Commands
 {
     [Collection(ProviderContext.Name)]
-    public class ProviderProjectCreateCommandTests : ProviderAzureTests
+    public class ProviderProjectCreateCommandTests : ProviderCommandAzureTests
     {
         public ProviderProjectCreateCommandTests(ProviderService providerService, ITestOutputHelper outputHelper)
             : base(providerService, outputHelper)
         { }
 
         [ConditionalFact(ConditionalFactPlatforms.Windows)]
-        public override async Task ExecuteAsync()
+        public virtual async Task ExecuteAsync()
         {
             await RegisterAsync()
                 .ConfigureAwait(false);

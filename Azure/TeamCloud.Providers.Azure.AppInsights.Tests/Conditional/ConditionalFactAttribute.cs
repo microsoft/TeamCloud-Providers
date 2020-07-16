@@ -9,7 +9,7 @@ using Xunit;
 
 namespace TeamCloud.Providers.Azure.AppInsights.Conditional
 {
-    public class ConditionalFactAttribute : FactAttribute
+    public sealed class ConditionalFactAttribute : FactAttribute
     {
         private static ConditionalFactPlatforms GetCurrentPlatform()
         {

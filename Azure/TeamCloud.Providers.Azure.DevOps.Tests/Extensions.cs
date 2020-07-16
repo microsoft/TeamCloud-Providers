@@ -20,10 +20,10 @@ namespace TeamCloud.Providers.Azure.DevOps
 {
     internal static class Extensions
     {
-        public static Task<T> ReadAsAsync<T>(this HttpContent httpContent, JsonSerializerSettings serializerSettings = null)
+        internal static Task<T> ReadAsAsync<T>(this HttpContent httpContent, JsonSerializerSettings serializerSettings = null)
             => httpContent.ReadAsAsync<T>(JsonSerializer.CreateDefault(serializerSettings));
 
-        public static async Task<T> ReadAsAsync<T>(this HttpContent httpContent, JsonSerializer serializer)
+        internal static async Task<T> ReadAsAsync<T>(this HttpContent httpContent, JsonSerializer serializer)
         {
             using var stream = await httpContent.ReadAsStreamAsync().ConfigureAwait(false);
             using var streamReader = new StreamReader(stream);
@@ -32,7 +32,7 @@ namespace TeamCloud.Providers.Azure.DevOps
             return serializer.Deserialize<T>(jsonReader);
         }
 
-        public static bool TryGetValue(this NameValueCollection collection, string key, out string value)
+        internal static bool TryGetValue(this NameValueCollection collection, string key, out string value)
         {
             value = collection.AllKeys.Contains(key)
                 ? collection.Get(key) : default;
@@ -40,7 +40,7 @@ namespace TeamCloud.Providers.Azure.DevOps
             return value != default;
         }
 
-        public static object SetValue(this JValue instance, object value)
+        internal static object SetValue(this JValue instance, object value)
         {
             if (instance is null)
                 throw new System.ArgumentNullException(nameof(instance));
@@ -48,7 +48,7 @@ namespace TeamCloud.Providers.Azure.DevOps
             return instance.Value = value;
         }
 
-        public static EventFiringWebDriver WithEvents(this IWebDriver webDriver, ILogger log = null)
+        internal static EventFiringWebDriver WithEvents(this IWebDriver webDriver, ILogger log = null)
         {
             if (webDriver is null)
                 throw new ArgumentNullException(nameof(webDriver));
@@ -79,7 +79,7 @@ namespace TeamCloud.Providers.Azure.DevOps
 
             return eventWebDriver;
 
-            string GetBrowserInfo(IWebDriver webDriver)
+            static string GetBrowserInfo(IWebDriver webDriver)
             {
                 if (webDriver is null)
                     throw new ArgumentNullException(nameof(webDriver));
@@ -90,8 +90,9 @@ namespace TeamCloud.Providers.Azure.DevOps
                 return $"{webDriver.GetType().Name} ({webDriver.Url})";
             }
 
-            string GetElementName(IWebElement element)
+            static string GetElementName(IWebElement element)
             {
+#pragma warning disable CA1031 // Do not catch general exception types
                 try
                 {
                     return element?.TagName;
@@ -100,10 +101,11 @@ namespace TeamCloud.Providers.Azure.DevOps
                 {
                     return default;
                 }
+#pragma warning restore CA1031 // Do not catch general exception types
             }
         }
 
-        public static T WrappedDriver<T>(this IWrapsDriver wrapsDriver)
+        internal static T WrappedDriver<T>(this IWrapsDriver wrapsDriver)
             where T : class, IWebDriver
             => (T)wrapsDriver.WrappedDriver;
     }

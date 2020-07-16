@@ -1,4 +1,4 @@
-/**
+﻿/**
  *  Copyright (c) Microsoft Corporation.
  *  Licensed under the MIT License.
  */
@@ -15,54 +15,22 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
-using TeamCloud.Model.Commands;
-using TeamCloud.Model.Commands.Core;
-using TeamCloud.Model.Data;
-using TeamCloud.Model.Data.Core;
-using TeamCloud.Providers.Azure.DevOps.Conditional;
-using TeamCloud.Providers.Azure.DevOps.Diagnostics;
+using TeamCloud.Providers.Testing.Commands;
+using TeamCloud.Providers.Testing.Services;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace TeamCloud.Providers.Azure.DevOps.Commands
 {
-    [Collection(nameof(ProviderContext))]
-    public class ProviderCoreTests : ProviderCommandTests
+    public abstract class ProviderCommandDevOpsTests : ProviderCommandCoreTests
     {
-        public ProviderCoreTests(ProviderService providerService, ITestOutputHelper outputHelper)
-            : this(providerService, XUnitLogger.Create<ProviderCoreTests>(outputHelper))
+        public ProviderCommandDevOpsTests(ProviderService providerService, ITestOutputHelper outputHelper)
+            : base(providerService, outputHelper)
         { }
 
-        internal ProviderCoreTests(ProviderService providerService, ILogger logger)
-            : base(providerService, logger)
-        { }
-
-        [ConditionalFact(ConditionalFactPlatforms.Windows)]
-        public async Task Register()
+        protected async Task AuthorizeAsync()
         {
-            _ = await ProviderService
-                .StartAsync()
-                .ConfigureAwait(false);
-
-            var user = await GetUserAsync()
-                .ConfigureAwait(false);
-
-            var command = new ProviderRegisterCommand(user, new ProviderConfiguration()
-            {
-                TeamCloudApplicationInsightsKey = Guid.Empty.ToString()
-            });
-
-            var commandResult = await SendCommandAsync(command, true)
-                .ConfigureAwait(false);
-
-            Assert.Equal(command.CommandId, commandResult.CommandId);
-            Assert.Equal(CommandRuntimeStatus.Completed, commandResult.RuntimeStatus);
-        }
-
-        [ConditionalFact(ConditionalFactPlatforms.Windows)]
-        public async Task Authorize()
-        {
-            await Register()
+            await RegisterAsync()
                 .ConfigureAwait(false);
 
             var configuration = new ConfigurationBuilder()
@@ -85,7 +53,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Commands
                 new WebDriverWait(browser, TimeSpan.FromSeconds(10))
                     .Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementIsVisible(By.TagName("body")));
 
-                Logger.LogInformation($"{nameof(Authorize)}: {browser.Url}");
+                Logger.LogInformation($"{nameof(AuthorizeAsync)}: {browser.Url}");
 
                 foreach (var fieldId in new string[] { "organization", "client_id", "client_secret" })
                 {
