@@ -28,9 +28,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="TeamCloud.Azure" Version="0.2.60-pre" />
-    <PackageReference Include="TeamCloud.Azure.Deployment" Version="0.2.60-pre" />
-    <PackageReference Include="TeamCloud.Azure.Resources" Version="0.2.60-pre" />
+    <PackageReference Include="TeamCloud.Azure.Deployment" Version="0.2.74-pre" />
+    <PackageReference Include="TeamCloud.Azure.Resources" Version="0.2.74-pre" />
   </ItemGroup>
   
   <ItemGroup>

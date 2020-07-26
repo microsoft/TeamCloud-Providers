@@ -18,6 +18,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using TeamCloud.Azure;
+using TeamCloud.Azure.Directory;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
@@ -33,6 +35,12 @@ namespace TeamCloud.Providers.Testing.Commands
 
     public abstract class ProviderCommandCoreTests : IAsyncLifetime
     {
+        protected static readonly IAzureSessionService AzureSessionService
+            = new AzureSessionService();
+
+        protected static readonly IAzureDirectoryService AzureDirectoryService
+            = new AzureDirectoryService(AzureSessionService);
+
         public static TimeSpan DefaultCallbackResultTimeout { get; set; } = TimeSpan.FromMinutes(5);
 
         private static Task<string> AcquireTokenAsync()
@@ -121,16 +129,30 @@ namespace TeamCloud.Providers.Testing.Commands
             Assert.Equal(CommandRuntimeStatus.Completed, commandResult.RuntimeStatus);
         }
 
-        protected async Task<User> GetUserAsync()
+        protected async Task<User> GetUserAsync(string identifier = null)
         {
-            var token = await AcquireTokenAsync()
-                .ConfigureAwait(false);
+            Guid? userId = default;
 
-            var jwtToken = new JwtSecurityTokenHandler()
-                .ReadJwtToken(token);
+            if (string.IsNullOrEmpty(identifier))
+            {
+                var token = await AcquireTokenAsync()
+                    .ConfigureAwait(false);
 
-            return jwtToken.Payload.TryGetValue("oid", out var oidValue) && Guid.TryParse(oidValue.ToString(), out Guid oid)
-                ? new User() { Id = oid.ToString() }
+                var jwtToken = new JwtSecurityTokenHandler()
+                    .ReadJwtToken(token);
+
+                if (jwtToken.Payload.TryGetValue("oid", out var oidValue) && Guid.TryParse(oidValue.ToString(), out Guid oid))
+                    userId = oid;
+            }
+            else
+            {
+                userId = await AzureDirectoryService
+                    .GetUserIdAsync(identifier)
+                    .ConfigureAwait(false);
+            }
+
+            return userId.HasValue
+                ? new User() { Id = userId.Value.ToString() }
                 : null;
         }
 
@@ -154,7 +176,6 @@ namespace TeamCloud.Providers.Testing.Commands
             var commandUser = await GetUserAsync().ConfigureAwait(false);
 
             (commandJson.SelectToken("$.commandId") as JValue)?.SetValue(Guid.NewGuid());
-            //(commandJson.SelectToken("$.projectId") as JValue)?.SetValue(TestId.Value);
 
             var user = commandJson.SelectToken("$.user");
 
@@ -169,10 +190,22 @@ namespace TeamCloud.Providers.Testing.Commands
 
             modifyCommandJson?.Invoke(commandJson);
 
-            return commandJson.ToObject<TCommand>();
+            var command = commandJson.ToObject<TCommand>();
+
+            if (command.Payload is Project project && !project.Users.Contains(commandUser))
+            {
+                // if this is a project scoped command and the 
+                // command payload represents a project, we are
+                // assigning the command user as an owner of
+                // the project as default.
+
+                project.Users.Add(commandUser.EnsureProjectMembership(project.Id, ProjectUserRole.Owner));
+            }
+
+            return command;
         }
 
-        protected async Task<ICommandResult> SendCommandAsync(IProviderCommand providerCommand, bool waitForCallbackResult = false, TimeSpan waitForCallbackResultTimeout = default)
+        protected async Task<ICommandResult> SendCommandAsync(IProviderCommand providerCommand, bool waitForCallbackResult = false, TimeSpan? waitForCallbackResultTimeout = default)
         {
             if (providerCommand is null)
                 throw new ArgumentNullException(nameof(providerCommand));
@@ -198,7 +231,7 @@ namespace TeamCloud.Providers.Testing.Commands
 
             if (waitForCallbackResult)
             {
-                commandResult = await GetCommandResultAsync(providerCommand.CommandId, waitForCallbackResult, waitForCallbackResultTimeout)
+                commandResult = await GetCommandResultAsync(providerCommand.CommandId, waitForCallbackResult, waitForCallbackResultTimeout.GetValueOrDefault(commandResult.Timeout))
                     .ConfigureAwait(false);
             }
             else

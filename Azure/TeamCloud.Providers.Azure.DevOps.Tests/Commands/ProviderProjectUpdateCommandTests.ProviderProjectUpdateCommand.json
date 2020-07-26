@@ -1,5 +1,5 @@
 {
-	"$type": "TeamCloud.Model.Commands.ProviderProjectCreateCommand, TeamCloud.Model",
+	"$type": "TeamCloud.Model.Commands.ProviderProjectUpdateCommand, TeamCloud.Model",
 	"commandId": "00000000-0000-0000-0000-000000000000",
 	"projectId": "00000000-0000-0000-0000-000000000000",
 	"payload": {

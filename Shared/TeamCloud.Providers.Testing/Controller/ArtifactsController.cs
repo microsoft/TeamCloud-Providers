@@ -19,24 +19,20 @@ namespace TeamCloud.Providers.Testing.Services.Controller
         private const string DEFAULT_CONNECTION_STRING = "UseDevelopmentStorage=true";
         private const string DEPLOYMENT_CONTAINER_NAME = "deployments";
 
-        private static readonly Lazy<CloudBlobContainer> deploymentContainer;
-
-        static ArtifactsController()
-        {
-            deploymentContainer = new Lazy<CloudBlobContainer>(() => CloudStorageAccount
+        private static readonly Lazy<CloudBlobContainer> deploymentContainer
+            = new Lazy<CloudBlobContainer>(() => CloudStorageAccount
                 .Parse(DEFAULT_CONNECTION_STRING)
                 .CreateCloudBlobClient()
                 .GetContainerReference(DEPLOYMENT_CONTAINER_NAME));
-        }
 
         [HttpGet("{deploymentId:guid}/{artifactName}")]
         public async Task<IActionResult> Get(string deploymentId, string artifactName)
         {
             if (string.IsNullOrEmpty(deploymentId))
-                throw new ArgumentException("message", nameof(deploymentId));
+                throw new ArgumentException("Value must not be NULL or EMPTY", nameof(deploymentId));
 
             if (string.IsNullOrEmpty(artifactName))
-                throw new ArgumentException("message", nameof(artifactName));
+                throw new ArgumentException("Value must not be NULL or EMPTY", nameof(artifactName));
 
             if (!deploymentContainer.IsValueCreated)
             {

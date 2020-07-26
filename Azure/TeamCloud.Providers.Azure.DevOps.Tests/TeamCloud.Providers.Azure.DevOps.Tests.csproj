@@ -9,6 +9,8 @@
 
   <ItemGroup>
     <None Remove="Commands\ProviderProjectCreateCommandTests.ProviderProjectCreateCommand.json" />
+    <None Remove="Commands\ProviderProjectUpdateCommandTests.ProviderProjectCreateCommand.json" />
+    <None Remove="Commands\ProviderProjectUpdateCommandTests.ProviderProjectUpdateCommand.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,6 +40,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Commands\ProviderProjectUpdateCommandTests.ProviderProjectUpdateCommand.json" />
+    <EmbeddedResource Include="Commands\ProviderProjectUpdateCommandTests.ProviderProjectCreateCommand.json" />
     <EmbeddedResource Include="Commands\ProviderProjectCreateCommandTests.ProviderProjectCreateCommand.json" />
   </ItemGroup>
    

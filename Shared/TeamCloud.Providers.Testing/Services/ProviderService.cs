@@ -79,6 +79,7 @@ namespace TeamCloud.Providers.Testing.Services
             {
                 Process.Start(new ProcessStartInfo
                 {
+                    CreateNoWindow = !Debugger.IsAttached,
                     UseShellExecute = true,
                     FileName = path,
                     Arguments = "init -forcecreate"
@@ -87,6 +88,7 @@ namespace TeamCloud.Providers.Testing.Services
 
                 Process.Start(new ProcessStartInfo
                 {
+                    CreateNoWindow = !Debugger.IsAttached,
                     UseShellExecute = true,
                     FileName = path,
                     Arguments = "start"

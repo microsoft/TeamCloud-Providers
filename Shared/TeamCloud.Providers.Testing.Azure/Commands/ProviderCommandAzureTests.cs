@@ -8,18 +8,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
-using TeamCloud.Azure;
 using TeamCloud.Azure.Deployment;
 using TeamCloud.Azure.Deployment.Providers;
 using TeamCloud.Azure.Resources;
-using TeamCloud.Model.Commands;
-using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
-using TeamCloud.Model.Data.Core;
 using TeamCloud.Providers.Azure.AppInsights.Options;
-using TeamCloud.Providers.Testing;
 using TeamCloud.Providers.Testing.Services;
-using Xunit;
 using Xunit.Abstractions;
 using AzureResourceGroup = TeamCloud.Model.Data.Core.AzureResourceGroup;
 
@@ -27,15 +21,17 @@ namespace TeamCloud.Providers.Testing.Commands
 {
     public abstract class ProviderCommandAzureTests : ProviderCommandCoreTests
     {
-        protected static readonly IAzureSessionService AzureSessionService = new AzureSessionService();
+        protected static readonly string AzureResourceLocation
+            = "EastUs";
 
-        protected static readonly string AzureResourceLocation = "EastUs";
+        protected static readonly IAzureResourceService AzureResourceService
+            = new AzureResourceService(AzureSessionService);
 
-        protected static readonly IAzureResourceService AzureResourceService = new AzureResourceService(AzureSessionService);
+        protected static readonly IAzureDeploymentOptions AzureDeploymentOptions
+            = new AzureDeploymentOptions();
 
-        protected static readonly IAzureDeploymentOptions AzureDeploymentOptions = new AzureDeploymentOptions();
-
-        protected static readonly IAzureDeploymentService AzureDeploymentService = new AzureDeploymentService(AzureDeploymentOptions, AzureSessionService, NoneStorageArtifactsProvider.Instance);
+        protected static readonly IAzureDeploymentService AzureDeploymentService
+            = new AzureDeploymentService(AzureDeploymentOptions, AzureSessionService, NoneStorageArtifactsProvider.Instance);
 
         protected ProviderCommandAzureTests(ProviderService providerService, ITestOutputHelper outputHelper)
             : base(providerService, outputHelper)
@@ -60,16 +56,6 @@ namespace TeamCloud.Providers.Testing.Commands
             {
                 project.ResourceGroup ??= await GetResourceGroupAsync()
                     .ConfigureAwait(false);
-
-                var user = await GetUserAsync()
-                    .ConfigureAwait(false);
-
-                if (!project.Users.Contains(user))
-                {
-                    user.EnsureProjectMembership(project.Id, ProjectUserRole.Owner);
-
-                    project.Users.Add(user);
-                }
             }
 
             return command;

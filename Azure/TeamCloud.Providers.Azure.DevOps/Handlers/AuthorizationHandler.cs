@@ -171,7 +171,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Handlers
                 "Error" => requestMessage.RequestUri.ParseQueryString().GetValues("error")?.FirstOrDefault(),
                 "ApplicationWebsite" => FunctionsEnvironment.GetHostUrlAsync().SyncResult(),
                 "ApplicationCallback" => FunctionsEnvironment.GetFunctionUrlAsync(nameof(AuthorizationHandler) + nameof(Callback)).SyncResult(),
-                "Organization" => authenticationService.GetUrlAsync().SyncResult() ?? string.Empty,
+                "Organization" => authenticationService.GetOrganizationUrlAsync().SyncResult() ?? string.Empty,
                 "ClientId" => string.Empty,
                 _ => match.Value
             });

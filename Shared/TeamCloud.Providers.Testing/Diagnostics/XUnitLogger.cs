@@ -16,9 +16,16 @@ namespace TeamCloud.Providers.Testing.Diagnostics
 
         public static ILogger Create(Type type, ITestOutputHelper outputHelper)
         {
-            var loggerFactory = new LoggerFactory();
+            if (type is null)
+                throw new ArgumentNullException(nameof(type));
 
-            loggerFactory.AddProvider(new XUnitLoggerProvider(outputHelper ?? throw new ArgumentNullException(nameof(outputHelper))));
+            if (outputHelper is null)
+                throw new ArgumentNullException(nameof(outputHelper));
+
+            using var loggerFactory = new LoggerFactory();
+            using var loggerProvider = new XUnitLoggerProvider(outputHelper);
+
+            loggerFactory.AddProvider(loggerProvider);
 
             return loggerFactory.CreateLogger(type ?? throw new ArgumentNullException(nameof(type)));
         }
@@ -40,7 +47,7 @@ namespace TeamCloud.Providers.Testing.Diagnostics
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            testOutputHelper.WriteLine($"{categoryName} - {logLevel} [{eventId}] - {formatter(state, exception)}".Trim());
+            testOutputHelper.WriteLine($"{categoryName} - {logLevel} [{eventId}] - {formatter?.Invoke(state, exception)}".Trim());
 
             if (exception != null)
                 testOutputHelper.WriteLine(exception.ToString());

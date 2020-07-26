@@ -5,9 +5,11 @@
 
 using System;
 using System.Threading.Tasks;
+using Flurl;
+using Flurl.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.Services.Graph.Client;
 using TeamCloud.Model.Data;
@@ -19,12 +21,10 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
     public sealed class UserRegisterActivity
     {
         private readonly IAuthenticationService authenticationService;
-        private readonly IMemoryCache cache;
 
-        public UserRegisterActivity(IAuthenticationService authenticationService, IMemoryCache cache)
+        public UserRegisterActivity(IAuthenticationService authenticationService)
         {
             this.authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
-            this.cache = cache;
         }
 
         [FunctionName(nameof(UserRegisterActivity))]
@@ -41,17 +41,9 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
                     .GetConnectionAsync()
                     .ConfigureAwait(false);
 
-                //var identityClient = await connection
-                //    .GetClientAsync<IdentityHttpClient>()
-                //    .ConfigureAwait(false);
-
                 var graphClient = await connection
                     .GetClientAsync<GraphHttpClient>()
                     .ConfigureAwait(false);
-
-                //var licensingClient = await connection
-                //    .GetClientAsync<AccountLicensingHttpClient>()
-                //    .ConfigureAwait(false);
 
                 var descriptor = await graphClient
                     .GetUserDescriptorAsync(Guid.Parse(user.Id))
@@ -59,13 +51,31 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
 
                 if (string.IsNullOrEmpty(descriptor))
                 {
-                    //var graphUser = await graphClient.CreateUserAsync(new GraphUserOriginIdCreationContext()
-                    //{
-                    //    OriginId = user.Id
+                    var graphUser = await graphClient.CreateUserAsync(new GraphUserOriginIdCreationContext()
+                    {
+                        OriginId = user.Id
 
-                    //}).ConfigureAwait(false);
+                    }).ConfigureAwait(false);
 
-                    //descriptor = graphUser.Descriptor;
+                    var token = await authenticationService
+                        .GetTokenAsync()
+                        .ConfigureAwait(false);
+
+                    var userEntitlementsServiceUrl = await authenticationService
+                        .GetServiceUrlAsync(ServiceEndpoint.UserEntitlements)
+                        .ConfigureAwait(false);
+
+                    var userEntitlement = new
+                    {
+                        user = graphUser,
+                        accessLevel = new { accountLicenseType = "express" }
+                    };
+
+                    _ = await userEntitlementsServiceUrl
+                        .SetQueryParam("api-version", "5.0-preview.2")
+                        .WithOAuthBearerToken(token)
+                        .PostJsonAsync(userEntitlement)
+                        .ConfigureAwait(false);
                 }
             }
             catch (Exception exc)

@@ -22,11 +22,11 @@
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask.Analyzers" Version="0.2.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.2" />
     <PackageReference Include="System.Linq.Async" Version="4.1.1" />
-    <PackageReference Include="TeamCloud.Azure" Version="0.2.60-pre" />
-    <PackageReference Include="TeamCloud.Azure.Deployment" Version="0.2.60-pre" />
-    <PackageReference Include="TeamCloud.Azure.Resources" Version="0.2.60-pre" />
-    <PackageReference Include="TeamCloud.Configuration" Version="0.2.60-pre" />
-    <PackageReference Include="TeamCloud.Orchestration.Deployment" Version="0.2.60-pre" />
+    <PackageReference Include="TeamCloud.Azure" Version="0.2.74-pre" />
+    <PackageReference Include="TeamCloud.Azure.Deployment" Version="0.2.74-pre" />
+    <PackageReference Include="TeamCloud.Azure.Resources" Version="0.2.74-pre" />
+    <PackageReference Include="TeamCloud.Configuration" Version="0.2.74-pre" />
+    <PackageReference Include="TeamCloud.Orchestration.Deployment" Version="0.2.74-pre" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\TeamCloud.Providers.Core\TeamCloud.Providers.Core.csproj" />

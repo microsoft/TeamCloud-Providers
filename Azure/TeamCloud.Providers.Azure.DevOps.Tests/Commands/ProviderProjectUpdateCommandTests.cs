@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
+using TeamCloud.Model.Data.Core;
 using TeamCloud.Providers.Azure.DevOps.Conditional;
 using TeamCloud.Providers.Testing;
 using TeamCloud.Providers.Testing.Services;
@@ -17,20 +18,25 @@ using Xunit.Abstractions;
 namespace TeamCloud.Providers.Azure.DevOps.Commands
 {
     [Collection(nameof(ProviderContext))]
-    public class ProviderProjectCreateCommandTests : ProviderCommandDevOpsTests
+    public class ProviderProjectUpdateCommandTests : ProviderProjectCreateCommandTests
     {
-        public ProviderProjectCreateCommandTests(ProviderService providerService, ITestOutputHelper outputHelper)
+        public ProviderProjectUpdateCommandTests(ProviderService providerService, ITestOutputHelper outputHelper)
             : base(providerService, outputHelper)
         { }
 
         [ConditionalFact(ConditionalFactPlatforms.Windows)]
-        public virtual async Task ExecuteAsync()
+        public override async Task ExecuteAsync()
         {
-            await AuthorizeAsync()
+            await base.ExecuteAsync()
                 .ConfigureAwait(false);
 
-            var command = await CreateCommandAsync<ProviderProjectCreateCommand>(modifyCommandJson: ModifyCommandPayload)
+            var command = await CreateCommandAsync<ProviderProjectUpdateCommand>(modifyCommandJson: ModifyCommandPayload)
                 .ConfigureAwait(false);
+
+            var user = await GetUserAsync("jaysch@microsoft.com")
+                .ConfigureAwait(false);
+
+            command.Payload.Users.Add(user.EnsureProjectMembership(command.Payload.Id, ProjectUserRole.Member));
 
             var commandResult = await SendCommandAsync(command, true)
                 .ConfigureAwait(false);

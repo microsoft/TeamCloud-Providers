@@ -7,6 +7,7 @@ using System;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Services.AppAuthentication;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TeamCloud.Http;
@@ -33,17 +34,6 @@ namespace TeamCloud.Providers.Azure.DevOps
             if (builder is null)
                 throw new ArgumentNullException(nameof(builder));
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
-            // yeah, IHostingEnvironment is obsolete,
-            // but this is what we get from the functions runtime.
-
-            var hostingEnvironment = builder.Services
-                .BuildServiceProvider()
-                .GetService<IHostingEnvironment>();
-
-#pragma warning restore CS0618 // Type or member is obsolete
-
             builder.Services
                 .AddMvcCore()
                 .AddNewtonsoftJson();
@@ -60,6 +50,15 @@ namespace TeamCloud.Providers.Azure.DevOps
                         .IgnoreCommand<IProviderCommand>();
                 });
 
+            var serviceProvider = builder.Services
+                .BuildServiceProvider();
+
+            var hostingEnvironment = serviceProvider
+                .GetRequiredService<IHostingEnvironment>();
+
+            var configuration = serviceProvider
+                .GetRequiredService<IConfiguration>();
+
             if (hostingEnvironment.IsDevelopment())
             {
                 builder.Services
@@ -75,7 +74,19 @@ namespace TeamCloud.Providers.Azure.DevOps
                     .AddSingleton<ISecretsService, VaultSecretsServices>();
             }
 
+            if (string.IsNullOrEmpty(configuration.GetValue<string>("Cache:Configuration")))
+            {
+                builder.Services
+                    .AddDistributedMemoryCache();
+            }
+            else
+            {
+                builder.Services
+                    .AddDistributedRedisCache(options => configuration.Bind("Cache", options));
+            }
+
             builder.Services
+                .AddDistributedMemoryCache()
                 .AddSingleton<IAuthenticationService, AuthenticationService>();
         }
     }

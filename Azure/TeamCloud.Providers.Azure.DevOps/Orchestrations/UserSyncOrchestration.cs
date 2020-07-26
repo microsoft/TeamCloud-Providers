@@ -4,7 +4,6 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
@@ -27,17 +26,21 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var (projectId, users) = functionContext
-                .GetInput<(string, IEnumerable<User>)>();
+            var project = functionContext
+                .GetInput<Project>();
 
             try
             {
                 await Task
-                    .WhenAll(users.Select(user => functionContext.CallActivityWithRetryAsync(nameof(UserRegisterActivity), user)))
+                    .WhenAll(project.Users.Select(user => functionContext.CallActivityWithRetryAsync(nameof(UserRegisterActivity), user)))
                     .ConfigureAwait(true);
+
+
             }
-            catch (Exception exc) when (!exc.IsSerializable())
+            catch (Exception exc)
             {
+                log.LogError(exc, $"Failed to synchronize users for project {project.Id}: {exc.Message}");
+
                 throw exc.AsSerializable();
             }
         }

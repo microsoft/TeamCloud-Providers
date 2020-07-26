@@ -39,6 +39,10 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
                 try
                 {
                     await functionContext
+                        .EnsureAuthorizedAsync()
+                        .ConfigureAwait(true);
+
+                    await functionContext
                         .CallOperationAsync(nameof(ProjectDeleteActivity), command.Payload)
                         .ConfigureAwait(true);
 

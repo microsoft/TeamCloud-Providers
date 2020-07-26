@@ -15,6 +15,12 @@ namespace TeamCloud.Providers.Testing
     {
         public static async Task ShouldHaveRoleAssignmentAsync(this AzureResource azureResource, User user, Guid roleDefinition)
         {
+            if (azureResource is null)
+                throw new ArgumentNullException(nameof(azureResource));
+
+            if (user is null)
+                throw new ArgumentNullException(nameof(user));
+
             var roleAssignments = await azureResource.GetRoleAssignmentsAsync(user.Id).ConfigureAwait(false);
 
             Assert.Contains(roleAssignments, roleAssignment => roleAssignment == roleDefinition);
@@ -22,6 +28,12 @@ namespace TeamCloud.Providers.Testing
 
         public static async Task ShouldHaveNoRoleAssignmentAsync(this AzureResource azureResource, User user)
         {
+            if (azureResource is null)
+                throw new ArgumentNullException(nameof(azureResource));
+
+            if (user is null)
+                throw new ArgumentNullException(nameof(user));
+
             var roleAssignments = await azureResource.GetRoleAssignmentsAsync(user.Id).ConfigureAwait(false);
 
             Assert.Empty(roleAssignments);

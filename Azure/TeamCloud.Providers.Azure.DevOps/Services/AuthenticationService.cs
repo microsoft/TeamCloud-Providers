@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentValidation;
 using Microsoft.VisualStudio.Services.OAuth;
@@ -18,7 +19,11 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
     {
         Task<string> GetTokenAsync();
 
-        Task<string> GetUrlAsync();
+        Task<string> GetOrganizationUrlAsync();
+
+        Task<string> GetOrganizationNameAsync();
+
+        Task<string> GetServiceUrlAsync(ServiceEndpoint serviceEndpoint);
 
         Task<VssConnection> GetConnectionAsync();
 
@@ -50,7 +55,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
 
             var token = JsonConvert.DeserializeObject<AuthorizationToken>(secret);
 
-            if (token.AccessTokenExpires.GetValueOrDefault(DateTime.UtcNow) > DateTime.UtcNow.AddMinutes(-5))
+            if (token.AccessTokenExpires.GetValueOrDefault(DateTime.UtcNow).AddMinutes(-1) < DateTime.UtcNow)
             {
                 token = await AuthorizationHandler
                     .RefreshAsync(token)
@@ -86,12 +91,51 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
             return authorizationToken?.AccessToken;
         }
 
-        public async Task<string> GetUrlAsync()
+        public async Task<string> GetServiceUrlAsync(ServiceEndpoint serviceEndpoint)
+        {
+            var organization = await GetOrganizationNameAsync()
+                .ConfigureAwait(false);
+
+            return serviceEndpoint switch
+            {
+                ServiceEndpoint.ApiRoot => $"https://dev.azure.com/{organization}/_apis",
+                ServiceEndpoint.UserEntitlements => $"https://vsaex.dev.azure.com/{organization}/_apis/userentitlements",
+                _ => throw new NotSupportedException($"Service endpoint of type '{serviceEndpoint}' is not supported"),
+            };
+        }
+
+        public async Task<string> GetOrganizationUrlAsync()
         {
             var authorizationToken = await GetAuthorizationTokenAsync()
                 .ConfigureAwait(false);
 
             return authorizationToken?.Organization;
+        }
+
+        public async Task<string> GetOrganizationNameAsync()
+        {
+            string organizationName = null;
+
+            var organizationUrl = await GetOrganizationUrlAsync()
+                .ConfigureAwait(false);
+
+            if (Uri.TryCreate(organizationUrl, UriKind.Absolute, out Uri url))
+            {
+                if (url.Host.Equals("dev.azure.com", StringComparison.OrdinalIgnoreCase))
+                {
+                    organizationName = url.AbsolutePath
+                        .Split('/', StringSplitOptions.RemoveEmptyEntries)
+                        .First();
+                }
+                else if (url.Host.EndsWith(".visualstudio.com", StringComparison.OrdinalIgnoreCase))
+                {
+                    organizationName = url.Host
+                        .Split('.', StringSplitOptions.RemoveEmptyEntries)
+                        .First();
+                }
+            }
+
+            return organizationName;
         }
 
         public async Task<bool> IsAuthorizedAsync()
