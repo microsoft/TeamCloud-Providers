@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Flurl;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Remote;
@@ -24,9 +25,18 @@ namespace TeamCloud.Providers.Azure.DevOps.Commands
 {
     public abstract class ProviderCommandDevOpsTests : ProviderCommandCoreTests
     {
+        private readonly Guid payloadId = Guid.NewGuid();
+        private readonly string payloadName = $"Project_{DateTime.UtcNow.Ticks}";
+
         public ProviderCommandDevOpsTests(ProviderService providerService, ITestOutputHelper outputHelper)
             : base(providerService, outputHelper)
         { }
+
+        protected virtual void ModifyCommandPayload(JObject commandJson)
+        {
+            (commandJson.SelectToken("$.payload.id") as JValue)?.SetValue(payloadId);
+            (commandJson.SelectToken("$.payload.name") as JValue)?.SetValue(payloadName);
+        }
 
         protected async Task AuthorizeAsync()
         {

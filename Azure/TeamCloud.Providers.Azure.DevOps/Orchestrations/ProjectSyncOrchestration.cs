@@ -4,7 +4,7 @@
  */
 
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -16,9 +16,9 @@ using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
 {
-    public static class UserSyncOrchestration
+    public static class ProjectSyncOrchestration
     {
-        [FunctionName(nameof(UserSyncOrchestration))]
+        [FunctionName(nameof(ProjectSyncOrchestration))]
         public static async Task RunOrchestration(
             [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
             ILogger log)
@@ -32,10 +32,12 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
             try
             {
                 await Task
-                    .WhenAll(project.Users.Select(user => functionContext.CallActivityWithRetryAsync(nameof(UserRegisterActivity), user)))
+                    .WhenAll(new Task[] 
+                    {
+                        functionContext.CallActivityWithRetryAsync(nameof(SynchronizeServiceConnectionsActivity), project),
+                        functionContext.CallActivityWithRetryAsync(nameof(SynchronizeUsersActivity), project)
+                    })
                     .ConfigureAwait(true);
-
-
             }
             catch (Exception exc)
             {

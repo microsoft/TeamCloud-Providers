@@ -36,12 +36,6 @@ namespace TeamCloud.Providers.Azure.DevOps.Commands
                 .ConfigureAwait(false);
 
             commandResult.ShouldHaveRuntimeStatus(CommandRuntimeStatus.Completed);
-
-            static void ModifyCommandPayload(JObject commandJson)
-            {
-                (commandJson.SelectToken("$.payload.id") as JValue)?.SetValue(Guid.NewGuid());
-                (commandJson.SelectToken("$.payload.name") as JValue)?.SetValue($"Project_{DateTime.UtcNow.Ticks}");
-            }
         }
     }
 }

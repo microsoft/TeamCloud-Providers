@@ -4,12 +4,15 @@
  */
 
 using System;
+using System.Reflection;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TeamCloud.Azure;
+using TeamCloud.Configuration;
 using TeamCloud.Http;
 using TeamCloud.Model.Commands;
 using TeamCloud.Orchestration;
@@ -39,14 +42,15 @@ namespace TeamCloud.Providers.Azure.DevOps
                 .AddNewtonsoftJson();
 
             builder.Services
+                .AddTeamCloudOptions(Assembly.GetExecutingAssembly())
                 .AddTeamCloudHttp()
+                .AddTeamCloudAzure(configuration => { })
                 .AddTeamCloudCommandOrchestration(configuration =>
                 {
                     configuration
                         .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration), (command) => TimeSpan.FromMinutes(5))
                         .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
                         .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
-                        .MapCommand<ProviderProjectDeleteCommand>(nameof(ProjectDeleteOrchestration))
                         .IgnoreCommand<IProviderCommand>();
                 });
 

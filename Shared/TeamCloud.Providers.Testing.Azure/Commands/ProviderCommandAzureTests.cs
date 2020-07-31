@@ -15,7 +15,7 @@ using TeamCloud.Model.Data;
 using TeamCloud.Providers.Azure.AppInsights.Options;
 using TeamCloud.Providers.Testing.Services;
 using Xunit.Abstractions;
-using AzureResourceGroup = TeamCloud.Model.Data.Core.AzureResourceGroup;
+using AzureResourceGroup = TeamCloud.Model.Data.AzureResourceGroup;
 
 namespace TeamCloud.Providers.Testing.Commands
 {

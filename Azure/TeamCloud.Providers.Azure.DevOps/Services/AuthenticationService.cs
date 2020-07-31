@@ -5,6 +5,7 @@
 
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
 using Microsoft.VisualStudio.Services.OAuth;
@@ -25,7 +26,9 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
 
         Task<string> GetServiceUrlAsync(ServiceEndpoint serviceEndpoint);
 
-        Task<VssConnection> GetConnectionAsync();
+        //Task<VssConnection> GetConnectionAsync();
+
+        Task<T> GetClientAsync<T>(CancellationToken cancellationToken = default) where T : VssHttpClientBase;
 
         Task<bool> IsAuthorizedAsync();
     }
@@ -69,19 +72,19 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
             return token;
         }
 
-        public async Task<VssConnection> GetConnectionAsync()
-        {
-            var token = await GetAuthorizationTokenAsync()
-                .ConfigureAwait(false);
+        //public async Task<VssConnection> GetConnectionAsync()
+        //{
+        //    var token = await GetAuthorizationTokenAsync()
+        //        .ConfigureAwait(false);
 
-            if (token is null)
-                return null;
+        //    if (token is null)
+        //        return null;
 
-            var connectionUri = new Uri(token.Organization);
-            var connectionCred = new VssOAuthAccessTokenCredential(token.AccessToken);
+        //    var connectionUri = new Uri(token.Organization);
+        //    var connectionCred = new VssOAuthAccessTokenCredential(token.AccessToken);
 
-            return new VssConnection(connectionUri, connectionCred);
-        }
+        //    return new VssConnection(connectionUri, connectionCred);
+        //}
 
         public async Task<string> GetTokenAsync()
         {
@@ -171,6 +174,24 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
 
             _ = await secretsService
                 .SetSecretAsync(nameof(AuthenticationService), authorizationSecret)
+                .ConfigureAwait(false);
+        }
+
+        public async Task<T> GetClientAsync<T>(CancellationToken cancellationToken = default)
+            where T : VssHttpClientBase
+        {
+            var token = await GetAuthorizationTokenAsync()
+                .ConfigureAwait(false);
+
+            if (token is null)
+                return null;
+
+            var connectionUri = new Uri(token.Organization);
+            var connectionCred = new VssOAuthAccessTokenCredential(token.AccessToken);
+            var connection = new VssConnection(connectionUri, connectionCred);
+
+            return await connection
+                .GetClientAsync<T>()
                 .ConfigureAwait(false);
         }
     }

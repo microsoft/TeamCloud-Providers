@@ -30,11 +30,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
         {
             try
             {
-                var connection = await authenticationService
-                    .GetConnectionAsync()
-                    .ConfigureAwait(false);
-
-                var operationClient = await connection
+                using var operationClient = await authenticationService
                     .GetClientAsync<OperationsHttpClient>()
                     .ConfigureAwait(false);
 

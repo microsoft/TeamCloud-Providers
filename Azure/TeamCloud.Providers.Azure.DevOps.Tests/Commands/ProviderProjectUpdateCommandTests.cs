@@ -3,9 +3,7 @@
  *  Licensed under the MIT License.
  */
 
-using System;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data.Core;
@@ -42,12 +40,6 @@ namespace TeamCloud.Providers.Azure.DevOps.Commands
                 .ConfigureAwait(false);
 
             commandResult.ShouldHaveRuntimeStatus(CommandRuntimeStatus.Completed);
-
-            static void ModifyCommandPayload(JObject commandJson)
-            {
-                (commandJson.SelectToken("$.payload.id") as JValue)?.SetValue(Guid.NewGuid());
-                (commandJson.SelectToken("$.payload.name") as JValue)?.SetValue($"Project_{DateTime.UtcNow.Ticks}");
-            }
         }
     }
 }

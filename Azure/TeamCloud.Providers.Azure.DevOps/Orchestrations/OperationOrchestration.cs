@@ -41,7 +41,11 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
                             .ConfigureAwait(true);
 
                     if (!string.IsNullOrEmpty(operationInstanceId))
+                    {
+                        operationLog.LogInformation($"Azure DevOps Operation '{operationInstanceId}' started");
+
                         functionContext.ContinueAsNew((operationActivityName, operationActivityInput, operationInstanceId));
+                    }
                 }
                 else
                 {
@@ -55,6 +59,8 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
 
                     if (status.IsProgressStatus())
                     {
+                        operationLog.LogInformation($"Azure DevOps Operation '{operationInstanceId}' in progress");
+
                         functionContext
                             .ContinueAsNew((operationActivityName, operationActivityInput, operationInstanceId));
                     }
@@ -64,8 +70,16 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
                             .CallActivityWithRetryAsync<string>(nameof(OperationErrorActivity), operationInstanceId)
                             .ConfigureAwait(false);
 
-                        if (!string.IsNullOrEmpty(operationError))
+                        operationLog.LogWarning($"Azure DevOps Operation '{operationInstanceId}' failed: {operationError ?? "Unknown error"}");
+
+                        if (string.IsNullOrEmpty(operationError))
+                            throw new Exception($"Operation '{operationInstanceId}' failed");
+                        else
                             throw new Exception(operationError);
+                    }
+                    else
+                    {
+                        operationLog.LogInformation($"Azure DevOps Operation '{operationInstanceId}' succeeded");
                     }
                 }
             }

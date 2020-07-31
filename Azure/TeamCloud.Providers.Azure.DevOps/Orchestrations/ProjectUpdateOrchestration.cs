@@ -47,7 +47,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
                         .ConfigureAwait(true);
 
                     await functionContext
-                        .CallSubOrchestratorWithRetryAsync(nameof(UserSyncOrchestration), command.Payload)
+                        .CallSubOrchestratorWithRetryAsync(nameof(ProjectSyncOrchestration), command.Payload)
                         .ConfigureAwait(true);
 
                     commandResult.Result = new ProviderOutput { Properties = new Dictionary<string, string>() };
