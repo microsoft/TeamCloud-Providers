@@ -15,7 +15,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs
         {
             ProjectUserRole.Owner => AzureRoleDefinition.Contributor,
             ProjectUserRole.Member => AzureRoleDefinition.DevTestLabUser,
-            _ => throw new NotSupportedException($"Project user role '{projectUserRole}' is not supported.")
+            _ => Guid.Empty
         };
     }
 }

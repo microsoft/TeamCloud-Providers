@@ -15,7 +15,7 @@ namespace TeamCloud.Providers.Azure.AppInsights
         {
             ProjectUserRole.Owner => AzureRoleDefinition.Contributor,
             ProjectUserRole.Member => AzureRoleDefinition.Reader,
-            _ => throw new NotSupportedException($"Project user role '{projectUserRole}' is not supported.")
+            _ => Guid.Empty
         };
     }
 }

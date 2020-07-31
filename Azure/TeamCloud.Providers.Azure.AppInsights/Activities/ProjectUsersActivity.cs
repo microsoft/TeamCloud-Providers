@@ -45,7 +45,9 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
                         .ConfigureAwait(false);
 
                     var roleAssignments = (project.Users ?? Enumerable.Empty<User>())
-                        .ToDictionary(user => user.Id, user => Enumerable.Repeat((user.ProjectMembership(project.Id)?.Role ?? ProjectUserRole.None).ToRoleDefinitionId(), 1));
+                        .ToDictionary(user => user.Id, user => Enumerable.Repeat((user.ProjectMembership(project.Id)?.Role ?? ProjectUserRole.None).ToRoleDefinitionId(), 1).Where(rdid => rdid != Guid.Empty)) 
+                        .Where(kvp => kvp.Value.Any())
+                        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
                     await resource
                         .SetRoleAssignmentsAsync(roleAssignments)
