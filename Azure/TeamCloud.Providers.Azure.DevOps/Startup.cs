@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TeamCloud.Azure;
+using TeamCloud.Azure.Resources;
 using TeamCloud.Configuration;
 using TeamCloud.Http;
 using TeamCloud.Model.Commands;
@@ -44,7 +45,11 @@ namespace TeamCloud.Providers.Azure.DevOps
             builder.Services
                 .AddTeamCloudOptions(Assembly.GetExecutingAssembly())
                 .AddTeamCloudHttp()
-                .AddTeamCloudAzure(configuration => { })
+                .AddTeamCloudAzure(configuration =>
+                {
+                    configuration
+                        .AddResources();
+                })
                 .AddTeamCloudCommandOrchestration(configuration =>
                 {
                     configuration
