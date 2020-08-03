@@ -4,9 +4,11 @@
  */
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
+using TeamCloud.Azure;
 using TeamCloud.Model;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data.Core;
@@ -16,8 +18,15 @@ namespace TeamCloud.Providers.GitHub.Activities
 {
     public class ProviderRegisterActivity
     {
+        private readonly IAzureSessionService azureSessionService;
+
+        public ProviderRegisterActivity(IAzureSessionService azureSessionService)
+        {
+            this.azureSessionService = azureSessionService ?? throw new ArgumentNullException(nameof(azureSessionService));
+        }
+
         [FunctionName(nameof(ProviderRegisterActivity))]
-        public static ProviderRegistration RunActivity(
+        public async Task<ProviderRegistration> RunActivityAsync(
             [ActivityTrigger] ProviderRegisterCommand command,
             ILogger log)
         {
@@ -28,10 +37,14 @@ namespace TeamCloud.Providers.GitHub.Activities
             {
                 try
                 {
+                    var identity = await azureSessionService
+                        .GetIdentityAsync()
+                        .ConfigureAwait(false);
+
                     var registration = new ProviderRegistration
                     {
-                        PrincipalId = null, // this provider does not talk to any azure resources yet
-                        CommandMode = ProviderCommandMode.Extended
+                        PrincipalId = identity?.ObjectId
+                        // ,CommandMode = ProviderCommandMode.Extended
                     };
 
                     return registration;
