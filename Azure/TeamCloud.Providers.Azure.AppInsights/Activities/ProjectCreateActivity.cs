@@ -21,10 +21,12 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
     public class ProjectCreateActivity
     {
         private readonly IAzureDeploymentService azureDeploymentService;
+        private readonly ILogger<ProjectCreateActivity> logger;
 
-        public ProjectCreateActivity(IAzureDeploymentService azureDeploymentService)
+        public ProjectCreateActivity(IAzureDeploymentService azureDeploymentService, ILogger<ProjectCreateActivity> logger)
         {
             this.azureDeploymentService = azureDeploymentService ?? throw new ArgumentNullException(nameof(azureDeploymentService));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         [FunctionName(nameof(ProjectCreateActivity)), RetryOptions(3, FirstRetryInterval = "00:02:00")]
@@ -47,6 +49,8 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
                     var deployment = await azureDeploymentService
                         .DeployResourceGroupTemplateAsync(template, project.ResourceGroup.SubscriptionId, project.ResourceGroup.Name)
                         .ConfigureAwait(false);
+
+                    log.LogInformation($"Created deployment {deployment.ResourceId} at {project.ResourceGroup.Id}");
 
                     return deployment.ResourceId;
                 }

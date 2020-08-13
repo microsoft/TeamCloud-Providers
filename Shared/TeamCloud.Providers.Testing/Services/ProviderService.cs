@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Flurl;
 using Flurl.Http;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using TeamCloud.Http;

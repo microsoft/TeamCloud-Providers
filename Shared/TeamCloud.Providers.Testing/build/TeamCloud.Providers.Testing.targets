@@ -8,10 +8,11 @@
   </Target>
   
   <Target Name="PrepareTestFunctionHost" BeforeTargets="_CopyFilesMarkedCopyLocal" DependsOnTargets="CleanupTestFunctionHost" Outputs="%(ProjectReference.Identity)">
+    <Message Importance="high" Text="%(ProjectReference.Identity)" />
     <CombinePath BasePath="$(MSBuildProjectDirectory)" Paths="$(OutDir)FunctionHost\%(ProjectReference.Filename)">
       <Output TaskParameter="CombinedPaths" PropertyName="FunctionHostDir" />
     </CombinePath>
-    <MSBuild Projects="%(ProjectReference.Identity)" Targets="Pack" Properties="Configuration=$(Configuration);PublishDir=$(FunctionHostDir)" Condition=" '%(ProjectReference.TeamCloudProvider)' == 'true' " />
+    <MSBuild Projects="%(ProjectReference.Identity)" Targets="Publish" Properties="Configuration=$(Configuration);PublishDir=$(FunctionHostDir)" Condition=" '%(ProjectReference.TeamCloudProvider)' == 'true' " />
     <Copy SourceFiles="%(ProjectReference.RelativeDir)local.settings.json" DestinationFolder="$(FunctionHostDir)" ContinueOnError="true" Condition=" '%(ProjectReference.TeamCloudProvider)' == 'true' " />
   </Target>
   

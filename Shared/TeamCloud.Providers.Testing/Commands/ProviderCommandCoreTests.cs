@@ -116,7 +116,7 @@ namespace TeamCloud.Providers.Testing.Commands
         {
             var user = await GetUserAsync()
                 .ConfigureAwait(false);
-
+            
             var command = new ProviderRegisterCommand(user, new ProviderConfiguration()
             {
                 TeamCloudApplicationInsightsKey = Guid.Empty.ToString()

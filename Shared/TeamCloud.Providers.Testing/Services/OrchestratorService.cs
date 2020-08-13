@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
+using TeamCloud.Model.Data.Core;
 
 namespace TeamCloud.Providers.Testing.Services
 {
@@ -46,16 +47,19 @@ namespace TeamCloud.Providers.Testing.Services
                 .Build();
         }
 
-        internal Task StartAsync()
-            => host.StartAsync();
+        internal async Task StartAsync()
+        {
+            await host.StartAsync();
+
+            ReferenceLink.BaseUrl = host.ServerFeatures.Get<IServerAddressesFeature>()?
+                .Addresses.FirstOrDefault(url => url.StartsWith("http://", StringComparison.OrdinalIgnoreCase));
+        }
 
         public string BaseUrl
-            => host.ServerFeatures.Get<IServerAddressesFeature>()?.Addresses
-            .FirstOrDefault(url => url.StartsWith("http://", StringComparison.OrdinalIgnoreCase))?
-            .AppendPathSegment("/api");
+            => ReferenceLink.BaseUrl;
 
         public string GetCallbackUrl(IProviderCommand providerCommand)
-            => BaseUrl.AppendPathSegment($"callback/{providerCommand.CommandId}");
+            => BaseUrl.AppendPathSegment($"api/callback/{providerCommand.CommandId}");
 
         public ICommandResult GetCommandResult(Guid commandId)
             => results.TryGetValue(commandId, out var commandResult) ? commandResult : null;
