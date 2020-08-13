@@ -9,6 +9,7 @@ using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TeamCloud.Azure;
 using TeamCloud.Http;
 using TeamCloud.Model.Commands;
 using TeamCloud.Orchestration;
@@ -47,6 +48,7 @@ namespace TeamCloud.Providers.GitHub
 
             builder.Services
                 .AddTeamCloudHttp()
+                .AddTeamCloudAzure(configuration => { })
                 .AddTeamCloudCommandOrchestration(configuration =>
                 {
                     configuration
