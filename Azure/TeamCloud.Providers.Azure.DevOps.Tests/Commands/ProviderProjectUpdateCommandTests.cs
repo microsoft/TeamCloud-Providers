@@ -6,6 +6,7 @@
 using System.Threading.Tasks;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
+using TeamCloud.Model.Data;
 using TeamCloud.Model.Data.Core;
 using TeamCloud.Providers.Azure.DevOps.Conditional;
 using TeamCloud.Providers.Testing;

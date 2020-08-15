@@ -17,6 +17,7 @@ using TeamCloud.Orchestration;
 using TeamCloud.Providers.GitHub.Activities;
 using TeamCloud.Providers.Core;
 using TeamCloud.Serialization;
+using TeamCloud.Model.Data;
 
 namespace TeamCloud.Providers.GitHub.Orchestrations
 {

@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 using TeamCloud.Azure.Resources;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
+using TeamCloud.Model.Data;
 using TeamCloud.Model.Data.Core;
 using TeamCloud.Providers.Azure.DevTestLabs.Conditional;
 using TeamCloud.Providers.Testing;
