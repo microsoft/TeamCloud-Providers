@@ -5,6 +5,7 @@
 
 using System;
 using TeamCloud.Azure.Resources;
+using TeamCloud.Model.Data;
 using TeamCloud.Model.Data.Core;
 
 namespace TeamCloud.Providers.Azure.AppInsights

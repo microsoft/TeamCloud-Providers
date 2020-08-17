@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using TeamCloud.Azure;
 using TeamCloud.Model;
 using TeamCloud.Model.Commands;
+using TeamCloud.Model.Data;
 using TeamCloud.Model.Data.Core;
 using TeamCloud.Serialization;
 

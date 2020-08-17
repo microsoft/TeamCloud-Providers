@@ -31,8 +31,8 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.5.0" />
     <PackageReference Include="System.Interactive.Async" Version="4.1.1" />
     <PackageReference Include="System.Linq.Async" Version="4.1.1" />
-    <PackageReference Include="TeamCloud.Azure.Resources" Version="0.2.118-pre" />
-    <PackageReference Include="TeamCloud.Configuration" Version="0.2.118-pre" />
+    <PackageReference Include="TeamCloud.Azure.Resources" Version="$(TeamCloudPackageVersion)" />
+    <PackageReference Include="TeamCloud.Configuration" Version="$(TeamCloudPackageVersion)" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
   </ItemGroup>
   <ItemGroup>
