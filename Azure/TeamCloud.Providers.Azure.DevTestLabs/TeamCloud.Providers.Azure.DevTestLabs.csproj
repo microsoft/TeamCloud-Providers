@@ -12,6 +12,7 @@
     <None Remove="Templates\ProjectCreateTemplate_Bastion.json" />
     <None Remove="Templates\ProjectCreateTemplate_Identity.json" />
     <None Remove="Templates\ProjectCreateTemplate_KeyVault.json" />
+    <None Remove="Templates\ProjectCreateTemplate_Permissions.json" />
     <None Remove="Templates\ProjectCreateTemplate_Repository.json" />
     <None Remove="Templates\ProjectCreateTemplate_VNet.json" />
     <None Remove="Templates\ProjectCreateTemplate_VNetSecure.json" />
@@ -19,8 +20,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Templates\ProjectCreateTemplate.json" />
     <EmbeddedResource Include="Templates\ProjectCreateTemplate_Bastion.json" />
-    <EmbeddedResource Include="Templates\ProjectCreateTemplate_Identity.json" />
     <EmbeddedResource Include="Templates\ProjectCreateTemplate_KeyVault.json" />
+    <EmbeddedResource Include="Templates\ProjectCreateTemplate_Permissions.json" />
     <EmbeddedResource Include="Templates\ProjectCreateTemplate_Repository.json" />
     <EmbeddedResource Include="Templates\ProjectCreateTemplate_VNet.json" />
     <EmbeddedResource Include="Templates\ProjectCreateTemplate_VNetSecure.json" />

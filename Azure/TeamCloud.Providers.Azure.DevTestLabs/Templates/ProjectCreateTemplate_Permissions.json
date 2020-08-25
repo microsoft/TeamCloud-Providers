@@ -1,0 +1,54 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "ProjectName": {
+      "type": "string"
+    },
+    "IdentityName": {
+      "type": "string"
+    },
+    "KeyVaultName": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "roleDefinition_Owner": "[concat('/subscriptions/',subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
+    "roleDefinition_Contributor": "[concat('/subscriptions/',subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+    "roleDefinition_Reader": "[concat('/subscriptions/',subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]"
+  },
+  "resources": [
+    {
+      "name": "[concat(parameters('ProjectName'), '/Microsoft.Authorization/', guid(resourceId('Microsoft.DevTestLab/labs', parameters('ProjectName')), parameters('IdentityName')))]",
+      "type": "Microsoft.DevTestLab/labs/providers/roleAssignments",
+      "apiVersion": "2019-04-01-preview",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "roleDefinitionId": "[variables('roleDefinition_Reader')]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('IdentityName')), '2018-11-30').principalId]",
+        "principalType": "ServicePrincipal"
+      }
+    },
+    {
+      "name": "[concat(parameters('keyVaultName'), '/add')]",
+      "type": "Microsoft.KeyVault/vaults/accessPolicies",
+      "apiVersion": "2018-02-14",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "accessPolicies": [
+          {
+            "tenantId": "[subscription().tenantId]",
+            "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('IdentityName')), '2018-11-30').principalId]",
+            "permissions": {
+              "secrets": [
+                "get"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+  }
+}
