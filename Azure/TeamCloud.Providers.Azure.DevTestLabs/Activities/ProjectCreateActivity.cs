@@ -41,16 +41,16 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
                     var vnetPrefix = "10.0.0.0/16";
                     var snetPrefix = new object[]
                     {
-                new
-                {
-                    subnetname = "TeamCloud",
-                    subnetprefix = "10.0.0.0/24"
-                },
-                new
-                {
-                    subnetname = "AzureBastionSubnet",
-                    subnetprefix = "10.0.1.0/24"
-                }
+                        new
+                        {
+                            subnetname = "TeamCloud",
+                            subnetprefix = "10.0.0.0/24"
+                        },
+                        new
+                        {
+                            subnetname = "AzureBastionSubnet",
+                            subnetprefix = "10.0.1.0/24"
+                        }
                     };
 
                     var template = new ProjectCreateTemplate();
