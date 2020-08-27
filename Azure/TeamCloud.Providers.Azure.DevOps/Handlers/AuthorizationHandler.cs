@@ -120,6 +120,10 @@ namespace TeamCloud.Providers.Azure.DevOps.Handlers
 
                 JsonConvert.PopulateObject(json, token);
             }
+            else if (response.StatusCode == HttpStatusCode.BadRequest)
+            {
+                token = null;
+            }
             else
             {
                 throw new Exception(response.ReasonPhrase);

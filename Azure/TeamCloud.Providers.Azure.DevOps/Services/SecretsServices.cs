@@ -117,9 +117,18 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
             var blob = await GetSecretsBlobAsync(key)
                 .ConfigureAwait(false);
 
-            await blob
-                .UploadTextAsync(value)
-                .ConfigureAwait(false);
+            if (value is null)
+            {
+                await blob
+                    .DeleteIfExistsAsync()
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                await blob
+                    .UploadTextAsync(value)
+                    .ConfigureAwait(false);
+            }
 
             return value;
         }
