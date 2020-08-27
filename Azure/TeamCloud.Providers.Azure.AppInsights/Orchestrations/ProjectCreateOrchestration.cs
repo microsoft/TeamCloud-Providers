@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
@@ -46,19 +47,14 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
                         .CallDeploymentAsync(nameof(ProjectCreateActivity), command.Payload)
                         .ConfigureAwait(true);
 
-                    if (deploymentOutput.TryGetValue("resourceId", out var resourceId))
-                    {
-                        functionContext.SetCustomStatus("Updating user permissions", commandLog);
-
-                        await functionContext
-                            .CallActivityWithRetryAsync(nameof(ProjectUsersActivity), (command.Payload, resourceId?.ToString()))
-                            .ConfigureAwait(true);
-                    }
-
                     commandResult.Result = new ProviderOutput
                     {
                         Properties = deploymentOutput.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString())
                     };
+
+                    await functionContext
+                        .CallSubOrchestratorWithRetryAsync(nameof(ProjectSyncOrchestration), command.Payload)
+                        .ConfigureAwait(true);
                 }
                 catch (Exception exc)
                 {

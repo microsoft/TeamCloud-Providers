@@ -31,12 +31,15 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
 
             try
             {
+                var tasks = new List<Task>()
+                {
+                    functionContext.CallActivityWithRetryAsync(nameof(SynchronizeLinksActivity), project),
+                    functionContext.CallActivityWithRetryAsync(nameof(SynchronizeServiceConnectionsActivity), project),
+                    functionContext.CallActivityWithRetryAsync(nameof(SynchronizeUsersActivity), project)
+                };
+
                 await Task
-                    .WhenAll(new Task[] 
-                    {
-                        functionContext.CallActivityWithRetryAsync(nameof(SynchronizeServiceConnectionsActivity), project),
-                        functionContext.CallActivityWithRetryAsync(nameof(SynchronizeUsersActivity), project)
-                    })
+                    .WhenAll(tasks)
                     .ConfigureAwait(true);
             }
             catch (Exception exc)

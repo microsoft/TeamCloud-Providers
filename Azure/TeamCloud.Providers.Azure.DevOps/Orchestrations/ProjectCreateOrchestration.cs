@@ -14,7 +14,6 @@ using TeamCloud.Model;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
-using TeamCloud.Model.Data.Core;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.DevOps.Activities;
 using TeamCloud.Serialization;
