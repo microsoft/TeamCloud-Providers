@@ -1,4 +1,9 @@
-﻿namespace TeamCloud.Providers.Azure.DevOps
+﻿/**
+ *  Copyright (c) Microsoft Corporation.
+ *  Licensed under the MIT License.
+ */
+
+namespace TeamCloud.Providers.Azure.DevOps
 {
     internal static class GlobalConstants
     {
