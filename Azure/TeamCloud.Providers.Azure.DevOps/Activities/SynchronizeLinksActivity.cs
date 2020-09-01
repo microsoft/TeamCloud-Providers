@@ -5,12 +5,10 @@
 
 using System;
 using System.Threading.Tasks;
-using Flurl.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using Microsoft.TeamFoundation.Core.WebApi;
-using Microsoft.VisualStudio.Services.WebApi;
 using TeamCloud.Azure;
 using TeamCloud.Model;
 using TeamCloud.Model.Data;
@@ -54,7 +52,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
                         .GetProject(project.Name)
                         .ConfigureAwait(false);
 
-                    if (projectInstance.Links.Links.TryGetValue("web", out var value) 
+                    if (projectInstance.Links.Links.TryGetValue("web", out var value)
                         && value is Microsoft.VisualStudio.Services.WebApi.ReferenceLink link)
                     {
                         var projectLink = new ProjectLink()
@@ -64,18 +62,9 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
 
                         }.WithGeneratedId(projectInstance.Id.ToString());
 
-                        try
-                        {
-                            _ = await project.Links.Links
-                                .PutAsync(azureSessionService, projectLink)
-                                .ConfigureAwait(false);
-                        }
-                        catch (FlurlHttpException exc) when (exc.Call.HttpStatus == System.Net.HttpStatusCode.NotFound)
-                        {
-                            _ = await project.Links.Links
-                                .PostAsync(azureSessionService, projectLink)
-                                .ConfigureAwait(false);
-                        }
+                        _ = await project.Links.Links
+                            .SetAsync(azureSessionService, projectLink)
+                            .ConfigureAwait(false);
                     }
                 }
                 catch (Exception exc)

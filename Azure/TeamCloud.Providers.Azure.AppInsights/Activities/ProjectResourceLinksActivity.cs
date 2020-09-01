@@ -6,7 +6,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Flurl.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
@@ -56,18 +55,9 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
 
                         }.WithGeneratedId(resourceId);
 
-                        try
-                        {
-                            _ = await project.Links.Links
-                                .PutAsync(azureSessionService, projectLink)
-                                .ConfigureAwait(false);
-                        }
-                        catch (FlurlHttpException exc) when (exc.Call.HttpStatus == System.Net.HttpStatusCode.NotFound)
-                        {
-                            _ = await project.Links.Links
-                                .PostAsync(azureSessionService, projectLink)
-                                .ConfigureAwait(false);
-                        }
+                        _ = await project.Links.Links
+                            .SetAsync(azureSessionService, projectLink)
+                            .ConfigureAwait(false);
                     }
                 }
                 catch (Exception exc)
