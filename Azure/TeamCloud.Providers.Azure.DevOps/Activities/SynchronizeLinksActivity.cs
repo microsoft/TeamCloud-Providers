@@ -58,7 +58,8 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
                         var projectLink = new ProjectLink()
                         {
                             HRef = link.Href,
-                            Title = $"Azure DevOps ({projectInstance.Name})".Trim()
+                            Title = $"Azure DevOps ({projectInstance.Name})".Trim(),
+                            Type = ProjectLinkType.AzureResource
 
                         }.WithGeneratedId(projectInstance.Id.ToString());
 

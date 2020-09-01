@@ -51,7 +51,8 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Activities
                         var projectLink = new ProjectLink()
                         {
                             HRef = azureResourceIdentifier.GetPortalUrl(identity.TenantId),
-                            Title = $"DevTest Lab ({azureResourceIdentifier.ResourceTypes.Last().Value})".Trim()
+                            Title = $"DevTest Lab ({azureResourceIdentifier.ResourceTypes.Last().Value})".Trim(),
+                            Type = ProjectLinkType.AzureResource
 
                         }.WithGeneratedId(resourceId);
 

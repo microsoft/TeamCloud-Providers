@@ -51,7 +51,8 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
                         var projectLink = new ProjectLink()
                         {
                             HRef = azureResourceIdentifier.GetPortalUrl(identity.TenantId),
-                            Title = $"Application Insights ({azureResourceIdentifier.ResourceTypes.Last().Value})".Trim()
+                            Title = $"Application Insights ({azureResourceIdentifier.ResourceTypes.Last().Value})".Trim(),
+                            Type = ProjectLinkType.AzureResource
 
                         }.WithGeneratedId(resourceId);
 
