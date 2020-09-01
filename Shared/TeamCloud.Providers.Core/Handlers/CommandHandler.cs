@@ -185,7 +185,7 @@ namespace TeamCloud.Providers.Azure.AppInsights
                     log.LogInformation($"Waiting for command orchestration '{command.CommandId}' ...");
 
                     await Task
-                        .Delay(5000)
+                        .Delay(1000)
                         .ConfigureAwait(false);
                 }
                 else
@@ -201,7 +201,8 @@ namespace TeamCloud.Providers.Azure.AppInsights
         {
             if (configuration.Orchestrations.TryGetValue(command.GetType(), out var orchestrationSettings))
             {
-                commandResult.Timeout = orchestrationSettings.OrchstrationTimeout(command);
+                commandResult.Timeout = orchestrationSettings.OrchstrationTimeout?.Invoke(command)
+                                        ?? OrchestrationSettings.DefaultOrchestrationTimeout(command);
             }
             else
             {

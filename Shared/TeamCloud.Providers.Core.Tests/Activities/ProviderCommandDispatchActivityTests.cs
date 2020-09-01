@@ -9,7 +9,6 @@ using NSubstitute;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
-using TeamCloud.Model.Data.Core;
 using TeamCloud.Providers.Core.Configuration;
 using Xunit;
 
@@ -56,7 +55,7 @@ namespace TeamCloud.Providers.Core.Activities
         {
             var configuration = Substitute.For<IOrchestrationConfiguration>();
 
-            configuration.Ignored.Returns(new List<Type>()
+            configuration.Ignored.Returns(new HashSet<Type>()
             {
                 typeof(TestInheritedCommand)
             });
@@ -94,7 +93,7 @@ namespace TeamCloud.Providers.Core.Activities
         {
             var configuration = Substitute.For<IOrchestrationConfiguration>();
 
-            configuration.Ignored.Returns(new List<Type>()
+            configuration.Ignored.Returns(new HashSet<Type>()
             {
                 typeof(TestCommand)
             });
@@ -132,7 +131,7 @@ namespace TeamCloud.Providers.Core.Activities
         {
             var configuration = Substitute.For<IOrchestrationConfiguration>();
 
-            configuration.Ignored.Returns(new List<Type>()
+            configuration.Ignored.Returns(new HashSet<Type>()
             {
                 typeof(ICommand)
             });
@@ -170,7 +169,7 @@ namespace TeamCloud.Providers.Core.Activities
         {
             var configuration = Substitute.For<IOrchestrationConfiguration>();
 
-            configuration.Ignored.Returns(new List<Type>()
+            configuration.Ignored.Returns(new HashSet<Type>()
             {
                 typeof(IProviderCommand<TestPayload, TestCommandResult>)
             });

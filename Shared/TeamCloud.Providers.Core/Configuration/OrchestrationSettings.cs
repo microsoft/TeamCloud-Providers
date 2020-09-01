@@ -12,19 +12,25 @@ namespace TeamCloud.Providers.Core.Configuration
     {
         string OrchestrationName { get; }
 
-        Func<ICommand, TimeSpan> OrchstrationTimeout { get; }
+        Func<ICommand, TimeSpan> OrchstrationTimeout { get; set; }
     }
 
     public sealed class OrchestrationSettings : IOrchestrationSettings
     {
-        internal static readonly Func<ICommand, TimeSpan> DefaultOrchestrationTimeout = (command)
+        public static readonly Func<ICommand, TimeSpan> DefaultOrchestrationTimeout = (command)
             => CommandResult.MaximumTimeout;
 
-        internal OrchestrationSettings()
-        { }
+        internal OrchestrationSettings(string orchestrationName)
+        {
+            if (string.IsNullOrEmpty(orchestrationName))
+                throw new ArgumentException($"'{nameof(orchestrationName)}' cannot be null or empty", nameof(orchestrationName));
 
-        public string OrchestrationName { get; internal set; }
+            OrchestrationName = orchestrationName;
+        }
 
-        public Func<ICommand, TimeSpan> OrchstrationTimeout { get; internal set; }
+        public string OrchestrationName { get; }
+
+        public Func<ICommand, TimeSpan> OrchstrationTimeout { get; set; }
+            = DefaultOrchestrationTimeout;
     }
 }

@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using TeamCloud.Model.Data;
 
 namespace TeamCloud.Providers.Core.Configuration
 {
@@ -12,7 +13,9 @@ namespace TeamCloud.Providers.Core.Configuration
     {
         IDictionary<Type, IOrchestrationSettings> Orchestrations { get; }
 
-        ICollection<Type> Ignored { get; }
+        ISet<ProviderEventSubscription> Subscriptions { get; }
+
+        ISet<Type> Ignored { get; }
     }
 
     public sealed class OrchestrationConfiguration : IOrchestrationConfiguration
@@ -22,7 +25,10 @@ namespace TeamCloud.Providers.Core.Configuration
         public IDictionary<Type, IOrchestrationSettings> Orchestrations { get; }
             = new Dictionary<Type, IOrchestrationSettings>();
 
-        public ICollection<Type> Ignored { get; }
+        public ISet<ProviderEventSubscription> Subscriptions { get; }
+            = new HashSet<ProviderEventSubscription>();
+
+        public ISet<Type> Ignored { get; }
             = new HashSet<Type>();
     }
 }

@@ -61,7 +61,7 @@ namespace TeamCloud.Providers.Azure.AppInsights
                 .AddTeamCloudCommandOrchestration(configuration =>
                 {
                     configuration
-                        .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration), (command) => TimeSpan.FromMinutes(5))
+                        .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration), settings => settings.OrchstrationTimeout = (command) => TimeSpan.FromMinutes(5))
                         .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
                         .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
                         .IgnoreCommand<IProviderCommand>();

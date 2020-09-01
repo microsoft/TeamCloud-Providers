@@ -55,8 +55,12 @@ namespace TeamCloud.Providers.Core.Orchestrations
 
                 if (string.IsNullOrEmpty(commandOrchestrationName))
                 {
+                    // there was no orchestration name found for the current command !!!
+                    // to keep the our suborchestration per command logic alive we trigger
+                    // a fallback orchestration in this case.
+
                     commandLog
-                        .LogInformation($"Dispatching command '{command.GetType().FullName}' ({command.CommandId}) >>> FALLBACK ({commandOrchestrationInstanceId})");
+                        .LogInformation($"Dispatching command '{command.GetType()}' ({command.CommandId}) >>> FALLBACK ({commandOrchestrationInstanceId})");
 
                     commandResult = await functionContext
                         .CallSubOrchestratorWithRetryAsync<ICommandResult>(nameof(ProviderCommandFallbackOrchestration), commandOrchestrationInstanceId, command)
@@ -64,15 +68,22 @@ namespace TeamCloud.Providers.Core.Orchestrations
                 }
                 else
                 {
+                    // this is the default case - the given command requested a command 
+                    // result by callback. means; the current orchestration instance has 
+                    // to wait for the result and send it back to callback url.
+
                     commandLog
-                        .LogInformation($"Dispatching command '{command.GetType().FullName}' ({commandMessage.CommandId}) >>> {commandOrchestrationName} ({commandOrchestrationInstanceId})");
+                        .LogInformation($"Dispatching command '{command.GetType()}' ({commandMessage.CommandId}) >>> {commandOrchestrationName} ({commandOrchestrationInstanceId})");
 
                     commandResult = await functionContext
                         .CallSubOrchestratorWithRetryAsync<ICommandResult>(commandOrchestrationName, commandOrchestrationInstanceId, command)
                         .ConfigureAwait(true);
                 }
 
-                do
+                var timeoutDuration = TimeSpan.FromMinutes(5);
+                var timeout = functionContext.CurrentUtcDateTime.Add(timeoutDuration);
+
+                while (true)
                 {
                     // there is a chance that the suborchestration used to agument the command result
                     // doesn't reflect the final runtime status (completed / failed / canceled) because
@@ -80,14 +91,30 @@ namespace TeamCloud.Providers.Core.Orchestrations
                     // status reported back to the orchestrator we loop / wait for this runtime status.
 
                     commandResult = await functionContext
-                        .CallActivityWithRetryAsync<ICommandResult>(nameof(ProviderCommandResultAugmentActivity), (commandResult, commandOrchestrationInstanceId))
+                        .CallActivityWithRetryAsync<ICommandResult>(nameof(ProviderCommandResultAugmentActivity), (commandResult ?? command.CreateResult(), commandOrchestrationInstanceId))
                         .ConfigureAwait(true);
+
+                    if (commandResult.RuntimeStatus.IsFinal())
+                    {
+                        // the command orchestration finally reached a final state, so we can stop
+                        // polling the status of the command orchestration to augment the command result
+
+                        break;
+                    }
+                    else if (functionContext.CurrentUtcDateTime > timeout)
+                    {
+                        // this should never happen, but we need to be bulletproof here.
+                        // the command orchestration finished, but we weren't able to resolve
+                        // an orchstration status with a final runtime status to finish
+                        // the overall command procession
+
+                        throw new OperationCanceledException($"Command orchestration '{commandOrchestrationInstanceId}' failed to deliver a final runtime status.");
+                    }
                 }
-                while (commandResult.RuntimeStatus.IsActive());
             }
             catch (Exception exc)
             {
-                commandLog.LogError(exc, $"Processing command '{command.GetType().FullName}' ({command.CommandId}) Failed >>> {exc.Message}");
+                commandLog.LogError(exc, $"Processing command '{command.GetType()}' ({command.CommandId}) Failed >>> {exc.Message}");
 
                 commandResult ??= command.CreateResult();
                 commandResult.Errors.Add(exc);
@@ -96,13 +123,22 @@ namespace TeamCloud.Providers.Core.Orchestrations
             {
                 try
                 {
-                    await functionContext
-                        .CallActivityWithRetryAsync(nameof(ProviderCommandResultSendActivity), (commandResult, commandMessage.CallbackUrl))
-                        .ConfigureAwait(true);
+                    if (!string.IsNullOrEmpty(commandMessage.CallbackUrl))
+                    {
+                        // try to send back the command result back to the callback url
+                        // this operation is part of the overall command processing and 
+                        // exceptions caused by this operation will be part of the 
+                        // command result (and will be returned if the orchestrator 
+                        // fetches the command result via a GET request)
+
+                        await functionContext
+                            .CallActivityWithRetryAsync(nameof(ProviderCommandResultSendActivity), (commandResult, commandMessage.CallbackUrl))
+                            .ConfigureAwait(true);
+                    }
                 }
                 catch (Exception exc)
                 {
-                    commandLog.LogError(exc, $"Sending result for command '{command.GetType().FullName}' ({command.CommandId}) Failed >>> {exc.Message}");
+                    commandLog.LogError(exc, $"Sending result for command '{command.GetType()}' ({command.CommandId}) Failed >>> {exc.Message}");
 
                     commandResult ??= command.CreateResult();
                     commandResult.Errors.Add(exc);

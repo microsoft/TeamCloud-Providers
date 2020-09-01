@@ -20,6 +20,7 @@ using TeamCloud.Azure.Resources;
 using TeamCloud.Configuration;
 using TeamCloud.Http;
 using TeamCloud.Model.Commands;
+using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Orchestration.Auditing;
 using TeamCloud.Orchestration.Deployment;
@@ -61,10 +62,12 @@ namespace TeamCloud.Providers.Azure.DevTestLabs
                 .AddTeamCloudCommandOrchestration(configuration =>
                 {
                     configuration
-                        .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration), (command) => TimeSpan.FromMinutes(5))
+                        .MapCommand<ProviderEventCommand>(nameof(ProviderEventOrchestration))
+                        .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration), settings => settings.OrchstrationTimeout = (command) => TimeSpan.FromMinutes(5))
                         .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
                         .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
-                        .IgnoreCommand<IProviderCommand>();
+                        .IgnoreCommand<IProviderCommand>()
+                        .SubscribeEvent(ProviderEventSubscription.All);
                 });
         }
 

@@ -9,15 +9,24 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
+using TeamCloud.Providers.Core.Configuration;
 using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Core.Activities
 {
-    public static class ProviderCommandResultAugmentActivity
+    public sealed class ProviderCommandResultAugmentActivity
     {
+        private readonly IOrchestrationConfiguration orchestrationConfiguration;
+
+        public ProviderCommandResultAugmentActivity(IOrchestrationConfiguration orchestrationConfiguration)
+        {
+            this.orchestrationConfiguration = orchestrationConfiguration ?? throw new ArgumentNullException(nameof(orchestrationConfiguration));
+        }
+
         [FunctionName(nameof(ProviderCommandResultAugmentActivity))]
-        public static async Task<ICommandResult> RunActivity(
+        public async Task<ICommandResult> RunActivity(
             [ActivityTrigger] IDurableActivityContext functionContext,
             [DurableClient] IDurableClient durableClient,
             ILogger log)
@@ -40,8 +49,12 @@ namespace TeamCloud.Providers.Core.Activities
                 {
                     commandResult = commandResult
                         .ApplyStatus(commandStatus);
+                }
 
-                    log.LogInformation($"Augmented command result ({commandResult.CommandId}): {JsonConvert.SerializeObject(commandResult)}");
+                if (commandResult is ProviderRegisterCommandResult providerRegisterCommandResult)
+                {
+                    providerRegisterCommandResult.Result
+                        .EventSubscriptions = orchestrationConfiguration.Subscriptions;
                 }
             }
             catch (Exception exc) when (!exc.IsSerializable(out var serializableExc))
@@ -49,6 +62,10 @@ namespace TeamCloud.Providers.Core.Activities
                 log.LogError(exc, $"Activity '{nameof(ProviderCommandResultAugmentActivity)}' failed: {exc.Message}");
 
                 throw serializableExc;
+            }
+            finally
+            {
+                log.LogInformation($"Augmented command result ({commandResult.CommandId}): {JsonConvert.SerializeObject(commandResult)}");
             }
 
             return commandResult;

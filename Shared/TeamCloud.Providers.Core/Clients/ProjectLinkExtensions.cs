@@ -1,4 +1,9 @@
-﻿using System;
+﻿/**
+ *  Copyright (c) Microsoft Corporation.
+ *  Licensed under the MIT License.
+ */
+
+using System;
 using System.Security.Cryptography;
 using System.Text;
 using TeamCloud.Model.Data;
