@@ -61,7 +61,7 @@ namespace TeamCloud.Providers.Core.Clients
         }
 
         public static async Task<T> PostAsync<T>(this ReferenceLink referenceLink, IAzureSessionService azureSessionService, T payload, Func<string, string> tokenCallback = null)
-            where T : class, new()
+            where T : class, IIdentifiable, new()
         {
             if (referenceLink is null)
                 throw new ArgumentNullException(nameof(referenceLink));
@@ -121,6 +121,26 @@ namespace TeamCloud.Providers.Core.Clients
                 .ConfigureAwait(false);
 
             return json.SelectToken("data")?.ToObject<T>();
+        }
+
+        public static async Task<T> SetAsync<T>(this ReferenceLink referenceLink, IAzureSessionService azureSessionService, T payload, Func<string, string> tokenCallback = null)
+            where T : class, IIdentifiable, new()
+        {
+            if (referenceLink is null)
+                throw new ArgumentNullException(nameof(referenceLink));
+
+            try
+            {
+                return await referenceLink
+                    .PutAsync(azureSessionService, payload, tokenCallback)
+                    .ConfigureAwait(false);
+            }
+            catch (FlurlHttpException exc) when (exc.Call.HttpStatus == System.Net.HttpStatusCode.NotFound)
+            {
+                return await referenceLink
+                    .PostAsync(azureSessionService, payload, tokenCallback)
+                    .ConfigureAwait(false);
+            }
         }
 
         public static Task<T> DeleteAsync<T>(this ReferenceLink referenceLink, IAzureSessionService azureSessionService, T payload, Func<string, string> tokenCallback = null)
