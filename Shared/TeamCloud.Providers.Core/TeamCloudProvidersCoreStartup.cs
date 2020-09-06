@@ -20,10 +20,6 @@ namespace TeamCloud.Providers.Core
             if (builder is null)
                 throw new ArgumentNullException(nameof(builder));
 
-            //builder.Services
-            //    .AddMvcCore()
-            //    .AddNewtonsoftJson();
-
             builder.Services
                 .TryAddSingleton<IOrchestrationConfiguration>(new OrchestrationConfiguration());
         }

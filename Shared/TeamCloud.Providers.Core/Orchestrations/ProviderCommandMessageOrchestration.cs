@@ -12,9 +12,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Orchestration;
-using TeamCloud.Orchestration.Auditing;
-using TeamCloud.Providers.Azure.AppInsights;
 using TeamCloud.Providers.Core.Activities;
+using TeamCloud.Providers.Core.API;
 
 namespace TeamCloud.Providers.Core.Orchestrations
 {
@@ -51,7 +50,7 @@ namespace TeamCloud.Providers.Core.Orchestrations
                     .CallActivityWithRetryAsync<string>(nameof(ProviderCommandDispatchActivity), command)
                     .ConfigureAwait(true);
 
-                var commandOrchestrationInstanceId = CommandHandler.GetCommandOrchestrationInstanceId(command);
+                var commandOrchestrationInstanceId = CommandTrigger.GetCommandOrchestrationInstanceId(command);
 
                 if (string.IsNullOrEmpty(commandOrchestrationName))
                 {

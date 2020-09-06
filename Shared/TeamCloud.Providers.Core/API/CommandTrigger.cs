@@ -11,6 +11,7 @@ using Flurl;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Management.Network.Fluent.ApplicationGatewayBackendHttpConfiguration.Update;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -19,13 +20,12 @@ using TeamCloud.Http;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Validation;
-using TeamCloud.Providers.Core;
 using TeamCloud.Providers.Core.Configuration;
 using TeamCloud.Providers.Core.Orchestrations;
 
-namespace TeamCloud.Providers.Azure.AppInsights
+namespace TeamCloud.Providers.Core.API
 {
-    public class CommandHandler
+    public sealed class CommandTrigger
     {
         internal static string GetCommandOrchestrationInstanceId(Guid commandId)
             => commandId.ToString();
@@ -42,13 +42,13 @@ namespace TeamCloud.Providers.Azure.AppInsights
         private readonly IOrchestrationConfiguration configuration;
         private readonly IHttpContextAccessor httpContextAccessor;
 
-        public CommandHandler(IOrchestrationConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        public CommandTrigger(IOrchestrationConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
-        [FunctionName(nameof(CommandHandler))]
+        [FunctionName(nameof(CommandTrigger))]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", "get", Route = "command/{commandId:guid?}")] HttpRequestMessage requestMessage,
             [DurableClient] IDurableClient durableClient,
@@ -65,7 +65,6 @@ namespace TeamCloud.Providers.Azure.AppInsights
 
             try
             {
-
                 switch (requestMessage)
                 {
                     case HttpRequestMessage msg when msg.Method == HttpMethod.Get:
@@ -99,22 +98,19 @@ namespace TeamCloud.Providers.Azure.AppInsights
 
         private async Task<IActionResult> HandleGetAsync(IDurableClient durableClient, Guid commandId)
         {
-            var messageInstanceId = GetCommandMessageOrchestrationInstanceId(commandId);
-
-            var messageInstanceStatus = await durableClient
-                .GetStatusAsync(messageInstanceId)
+            var command = await durableClient
+                .GetCommandAsync(commandId)
                 .ConfigureAwait(false);
 
-            var message = messageInstanceStatus?.Input
-                .ToObject<ProviderCommandMessage>();
-
-            if (message?.Command is IProviderCommand command)
+            if (command != null)
             {
-                var providerCommandResult = await durableClient
+                var commandResult = await durableClient
                     .GetCommandResultAsync(command)
                     .ConfigureAwait(false);
 
-                return CreateCommandResultResponse(command, providerCommandResult);
+                commandResult ??= command.CreateResult();
+
+                return CreateCommandResultResponse(command, commandResult);
             }
 
             return new NotFoundResult();
@@ -130,6 +126,9 @@ namespace TeamCloud.Providers.Azure.AppInsights
                     .ReadAsJsonAsync<ProviderCommandMessage>()
                     .ConfigureAwait(false);
 
+                if (message?.Command is null)
+                    return new BadRequestResult();
+
                 message.Validate(throwOnValidationError: true);
             }
             catch (ValidationException)
@@ -137,64 +136,47 @@ namespace TeamCloud.Providers.Azure.AppInsights
                 return new BadRequestResult();
             }
 
-            if (message?.Command is null)
-                return new BadRequestResult();
-
             var instanceId = GetCommandMessageOrchestrationInstanceId(message.Command.CommandId);
 
             try
             {
+                log.LogInformation($"Starting provider command message orchestration for command {message.Command.CommandId}");
+
                 _ = await durableClient
                     .StartNewAsync(nameof(ProviderCommandMessageOrchestration), instanceId, message)
                     .ConfigureAwait(false);
             }
-            catch (InvalidOperationException)
+            catch (Exception exc)
             {
-                // check if there is an orchestration for the given
-                // provider command message is already in-flight
+                if (exc is InvalidOperationException invalidOperationException)
+                {
+                    // check if there is an orchestration for the given
+                    // provider command message is already in-flight
 
-                var commandMessageStatus = await durableClient
-                    .GetStatusAsync(instanceId)
-                    .ConfigureAwait(false);
+                    var commandMessageStatus = await durableClient
+                        .GetStatusAsync(instanceId)
+                        .ConfigureAwait(false);
 
-                if (commandMessageStatus is null)
-                    throw; // bubble exception
+                    if (commandMessageStatus != null)
+                    {
+                        log.LogWarning(exc, $"Provider command message orchestration for command {message.Command.CommandId} already started: {exc.Message}");
 
-                return new System.Web.Http.ConflictResult();
+                        return new System.Web.Http.ConflictResult();
+                    }
+                }
+
+                log.LogError(exc, $"Failed to start provider command message orchestration for command {message.Command.CommandId}: {exc.Message}");
+
+                throw;
             }
 
-            var commandResult = await WaitForCommandResultAsync(durableClient, message.Command, log)
+            var commandResult = await durableClient
+                .GetCommandResultAsync(message.Command)
                 .ConfigureAwait(false);
 
+            commandResult ??= message.Command.CreateResult();
+
             return CreateCommandResultResponse(message.Command, commandResult);
-        }
-
-        private static async Task<ICommandResult> WaitForCommandResultAsync(IDurableClient durableClient, ICommand command, ILogger log)
-        {
-            var timeoutDuration = TimeSpan.FromMinutes(5);
-            var timeout = DateTime.UtcNow.Add(timeoutDuration);
-
-            while (DateTime.UtcNow <= timeout)
-            {
-                var commandResult = await durableClient
-                    .GetCommandResultAsync(command)
-                    .ConfigureAwait(false);
-
-                if (commandResult?.RuntimeStatus.IsUnknown() ?? true)
-                {
-                    log.LogInformation($"Waiting for command orchestration '{command.CommandId}' ...");
-
-                    await Task
-                        .Delay(1000)
-                        .ConfigureAwait(false);
-                }
-                else
-                {
-                    return commandResult;
-                }
-            }
-
-            throw new TimeoutException($"Failed to get status for command {command.CommandId} within {timeoutDuration}");
         }
 
         private IActionResult CreateCommandResultResponse(ICommand command, ICommandResult commandResult)
@@ -210,22 +192,14 @@ namespace TeamCloud.Providers.Azure.AppInsights
             }
 
             if (commandResult.RuntimeStatus.IsFinal())
-            {
-                // this was damned fast - the orchestration already
-                // finished it's work and we can return a final response.
-
                 return new OkObjectResult(commandResult);
-            }
-            else
-            {
-                // the usual behavior - the orchestration is in progress
-                // so we have to inform the caller that we accepted the command
 
-                var location = UriHelper.GetDisplayUrl(httpContextAccessor.HttpContext.Request)
-                    .AppendPathSegment(commandResult.CommandId);
+            var location = httpContextAccessor.HttpContext.Request.GetDisplayUrl();
 
-                return new AcceptedResult(location, commandResult);
-            }
+            if (!location.EndsWith(commandResult.CommandId.ToString()))
+                location = location.AppendPathSegment(commandResult.CommandId);
+
+            return new AcceptedResult(location, commandResult);
         }
     }
 }

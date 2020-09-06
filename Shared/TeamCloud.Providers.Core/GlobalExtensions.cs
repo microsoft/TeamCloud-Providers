@@ -6,14 +6,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using TeamCloud.Audit;
+using TeamCloud.Configuration;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Orchestration;
-using TeamCloud.Providers.Azure.AppInsights;
 using TeamCloud.Providers.Core.Activities;
+using TeamCloud.Providers.Core.API;
 using TeamCloud.Providers.Core.Configuration;
 
 namespace TeamCloud.Providers.Core
@@ -28,12 +31,23 @@ namespace TeamCloud.Providers.Core
             if (orchestrationStatus is null)
                 throw new ArgumentNullException(nameof(orchestrationStatus));
 
-            commandResult.CreatedTime = orchestrationStatus.CreatedTime;
-            commandResult.LastUpdatedTime = orchestrationStatus.LastUpdatedTime;
+            commandResult.CreatedTime = GetNullWhenMinValue(orchestrationStatus.CreatedTime);
+            commandResult.LastUpdatedTime = GetNullWhenMinValue(orchestrationStatus.LastUpdatedTime);
             commandResult.RuntimeStatus = (CommandRuntimeStatus)orchestrationStatus.RuntimeStatus;
             commandResult.CustomStatus = orchestrationStatus.CustomStatus?.ToString();
 
             return commandResult;
+
+            static DateTime? GetNullWhenMinValue(DateTime dateTime)
+                => (dateTime == DateTime.MinValue ? default(DateTime?) : dateTime);
+        }
+
+        public static Task AuditAsync(this IDurableOrchestrationContext functionContext, ICommand command, ICommandResult commandResult = default)
+        {
+            if (command is null)
+                throw new ArgumentNullException(nameof(command));
+
+            return functionContext.CallActivityWithRetryAsync(nameof(ProviderCommandAuditActivity), (command, commandResult));
         }
 
         public static IServiceCollection AddTeamCloudCommandOrchestration(this IServiceCollection services, Action<IOrchestrationConfiguration> config)
@@ -43,6 +57,10 @@ namespace TeamCloud.Providers.Core
 
             if (config is null)
                 throw new ArgumentNullException(nameof(config));
+
+            services
+                .AddTeamCloudOptions(Assembly.GetExecutingAssembly())
+                .AddTeamCloudAudit();
 
             services
                 .TryAddSingleton<IOrchestrationConfiguration>(new OrchestrationConfiguration());
@@ -57,6 +75,57 @@ namespace TeamCloud.Providers.Core
             return services;
         }
 
+        public static async Task<ICommand> GetCommandAsync(this IDurableClient durableClient, Guid commandId)
+        {
+            if (durableClient is null)
+                throw new ArgumentNullException(nameof(durableClient));
+
+            var commandStatus = await durableClient
+                .GetStatusAsync(CommandTrigger.GetCommandOrchestrationInstanceId(commandId))
+                .ConfigureAwait(false);
+
+            if (commandStatus?.Input?.HasValues ?? false)
+            {
+                var command = commandStatus.Input
+                    .ToObject<ICommand>();
+
+                if (command != null)
+                    return command;
+            }
+
+            commandStatus = await durableClient
+                .GetStatusAsync(CommandTrigger.GetCommandMessageOrchestrationInstanceId(commandId))
+                .ConfigureAwait(false);
+
+            if (commandStatus?.Input?.HasValues ?? false)
+            {
+                var commandMessage = commandStatus.Input
+                    .ToObject<ICommandMessage>();
+
+                if (commandMessage.Command != null)
+                    return commandMessage.Command;
+            }
+
+            return null;
+        }
+
+        public static async Task<ICommandResult> GetCommandResultAsync(this IDurableClient durableClient, Guid commandId)
+        {
+            if (durableClient is null)
+                throw new ArgumentNullException(nameof(durableClient));
+
+            var command = await durableClient
+                .GetCommandAsync(commandId)
+                .ConfigureAwait(false);
+
+            if (command is null)
+                return null;
+
+            return await durableClient
+                .GetCommandResultAsync(command)
+                .ConfigureAwait(false);
+        }
+
         public static async Task<ICommandResult> GetCommandResultAsync(this IDurableClient durableClient, ICommand command)
         {
             if (durableClient is null)
@@ -66,7 +135,7 @@ namespace TeamCloud.Providers.Core
                 throw new ArgumentNullException(nameof(command));
 
             var commandStatus = await durableClient
-                .GetStatusAsync(CommandHandler.GetCommandOrchestrationInstanceId(command))
+                .GetStatusAsync(CommandTrigger.GetCommandOrchestrationInstanceId(command))
                 .ConfigureAwait(false);
 
             if (commandStatus is null)
@@ -84,7 +153,7 @@ namespace TeamCloud.Providers.Core
                 // command result (e.g. if a send operation fails).
 
                 var commandMessageStatus = await durableClient
-                    .GetStatusAsync(CommandHandler.GetCommandMessageOrchestrationInstanceId(command))
+                    .GetStatusAsync(CommandTrigger.GetCommandMessageOrchestrationInstanceId(command))
                     .ConfigureAwait(false);
 
                 if (commandMessageStatus?.Output.HasValues ?? false)

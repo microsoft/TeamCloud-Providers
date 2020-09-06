@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration.AzureKeyVault;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TeamCloud.Audit;
 using TeamCloud.Azure;
 using TeamCloud.Azure.Deployment;
 using TeamCloud.Azure.Deployment.Providers;
@@ -21,7 +22,6 @@ using TeamCloud.Configuration;
 using TeamCloud.Http;
 using TeamCloud.Model.Commands;
 using TeamCloud.Orchestration;
-using TeamCloud.Orchestration.Auditing;
 using TeamCloud.Orchestration.Deployment;
 using TeamCloud.Providers.Azure.AppInsights;
 using TeamCloud.Providers.Azure.AppInsights.Orchestrations;
@@ -31,7 +31,6 @@ using TeamCloud.Providers.Core.Configuration;
 [assembly: FunctionsStartup(typeof(Startup))]
 [assembly: FunctionsImport(typeof(TeamCloudProvidersCoreStartup))]
 [assembly: FunctionsImport(typeof(TeamCloudOrchestrationStartup))]
-[assembly: FunctionsImport(typeof(TeamCloudOrchestrationAuditingStartup))]
 [assembly: FunctionsImport(typeof(TeamCloudOrchestrationDeploymentStartup))]
 
 namespace TeamCloud.Providers.Azure.AppInsights
@@ -45,6 +44,7 @@ namespace TeamCloud.Providers.Azure.AppInsights
 
             builder.Services
                 .AddSingleton(GetConfiguration(builder.Services))
+                .AddLogging()
                 .AddMvcCore()
                 .AddNewtonsoftJson();
 

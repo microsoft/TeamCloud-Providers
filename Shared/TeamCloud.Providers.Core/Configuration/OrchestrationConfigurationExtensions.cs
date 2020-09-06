@@ -7,10 +7,11 @@ using System;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
+using TeamCloud.Providers.Core.Handlers;
 
 namespace TeamCloud.Providers.Core.Configuration
 {
-    public static class OrchestrationExtensions
+    public static class OrchestrationConfigurationExtensions
     {
         public static IOrchestrationConfiguration SubscribeEvent(this IOrchestrationConfiguration configuration, ProviderEventSubscription providerEventSubscription)
         {
@@ -31,8 +32,8 @@ namespace TeamCloud.Providers.Core.Configuration
             return configuration;
         }
 
-        public static IOrchestrationConfiguration MapCommand<T>(this IOrchestrationConfiguration configuration, string orchestrationName, Action<IOrchestrationSettings> orchestrationSettings = null)
-            where T : IProviderCommand
+        public static IOrchestrationConfiguration MapCommand<TCommand>(this IOrchestrationConfiguration configuration, string orchestrationName, Action<IOrchestrationSettings> orchestrationSettings = null)
+            where TCommand : class, IProviderCommand
         {
             if (configuration is null)
                 throw new ArgumentNullException(nameof(configuration));
@@ -43,20 +44,20 @@ namespace TeamCloud.Providers.Core.Configuration
             if (!FunctionsEnvironment.FunctionExists(orchestrationName))
                 throw new ArgumentOutOfRangeException(nameof(orchestrationName), $"Could not find orchstration by name '{orchestrationName}'");
 
-            var settings = configuration.Orchestrations[typeof(T)] = new OrchestrationSettings(orchestrationName);
+            var settings = configuration.Orchestrations[typeof(TCommand)] = new OrchestrationSettings(orchestrationName);
 
             orchestrationSettings?.Invoke(settings);
 
             return configuration;
         }
 
-        public static IOrchestrationConfiguration IgnoreCommand<T>(this IOrchestrationConfiguration configuration)
-            where T : IProviderCommand
+        public static IOrchestrationConfiguration IgnoreCommand<TCommand>(this IOrchestrationConfiguration configuration)
+            where TCommand : class, IProviderCommand
         {
             if (configuration is null)
                 throw new ArgumentNullException(nameof(configuration));
 
-            configuration.Ignored.Add(typeof(T));
+            configuration.Ignored.Add(typeof(TCommand));
 
             return configuration;
         }

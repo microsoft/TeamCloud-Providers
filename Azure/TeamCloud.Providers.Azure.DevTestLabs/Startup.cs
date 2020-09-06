@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration.AzureKeyVault;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TeamCloud.Audit;
 using TeamCloud.Azure;
 using TeamCloud.Azure.Deployment;
 using TeamCloud.Azure.Deployment.Providers;
@@ -22,7 +23,6 @@ using TeamCloud.Http;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
-using TeamCloud.Orchestration.Auditing;
 using TeamCloud.Orchestration.Deployment;
 using TeamCloud.Providers.Azure.DevTestLabs;
 using TeamCloud.Providers.Azure.DevTestLabs.Orchestrations;
@@ -32,7 +32,6 @@ using TeamCloud.Providers.Core.Configuration;
 [assembly: FunctionsStartup(typeof(Startup))]
 [assembly: FunctionsImport(typeof(TeamCloudProvidersCoreStartup))]
 [assembly: FunctionsImport(typeof(TeamCloudOrchestrationStartup))]
-[assembly: FunctionsImport(typeof(TeamCloudOrchestrationAuditingStartup))]
 [assembly: FunctionsImport(typeof(TeamCloudOrchestrationDeploymentStartup))]
 
 namespace TeamCloud.Providers.Azure.DevTestLabs
@@ -46,6 +45,7 @@ namespace TeamCloud.Providers.Azure.DevTestLabs
 
             builder.Services
                 .AddSingleton(GetConfiguration(builder.Services))
+                .AddLogging()
                 .AddMvcCore()
                 .AddNewtonsoftJson();
 
@@ -67,7 +67,8 @@ namespace TeamCloud.Providers.Azure.DevTestLabs
                         .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
                         .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
                         .IgnoreCommand<IProviderCommand>()
-                        .SubscribeEvent(ProviderEventSubscription.All);
+                        .SubscribeEvent(ProviderEventSubscription.ResourceWriteSuccess)
+                        .SubscribeEvent(ProviderEventSubscription.ResourceDeleteSuccess);
                 });
         }
 

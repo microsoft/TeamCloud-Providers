@@ -13,7 +13,6 @@ using TeamCloud.Azure;
 using TeamCloud.Http;
 using TeamCloud.Model.Commands;
 using TeamCloud.Orchestration;
-using TeamCloud.Orchestration.Auditing;
 using TeamCloud.Providers.Core;
 using TeamCloud.Providers.Core.Configuration;
 using TeamCloud.Providers.GitHub;
@@ -23,7 +22,6 @@ using TeamCloud.Providers.GitHub.Services;
 [assembly: FunctionsStartup(typeof(Startup))]
 [assembly: FunctionsImport(typeof(TeamCloudProvidersCoreStartup))]
 [assembly: FunctionsImport(typeof(TeamCloudOrchestrationStartup))]
-[assembly: FunctionsImport(typeof(TeamCloudOrchestrationAuditingStartup))]
 
 namespace TeamCloud.Providers.GitHub
 {
