@@ -16,29 +16,7 @@ using TeamCloud.Providers.Azure.DevOps.Handlers;
 
 namespace TeamCloud.Providers.Azure.DevOps.Services
 {
-    public interface IAuthenticationService
-    {
-        Task<string> GetTokenAsync();
-
-        Task<string> GetOrganizationUrlAsync();
-
-        Task<string> GetOrganizationNameAsync();
-
-        Task<string> GetServiceUrlAsync(ServiceEndpoint serviceEndpoint);
-
-        //Task<VssConnection> GetConnectionAsync();
-
-        Task<T> GetClientAsync<T>(CancellationToken cancellationToken = default) where T : VssHttpClientBase;
-
-        Task<bool> IsAuthorizedAsync();
-    }
-
-    public interface IAuthenticationSetup
-    {
-        Task SetupAsync(AuthorizationToken authorizationToken);
-    }
-
-    internal class AuthenticationService : IAuthenticationService, IAuthenticationSetup
+    public sealed class AuthenticationService : IAuthenticationService, IAuthenticationSetup
     {
         private readonly ISecretsService secretsService;
 
@@ -71,20 +49,6 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
 
             return token;
         }
-
-        //public async Task<VssConnection> GetConnectionAsync()
-        //{
-        //    var token = await GetAuthorizationTokenAsync()
-        //        .ConfigureAwait(false);
-
-        //    if (token is null)
-        //        return null;
-
-        //    var connectionUri = new Uri(token.Organization);
-        //    var connectionCred = new VssOAuthAccessTokenCredential(token.AccessToken);
-
-        //    return new VssConnection(connectionUri, connectionCred);
-        //}
 
         public async Task<string> GetTokenAsync()
         {

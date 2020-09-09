@@ -17,7 +17,7 @@ namespace TeamCloud.Providers.Core.Activities
     public class ProviderCommandDispatchActivityTests
     {
         [Fact]
-        public void GetOrchestration_NoConfiguration()
+        public void GetOrchestrationNoConfiguration()
         {
             var configuration = Substitute.For<IOrchestrationConfiguration>();
 
@@ -30,7 +30,7 @@ namespace TeamCloud.Providers.Core.Activities
         }
 
         [Fact]
-        public void GetOrchestration_Exact_Match()
+        public void GetOrchestrationExactMatch()
         {
             var settings = Substitute.For<IOrchestrationSettings>();
 
@@ -51,7 +51,7 @@ namespace TeamCloud.Providers.Core.Activities
         }
 
         [Fact]
-        public void GetOrchestration_Exact_Ignored()
+        public void GetOrchestrationExactIgnored()
         {
             var configuration = Substitute.For<IOrchestrationConfiguration>();
 
@@ -68,7 +68,7 @@ namespace TeamCloud.Providers.Core.Activities
         }
 
         [Fact]
-        public void GetOrchestration_Inherited_Match()
+        public void GetOrchestrationInheritedMatch()
         {
             var settings = Substitute.For<IOrchestrationSettings>();
 
@@ -89,7 +89,7 @@ namespace TeamCloud.Providers.Core.Activities
         }
 
         [Fact]
-        public void GetOrchestration_Inherited_Ignored()
+        public void GetOrchestrationInheritedIgnored()
         {
             var configuration = Substitute.For<IOrchestrationConfiguration>();
 
@@ -106,7 +106,7 @@ namespace TeamCloud.Providers.Core.Activities
         }
 
         [Fact]
-        public void GetOrchestration_Interface_Match()
+        public void GetOrchestrationInterfaceMatch()
         {
             var settings = Substitute.For<IOrchestrationSettings>();
 
@@ -127,7 +127,7 @@ namespace TeamCloud.Providers.Core.Activities
         }
 
         [Fact]
-        public void GetOrchestration_Interface_Ignore()
+        public void GetOrchestrationInterfaceIgnore()
         {
             var configuration = Substitute.For<IOrchestrationConfiguration>();
 
@@ -144,7 +144,7 @@ namespace TeamCloud.Providers.Core.Activities
         }
 
         [Fact]
-        public void GetOrchestration_InterfaceGeneric_Match()
+        public void GetOrchestrationInterfaceGenericMatch()
         {
             var settings = Substitute.For<IOrchestrationSettings>();
 
@@ -165,7 +165,7 @@ namespace TeamCloud.Providers.Core.Activities
         }
 
         [Fact]
-        public void GetOrchestration_InterfaceGeneric_Ignore()
+        public void GetOrchestrationInterfaceGenericIgnore()
         {
             var configuration = Substitute.For<IOrchestrationConfiguration>();
 

@@ -11,7 +11,6 @@ using Flurl;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Management.Network.Fluent.ApplicationGatewayBackendHttpConfiguration.Update;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -196,7 +195,7 @@ namespace TeamCloud.Providers.Core.API
 
             var location = httpContextAccessor.HttpContext.Request.GetDisplayUrl();
 
-            if (!location.EndsWith(commandResult.CommandId.ToString()))
+            if (!location.EndsWith(commandResult.CommandId.ToString(), StringComparison.OrdinalIgnoreCase))
                 location = location.AppendPathSegment(commandResult.CommandId);
 
             return new AcceptedResult(location, commandResult);
