@@ -41,7 +41,7 @@ namespace TeamCloud.Providers.GitHub
             log.LogWarning($"GitHub code: {code ?? "null"}");
 
             var app = await github
-                .GetAppManifest(code)
+                .GetAppManifestAsync(code)
                 .ConfigureAwait(false);
 
             if (app is null)
@@ -54,7 +54,7 @@ namespace TeamCloud.Providers.GitHub
             };
         }
 
-        private string Html(GitHubAppManifest app) =>
+        private static string Html(GitHubAppManifest app) =>
 $@"
 <!DOCTYPE html>
 <html lang=""en-US"">

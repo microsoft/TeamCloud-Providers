@@ -12,7 +12,6 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using TeamCloud.Model.Data;
-using TeamCloud.Model.Data.Core;
 using TeamCloud.Providers.GitHub.Services;
 
 namespace TeamCloud.Providers.GitHub
@@ -64,7 +63,7 @@ namespace TeamCloud.Providers.GitHub
 
             if (httpRequest.Method == HttpMethod.Get)
             {
-                var (team, repo, proj) = await github.CreateTeamCloudProject(project)
+                var (team, repo, proj) = await github.CreateTeamCloudProjectAsync(project)
                     .ConfigureAwait(false);
 
                 log.LogWarning(team.ToString());
@@ -75,7 +74,7 @@ namespace TeamCloud.Providers.GitHub
             }
             else if (httpRequest.Method == HttpMethod.Delete)
             {
-                await github.DeleteTeamCloudProject(project)
+                await github.DeleteTeamCloudProjectAsync(project)
                     .ConfigureAwait(false);
             }
 

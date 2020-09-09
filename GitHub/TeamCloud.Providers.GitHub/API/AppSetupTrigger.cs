@@ -42,7 +42,7 @@ namespace TeamCloud.Providers.GitHub
             };
         }
 
-        private string Html =>
+        private static string Html =>
 $@"
 <!DOCTYPE html>
 <html lang=""en-US"">

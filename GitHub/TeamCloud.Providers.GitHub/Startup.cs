@@ -41,6 +41,8 @@ namespace TeamCloud.Providers.GitHub
 #pragma warning restore CS0618 // Type or member is obsolete
 
             builder.Services
+                // .AddSingleton(GetConfiguration(builder.Services))
+                .AddLogging()
                 .AddMvcCore()
                 .AddNewtonsoftJson();
 
@@ -54,9 +56,11 @@ namespace TeamCloud.Providers.GitHub
                         .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
                         .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
                         .MapCommand<ProviderProjectDeleteCommand>(nameof(ProjectDeleteOrchestration))
+                        .MapCommand<ProviderTeamCloudUserCreateCommand>(nameof(TeamCloudUserCreateOrchestration))
+                        .MapCommand<ProviderTeamCloudUserDeleteCommand>(nameof(TeamCloudUserDeleteOrchestration))
+                        .MapCommand<ProviderTeamCloudUserUpdateCommand>(nameof(TeamCloudUserUpdateOrchestration))
                         .IgnoreCommand<IProviderCommand>();
                 });
-
 
             if (hostingEnvironment.IsDevelopment())
             {

@@ -4,7 +4,6 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -14,7 +13,6 @@ using TeamCloud.Model;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
-using TeamCloud.Model.Data.Core;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.GitHub.Activities;
 using TeamCloud.Serialization;
@@ -39,11 +37,13 @@ namespace TeamCloud.Providers.GitHub.Orchestrations
             {
                 try
                 {
-                    var properties = await functionContext
-                        .CallActivityWithRetryAsync<Dictionary<string, string>>(nameof(ProjectUpdateActivity), command)
+                    functionContext.SetCustomStatus("Updating resources", commandLog);
+
+                    await functionContext
+                        .CallActivityWithRetryAsync(nameof(ProjectUpdateActivity), command)
                         .ConfigureAwait(true);
 
-                    commandResult.Result = new ProviderOutput { Properties = properties };
+                    commandResult.Result = new ProviderOutput();
                 }
                 catch (Exception exc)
                 {

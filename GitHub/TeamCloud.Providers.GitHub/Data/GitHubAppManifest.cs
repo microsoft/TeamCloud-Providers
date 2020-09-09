@@ -12,6 +12,9 @@ namespace TeamCloud.Providers.GitHub.Data
     {
         public GitHubAppManifest() { }
 
+        public GitHubAppManifest(long id, string name, User owner, string description, Uri externalUrl, Uri htmlUrl, DateTimeOffset createdAt, DateTimeOffset updatedAt)
+            : base(id, name, owner, description, externalUrl?.AbsoluteUri, htmlUrl?.AbsoluteUri, createdAt, updatedAt) { }
+
         public GitHubAppManifest(long id, string name, User owner, string description, string externalUrl, string htmlUrl, DateTimeOffset createdAt, DateTimeOffset updatedAt)
             : base(id, name, owner, description, externalUrl, htmlUrl, createdAt, updatedAt) { }
 

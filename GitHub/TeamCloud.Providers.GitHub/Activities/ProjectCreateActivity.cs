@@ -4,14 +4,18 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
+using TeamCloud.Azure;
 using TeamCloud.Model;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Serialization;
+using TeamCloud.Providers.Core.Clients;
 using TeamCloud.Providers.GitHub.Services;
 
 namespace TeamCloud.Providers.GitHub.Activities
@@ -19,10 +23,12 @@ namespace TeamCloud.Providers.GitHub.Activities
     public class ProjectCreateActivity
     {
         private readonly GitHubService github;
+        private readonly IAzureSessionService azureSessionService;
 
-        public ProjectCreateActivity(GitHubService github)
+        public ProjectCreateActivity(GitHubService github, IAzureSessionService azureSessionService)
         {
             this.github = github ?? throw new ArgumentNullException(nameof(github));
+            this.azureSessionService = azureSessionService ?? throw new ArgumentNullException(nameof(azureSessionService));
         }
 
         [FunctionName(nameof(ProjectCreateActivity)), RetryOptions(10, FirstRetryInterval = "00:02:00")]
@@ -37,9 +43,17 @@ namespace TeamCloud.Providers.GitHub.Activities
             {
                 try
                 {
-                    await github
-                        .CreateTeamCloudProject(project)
+                    var (team, repo, proj) = await github
+                        .CreateTeamCloudProjectAsync(project)
                         .ConfigureAwait(false);
+
+                    var tasks = GetProjectLinks(team, repo, proj, project.Id)
+                        .Select(l => project.Links.Links.SetAsync(azureSessionService, l));
+
+                    await Task.WhenAll(tasks)
+                        .ConfigureAwait(false);
+
+                    log.LogInformation($"Created GitHub resources for project.");
                 }
                 catch (Exception exc)
                 {
@@ -49,5 +63,28 @@ namespace TeamCloud.Providers.GitHub.Activities
                 }
             }
         }
+
+        private static List<ProjectLink> GetProjectLinks(Octokit.Team team, Octokit.Repository repo, Octokit.Project proj, string projectId)
+            => new List<ProjectLink>
+                {
+                    new ProjectLink
+                    {
+                        Title = "GitHub Team",
+                        HRef = team.Url,
+                        Type = ProjectLinkType.Link
+                    }.WithGeneratedId("team", projectId),
+                    new ProjectLink
+                    {
+                        Title = "GitHub Repo",
+                        HRef = repo.Url,
+                        Type = ProjectLinkType.GitRepository
+                    }.WithGeneratedId("repo", projectId),
+                    new ProjectLink
+                    {
+                        Title = "GitHub Project",
+                        HRef = proj.Url,
+                        Type = ProjectLinkType.Link
+                    }.WithGeneratedId("project", projectId)
+                };
     }
 }

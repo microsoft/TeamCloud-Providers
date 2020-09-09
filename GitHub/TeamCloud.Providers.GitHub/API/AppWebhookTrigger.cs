@@ -31,9 +31,11 @@ namespace TeamCloud.Providers.GitHub
 
             // json payload from the received webhook
             var eventType = httpRequest.GitHubEventType();
-            var payload = await httpRequest.Content.ReadAsStringAsync();
+            var payload = await httpRequest.Content.ReadAsStringAsync()
+                .ConfigureAwait(false);
 
-            await github.HandleWebhook(eventType, payload);
+            await github.HandleWebhookAsync(eventType, payload)
+                .ConfigureAwait(false);
 
             return new OkResult();
         }
