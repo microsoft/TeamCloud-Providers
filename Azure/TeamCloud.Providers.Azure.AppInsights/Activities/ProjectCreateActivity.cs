@@ -21,12 +21,10 @@ namespace TeamCloud.Providers.Azure.AppInsights.Activities
     public class ProjectCreateActivity
     {
         private readonly IAzureDeploymentService azureDeploymentService;
-        private readonly ILogger<ProjectCreateActivity> logger;
 
-        public ProjectCreateActivity(IAzureDeploymentService azureDeploymentService, ILogger<ProjectCreateActivity> logger)
+        public ProjectCreateActivity(IAzureDeploymentService azureDeploymentService)
         {
             this.azureDeploymentService = azureDeploymentService ?? throw new ArgumentNullException(nameof(azureDeploymentService));
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         [FunctionName(nameof(ProjectCreateActivity)), RetryOptions(3, FirstRetryInterval = "00:02:00")]

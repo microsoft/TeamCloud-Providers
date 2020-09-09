@@ -21,6 +21,7 @@ using TeamCloud.Model.Commands;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.DevOps;
 using TeamCloud.Providers.Azure.DevOps.Orchestrations;
+using TeamCloud.Providers.Azure.DevOps.Services;
 using TeamCloud.Providers.Core;
 using TeamCloud.Providers.Core.Configuration;
 
@@ -60,6 +61,45 @@ namespace TeamCloud.Providers.Azure.DevOps
                         .MapCommand<ProviderEventCommand>(nameof(ProviderEventOrchestration))
                         .IgnoreCommand<IProviderCommand>();
                 });
+
+            var serviceProvider = builder.Services
+                .BuildServiceProvider();
+
+            var hostingEnvironment = serviceProvider
+                .GetRequiredService<IHostingEnvironment>();
+
+            var configuration = serviceProvider
+                .GetRequiredService<IConfiguration>();
+
+            if (hostingEnvironment.IsDevelopment())
+            {
+                builder.Services
+                    .AddSingleton<ISecretsService, StorageSecretsService>();
+            }
+            else
+            {
+                // we use the managed identity of the service to authenticate at the KeyVault
+                builder.Services
+                    .AddSingleton<IKeyVaultClient>(provider => new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(new AzureServiceTokenProvider().KeyVaultTokenCallback)));
+
+                builder.Services
+                    .AddSingleton<ISecretsService, VaultSecretsServices>();
+            }
+
+            if (string.IsNullOrEmpty(configuration.GetValue<string>("Cache:Configuration")))
+            {
+                builder.Services
+                    .AddDistributedMemoryCache();
+            }
+            else
+            {
+                builder.Services
+                    .AddDistributedRedisCache(options => configuration.Bind("Cache", options));
+            }
+
+            builder.Services
+                .AddDistributedMemoryCache()
+                .AddSingleton<IAuthenticationService, AuthenticationService>();
         }
 
         private static IConfiguration GetConfiguration(IServiceCollection services)
