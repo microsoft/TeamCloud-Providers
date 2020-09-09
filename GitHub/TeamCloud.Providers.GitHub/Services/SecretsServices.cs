@@ -101,9 +101,14 @@ namespace TeamCloud.Providers.GitHub.Services
             var blob = await GetSecretsBlobAsync(key)
                 .ConfigureAwait(false);
 
-            return await blob
-                .DownloadTextAsync()
-                .ConfigureAwait(false);
+            if (await blob.ExistsAsync().ConfigureAwait(false))
+            {
+                return await blob
+                    .DownloadTextAsync()
+                    .ConfigureAwait(false);
+            }
+
+            return null;
         }
 
         public async Task<string> SetSecretAsync(string key, string value)
@@ -111,9 +116,18 @@ namespace TeamCloud.Providers.GitHub.Services
             var blob = await GetSecretsBlobAsync(key)
                 .ConfigureAwait(false);
 
-            await blob
-                .UploadTextAsync(value)
-                .ConfigureAwait(false);
+            if (value is null)
+            {
+                await blob
+                    .DeleteIfExistsAsync()
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                await blob
+                    .UploadTextAsync(value)
+                    .ConfigureAwait(false);
+            }
 
             return value;
         }

@@ -4,13 +4,13 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Flurl.Http;
 using Octokit;
 using Octokit.Internal;
 using TeamCloud.Model.Data;
-using TeamCloud.Model.Data.Core;
 using TeamCloud.Providers.GitHub.Data;
 
 namespace TeamCloud.Providers.GitHub.Services
@@ -23,11 +23,12 @@ namespace TeamCloud.Providers.GitHub.Services
         private GitHubClient _client;
         private GitHubAppManifest _app;
 
-        private ProductHeaderValue ProductHeader => new ProductHeaderValue(GitHubServiceConstants.ProductHeaderName, GitHubServiceConstants.ProductHeaderVersion);
-
         private readonly SimpleJsonSerializer SimpleJsonSerializer = new SimpleJsonSerializer();
 
-        private GitHubJwtFactory JwtTokenGenerator(GitHubAppManifest app) => new GitHubJwtFactory(
+        private static ProductHeaderValue ProductHeader => new ProductHeaderValue(GitHubServiceConstants.ProductHeaderName, GitHubServiceConstants.ProductHeaderVersion);
+
+
+        private static GitHubJwtFactory JwtTokenGenerator(GitHubAppManifest app) => new GitHubJwtFactory(
             new StringPrivateKeySource(app?.Pem ?? throw new InvalidOperationException("Must have GitHub App Pem key before initializing GitHub client")),
             new GitHubJwtFactoryOptions
             {
@@ -42,19 +43,19 @@ namespace TeamCloud.Providers.GitHub.Services
             this.secretsService = secretsService ?? throw new ArgumentNullException(nameof(secretsService));
         }
 
-        public async Task<bool> IsConfigured()
+        public async Task<bool> IsConfiguredAsync()
         {
-            var app = await GetAppManifest()
+            var app = await GetAppManifestAsync()
                 .ConfigureAwait(false);
 
             return app != default;
         }
 
-        private async Task<GitHubClient> GetAppClient()
+        private async Task<GitHubClient> GetAppClientAsync()
         {
             if (!(_client is null))
             {
-                var token = await GetToken()
+                var token = await GetTokenAsync()
                     .ConfigureAwait(false);
 
                 if (token is null || token.ExpiresAt < DateTimeOffset.Now.AddMinutes(5))
@@ -63,7 +64,7 @@ namespace TeamCloud.Providers.GitHub.Services
 
             if (_client is null)
             {
-                var app = await GetAppManifest()
+                var app = await GetAppManifestAsync()
                     .ConfigureAwait(false);
 
                 var jwtToken = JwtTokenGenerator(app).CreateEncodedJwtToken();
@@ -73,7 +74,7 @@ namespace TeamCloud.Providers.GitHub.Services
                     Credentials = new Credentials(jwtToken, AuthenticationType.Bearer)
                 };
 
-                var installation = await GetInstallation()
+                var installation = await GetInstallationAsync()
                     .ConfigureAwait(false);
 
                 var token = await appClient
@@ -81,7 +82,7 @@ namespace TeamCloud.Providers.GitHub.Services
                     .CreateInstallationToken(installation?.Id ?? throw new InvalidOperationException("Must have GitHub App Installation before initializing GitHub client"))
                     .ConfigureAwait(false);
 
-                await SetSecret(token)
+                await SetSecretAsync(token)
                     .ConfigureAwait(false);
 
                 _client = new GitHubClient(ProductHeader)
@@ -93,7 +94,7 @@ namespace TeamCloud.Providers.GitHub.Services
             return _client;
         }
 
-        public async Task<GitHubAppManifest> GetAppManifest(string code)
+        public async Task<GitHubAppManifest> GetAppManifestAsync(string code)
         {
             // Using Flurl as Octokit doesn't support this API yet
             // https://github.com/octokit/octokit.net/issues/2138
@@ -101,34 +102,37 @@ namespace TeamCloud.Providers.GitHub.Services
 
             var response = await url
                 .WithHeader("User-Agent", ProductHeader.ToString())
-                .PostStringAsync(string.Empty);
+                .PostStringAsync(string.Empty)
+                .ConfigureAwait(false);
 
-            var json = await response.Content.ReadAsStringAsync();
+            var json = await response.Content
+                .ReadAsStringAsync()
+                .ConfigureAwait(false);
 
             _app = SimpleJsonSerializer.Deserialize<GitHubAppManifest>(json);
 
-            await SetSecret(_app)
+            await SetSecretAsync(_app)
                 .ConfigureAwait(false);
 
             return _app;
         }
 
-        public async Task<GitHubAppManifest> GetAppManifest()
+        public async Task<GitHubAppManifest> GetAppManifestAsync()
         {
             if (_app is null)
-                _app = await GetSecret<GitHubAppManifest>()
+                _app = await GetSecretAsync<GitHubAppManifest>()
                     .ConfigureAwait(false);
 
             return _app;
         }
 
-        public Task<InstallationWithSlug> GetInstallation()
-            => GetSecret<InstallationWithSlug>();
+        public Task<InstallationWithSlug> GetInstallationAsync()
+            => GetSecretAsync<InstallationWithSlug>();
 
-        public Task<AccessToken> GetToken()
-            => GetSecret<AccessToken>();
+        public Task<AccessToken> GetTokenAsync()
+            => GetSecretAsync<AccessToken>();
 
-        private async Task<T> GetSecret<T>()
+        private async Task<T> GetSecretAsync<T>()
         {
             var secret = await secretsService
                 .GetSecretAsync(typeof(T).Name)
@@ -142,7 +146,7 @@ namespace TeamCloud.Providers.GitHub.Services
             return item;
         }
 
-        private async Task SetSecret<T>(T secret)
+        private async Task SetSecretAsync<T>(T secret)
         {
             var json = SimpleJsonSerializer.Serialize(secret);
 
@@ -151,71 +155,120 @@ namespace TeamCloud.Providers.GitHub.Services
                 .ConfigureAwait(false);
         }
 
-        public async Task<(Team, Repository, Octokit.Project)> CreateTeamCloudProject(Model.Data.Project project)
+        public async Task<(Team, Repository, Octokit.Project)> CreateTeamCloudProjectAsync(Model.Data.Project project)
         {
-            var team = await CreateTeam(project)
+            var team = await CreateTeamAsync(project)
                 .ConfigureAwait(false);
 
-            var repo = await CreateRepository(project, team)
+            var repo = await CreateRepositoryAsync(project, team)
                 .ConfigureAwait(false);
 
-            var proj = await CreateProject(project, team)
+            var proj = await CreateProjectAsync(project, team)
                 .ConfigureAwait(false);
 
             return (team, repo, proj);
         }
 
-        public async Task DeleteTeamCloudProject(Model.Data.Project project)
+        public async Task DeleteTeamCloudProjectAsync(Model.Data.Project project)
         {
-            await DeleteTeam(project)
+            await DeleteTeamAsync(project)
                 .ConfigureAwait(false);
 
-            await DeleteRepository(project)
+            await DeleteRepositoryAsync(project)
                 .ConfigureAwait(false);
 
-            await DeleteProject(project)
+            await DeleteProjectAsync(project)
                 .ConfigureAwait(false);
         }
 
-        public async Task<Team> CreateTeam(Model.Data.Project project)
+        public async Task<Team> CreateTeamAsync(Model.Data.Project project)
         {
-            var client = await GetAppClient().ConfigureAwait(false);
+            if (project is null)
+                throw new ArgumentNullException(nameof(project));
 
-            var team = await CreateTeamInternal(project.Name, Permission.Push)
+            var team = await CreateTeamInternalAsync(project.Name, Permission.Push)
                 .ConfigureAwait(false);
 
-            var members = project.Users
-                .Where(u => u.IsMember(project.Id) && u.ProjectProperties(project.Id).ContainsKeyInsensitive(AvailableUserProperties.GitHubLogin))
-                .Select(u => (
-                    login: u.ProjectProperties(project.Id).GetValueInsensitive(AvailableUserProperties.GitHubLogin),
-                    role: u.IsOwner(project.Id) ? TeamRole.Maintainer : TeamRole.Member)
-                );
+            await SyncTeamMembershipAsync(team, project)
+                .ConfigureAwait(false);
 
-            if (members.Any())
-            {
-                var tasks = members.Select(u => client
-                    .Organization
-                    .Team
-                    .AddOrEditMembership(team.Id, u.login, new UpdateTeamMembership(u.role)
-                ));
-
-                await Task.WhenAll(tasks)
-                    .ConfigureAwait(false);
-            }
-
-            await EnsureAdminUsers(project)
+            await EnsureAdminUsersAsync(project)
                 .ConfigureAwait(false);
 
             return team;
         }
 
-        public async Task DeleteTeam(Model.Data.Project project, int id = default)
+        public async Task SyncTeamMembershipAsync(Team team, Model.Data.Project project)
         {
-            var client = await GetAppClient().ConfigureAwait(false);
+            if (team is null)
+                throw new ArgumentNullException(nameof(team));
+
+            if (project is null)
+                throw new ArgumentNullException(nameof(project));
+
+            var client = await GetAppClientAsync().ConfigureAwait(false);
+
+            var members = project.Users
+                .Where(u =>
+                    u.UserType == UserType.User
+                && u.IsMember(project.Id)
+                && u.ProjectProperties(project.Id).ContainsKeyInsensitive(AvailableUserProperties.GitHubLogin))
+                .Select(u => (
+                    login: u.ProjectProperties(project.Id).GetValueInsensitive(AvailableUserProperties.GitHubLogin),
+                    role: u.IsOwner(project.Id) ? TeamRole.Maintainer : TeamRole.Member)
+                );
+
+            var existingMembers = await client
+                .Organization
+                .Team
+                .GetAllMembers(team.Id)
+                .ConfigureAwait(false);
+
+            var tasks = new List<Task>();
+
+            if (members.Any())
+            {
+                // var membersToAddOrUpdate = members
+                //     .Where(m => !existingMembers.Any(em => em.Login.Equals(m.login, StringComparison.OrdinalIgnoreCase)));
+
+                tasks.AddRange(members
+                    .Select(m => client
+                        .Organization
+                        .Team
+                        .AddOrEditMembership(team.Id, m.login, new UpdateTeamMembership(m.role))));
+
+                var existingMembersToRemove = existingMembers
+                    .Where(em => !members.Any(m => m.login.Equals(em.Login, StringComparison.OrdinalIgnoreCase)));
+
+                tasks.AddRange(existingMembersToRemove
+                    .Select(em => client
+                        .Organization
+                        .Team
+                        .RemoveMembership(team.Id, em.Login)));
+            }
+            else if (existingMembers.Any())
+            {
+                tasks.AddRange(existingMembers
+                    .Select(em => client
+                    .Organization
+                    .Team
+                    .RemoveMembership(team.Id, em.Login)));
+            }
+
+            if (tasks.Any())
+            {
+                await Task.WhenAll(tasks)
+                    .ConfigureAwait(false);
+            }
+        }
+
+        public async Task DeleteTeamAsync(Model.Data.Project project, int id = default)
+        {
+            var client = await GetAppClientAsync().ConfigureAwait(false);
 
             if (id == default)
             {
-                var team = await GetTeam(project)
+                var team = await GetTeamAsync(project)
                     .ConfigureAwait(false);
 
                 id = team?.Id ?? default;
@@ -238,13 +291,38 @@ namespace TeamCloud.Providers.GitHub.Services
             }
         }
 
-        public Task<Team> GetTeam(Model.Data.Project project, int id = default)
-            => GetTeamInternal(project.Name, id);
-
-        public async Task<Repository> CreateRepository(Model.Data.Project project, Team team)
+        public Task<Team> GetTeamAsync(Model.Data.Project project, int id = default)
         {
-            var client = await GetAppClient().ConfigureAwait(false);
-            var app = await GetAppManifest().ConfigureAwait(false);
+            if (project is null)
+                throw new ArgumentNullException(nameof(project));
+
+            return GetTeamInternalAsync(project.Name, id);
+        }
+
+        public async Task<Team> UpdateTeamAsync(Model.Data.Project project, int id = default)
+        {
+            if (project is null)
+                throw new ArgumentNullException(nameof(project));
+
+            var team = await GetTeamInternalAsync(project.Name, id)
+                .ConfigureAwait(false);
+
+            await SyncTeamMembershipAsync(team, project)
+                .ConfigureAwait(false);
+
+            await EnsureAdminUsersAsync(project)
+                .ConfigureAwait(false);
+
+            return team;
+        }
+
+        public async Task<Repository> CreateRepositoryAsync(Model.Data.Project project, Team team)
+        {
+            if (team is null)
+                throw new ArgumentNullException(nameof(team));
+
+            var client = await GetAppClientAsync().ConfigureAwait(false);
+            var app = await GetAppManifestAsync().ConfigureAwait(false);
 
             var gitHubProvider = project?.Type?.Providers?.FirstOrDefault(p => p.Id == "github");
 
@@ -261,7 +339,7 @@ namespace TeamCloud.Providers.GitHub.Services
                 .Create(app.Owner.Login, newRepository)
                 .ConfigureAwait(false);
 
-            var adminTeam = await EnsureAdminTeam()
+            var adminTeam = await EnsureAdminTeamAsync()
                 .ConfigureAwait(false);
 
             await client
@@ -279,10 +357,13 @@ namespace TeamCloud.Providers.GitHub.Services
             return repository;
         }
 
-        public async Task DeleteRepository(Model.Data.Project project)
+        public async Task DeleteRepositoryAsync(Model.Data.Project project)
         {
-            var client = await GetAppClient().ConfigureAwait(false);
-            var app = await GetAppManifest().ConfigureAwait(false);
+            if (project is null)
+                throw new ArgumentNullException(nameof(project));
+
+            var client = await GetAppClientAsync().ConfigureAwait(false);
+            var app = await GetAppManifestAsync().ConfigureAwait(false);
 
             try
             {
@@ -297,10 +378,16 @@ namespace TeamCloud.Providers.GitHub.Services
             }
         }
 
-        public async Task<Octokit.Project> CreateProject(Model.Data.Project project, Team team)
+        public async Task<Octokit.Project> CreateProjectAsync(Model.Data.Project project, Team team)
         {
-            var client = await GetAppClient().ConfigureAwait(false);
-            var app = await GetAppManifest().ConfigureAwait(false);
+            if (project is null)
+                throw new ArgumentNullException(nameof(project));
+
+            if (team is null)
+                throw new ArgumentNullException(nameof(team));
+
+            var client = await GetAppClientAsync().ConfigureAwait(false);
+            var app = await GetAppManifestAsync().ConfigureAwait(false);
 
             // only org level projects can be added to teams
             // repo level projects cannot
@@ -320,7 +407,7 @@ namespace TeamCloud.Providers.GitHub.Services
                 .Put<string>(url, body: new { Permission = "write" }, null, accepts: GitHubServiceConstants.ProjectPreviewAcceptValue)
                 .ConfigureAwait(false);
 
-            var adminTeam = await EnsureAdminTeam()
+            var adminTeam = await EnsureAdminTeamAsync()
                 .ConfigureAwait(false);
 
             url = new Uri($"/orgs/{app.Owner.Login}/teams/{adminTeam.Slug}/projects/{githubProject.Id}", UriKind.Relative);
@@ -333,13 +420,16 @@ namespace TeamCloud.Providers.GitHub.Services
             return githubProject;
         }
 
-        public async Task<bool> DeleteProject(Model.Data.Project project, int id = default)
+        public async Task<bool> DeleteProjectAsync(Model.Data.Project project, int id = default)
         {
-            var client = await GetAppClient().ConfigureAwait(false);
+            if (project is null)
+                throw new ArgumentNullException(nameof(project));
+
+            var client = await GetAppClientAsync().ConfigureAwait(false);
 
             if (id == default)
             {
-                var githubProject = await GetProjectInternal(project.Name)
+                var githubProject = await GetProjectInternalAsync(project.Name)
                     .ConfigureAwait(false);
 
                 id = githubProject?.Id ?? default;
@@ -362,12 +452,12 @@ namespace TeamCloud.Providers.GitHub.Services
             }
         }
 
-        private async Task<Team> CreateTeamInternal(string name, Permission permission)
+        private async Task<Team> CreateTeamInternalAsync(string name, Permission permission)
         {
-            var client = await GetAppClient().ConfigureAwait(false);
-            var app = await GetAppManifest().ConfigureAwait(false);
+            var client = await GetAppClientAsync().ConfigureAwait(false);
+            var app = await GetAppManifestAsync().ConfigureAwait(false);
 
-            var rootTeam = await EnsureRootTeam()
+            var rootTeam = await EnsureRootTeamAsync()
                 .ConfigureAwait(false);
 
             return await client
@@ -383,10 +473,10 @@ namespace TeamCloud.Providers.GitHub.Services
                 .ConfigureAwait(false);
         }
 
-        private async Task<Team> GetTeamInternal(string name, int id = default)
+        private async Task<Team> GetTeamInternalAsync(string name, int id = default)
         {
-            var client = await GetAppClient().ConfigureAwait(false);
-            var app = await GetAppManifest().ConfigureAwait(false);
+            var client = await GetAppClientAsync().ConfigureAwait(false);
+            var app = await GetAppManifestAsync().ConfigureAwait(false);
 
             if (id == default)
             {
@@ -413,17 +503,17 @@ namespace TeamCloud.Providers.GitHub.Services
             }
         }
 
-        private async Task<Team> EnsureRootTeam()
+        private async Task<Team> EnsureRootTeamAsync()
         {
             if (RootTeam is null)
-                RootTeam = await GetTeamInternal(GitHubServiceConstants.RootTeamName)
+                RootTeam = await GetTeamInternalAsync(GitHubServiceConstants.RootTeamName)
                     .ConfigureAwait(false);
 
             if (RootTeam is null)
             {
                 // CreateTeamInternal calls this method so we cannot use it here
-                var client = await GetAppClient().ConfigureAwait(false);
-                var app = await GetAppManifest().ConfigureAwait(false);
+                var client = await GetAppClientAsync().ConfigureAwait(false);
+                var app = await GetAppManifestAsync().ConfigureAwait(false);
 
                 RootTeam = await client
                     .Organization
@@ -439,28 +529,31 @@ namespace TeamCloud.Providers.GitHub.Services
             return RootTeam;
         }
 
-        private async Task<Team> EnsureAdminTeam()
+        private async Task<Team> EnsureAdminTeamAsync()
         {
             if (AdminTeam is null)
-                AdminTeam = await GetTeamInternal(GitHubServiceConstants.AdminTeamName)
+                AdminTeam = await GetTeamInternalAsync(GitHubServiceConstants.AdminTeamName)
                     .ConfigureAwait(false);
 
             if (AdminTeam is null)
-                AdminTeam = await CreateTeamInternal(GitHubServiceConstants.AdminTeamName, Permission.Admin)
+                AdminTeam = await CreateTeamInternalAsync(GitHubServiceConstants.AdminTeamName, Permission.Admin)
                     .ConfigureAwait(false);
 
             return AdminTeam;
         }
 
-        private async Task<Team> EnsureAdminUsers(Model.Data.Project project)
+        private async Task<Team> EnsureAdminUsersAsync(Model.Data.Project project)
         {
-            var client = await GetAppClient().ConfigureAwait(false);
+            var client = await GetAppClientAsync().ConfigureAwait(false);
 
-            var adminTeam = await EnsureAdminTeam()
+            var adminTeam = await EnsureAdminTeamAsync()
                 .ConfigureAwait(false);
 
             var members = project.Users
-                .Where(u => u.IsAdmin() && u.ProjectProperties(project.Id).ContainsKeyInsensitive(AvailableUserProperties.GitHubLogin))
+                .Where(u =>
+                    u.UserType == UserType.User
+                 && u.IsAdmin()
+                 && u.ProjectProperties(project.Id).ContainsKeyInsensitive(AvailableUserProperties.GitHubLogin))
                 .Select(u => (
                     login: u.ProjectProperties(project.Id).GetValueInsensitive(AvailableUserProperties.GitHubLogin),
                     role: TeamRole.Member)
@@ -468,23 +561,114 @@ namespace TeamCloud.Providers.GitHub.Services
 
             if (members.Any())
             {
-                var tasks = members.Select(u => client
+                var existingMembers = await client
                     .Organization
                     .Team
-                    .AddOrEditMembership(adminTeam.Id, u.login, new UpdateTeamMembership(u.role)
-                ));
-
-                await Task.WhenAll(tasks)
+                    .GetAllMembers(adminTeam.Id)
                     .ConfigureAwait(false);
+
+                var membersToAdd = members
+                    .Where(m => !existingMembers.Any(em => em.Login.Equals(m.login, StringComparison.OrdinalIgnoreCase)));
+
+                if (membersToAdd.Any())
+                {
+                    var tasks = new List<Task>();
+
+                    tasks.AddRange(membersToAdd
+                        .Select(m => client
+                            .Organization
+                            .Team
+                            .AddOrEditMembership(adminTeam.Id, m.login, new UpdateTeamMembership(m.role))));
+
+                    await Task.WhenAll(tasks)
+                        .ConfigureAwait(false);
+                }
             }
 
             return adminTeam;
         }
 
-        private async Task<Octokit.Project> GetProjectInternal(string name, int id = default)
+
+        public async Task UpdateAdminUserAsync(Model.Data.User user)
         {
-            var client = await GetAppClient().ConfigureAwait(false);
-            var app = await GetAppManifest().ConfigureAwait(false);
+            if (user is null)
+                throw new ArgumentNullException(nameof(user));
+
+            if (user.UserType == UserType.User
+             && user.Properties.ContainsKeyInsensitive(AvailableUserProperties.GitHubLogin))
+            {
+                if (user.IsAdmin())
+                {
+                    await EnsureAdminUserAsync(user)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    await DeleteAdminUserAsync(user)
+                        .ConfigureAwait(false);
+                }
+            }
+        }
+
+        public async Task EnsureAdminUserAsync(Model.Data.User user)
+        {
+            if (user is null)
+                throw new ArgumentNullException(nameof(user));
+
+            if (user.UserType == UserType.User
+             && user.IsAdmin()
+             && user.Properties.ContainsKeyInsensitive(AvailableUserProperties.GitHubLogin))
+            {
+                var client = await GetAppClientAsync().ConfigureAwait(false);
+
+                var adminTeam = await EnsureAdminTeamAsync()
+                    .ConfigureAwait(false);
+
+                var login = user.Properties.GetValueInsensitive(AvailableUserProperties.GitHubLogin);
+                try
+                {
+                    var member = await client
+                        .Organization
+                        .Team
+                        .GetMembershipDetails(adminTeam.Id, login)
+                        .ConfigureAwait(false);
+                }
+                catch (NotFoundException)
+                {
+                    await client
+                        .Organization
+                        .Team
+                        .AddOrEditMembership(adminTeam.Id, login, new UpdateTeamMembership(TeamRole.Member))
+                        .ConfigureAwait(false);
+                }
+            }
+        }
+
+        public async Task DeleteAdminUserAsync(Model.Data.User user)
+        {
+            if (user is null)
+                throw new ArgumentNullException(nameof(user));
+
+            if (user.UserType == UserType.User
+             && user.Properties.ContainsKeyInsensitive(AvailableUserProperties.GitHubLogin))
+            {
+                var client = await GetAppClientAsync().ConfigureAwait(false);
+
+                var adminTeam = await EnsureAdminTeamAsync()
+                    .ConfigureAwait(false);
+
+                await client
+                    .Organization
+                    .Team
+                    .RemoveMembership(adminTeam.Id, user.Properties.GetValueInsensitive(AvailableUserProperties.GitHubLogin))
+                    .ConfigureAwait(false);
+            }
+        }
+
+        private async Task<Octokit.Project> GetProjectInternalAsync(string name, int id = default)
+        {
+            var client = await GetAppClientAsync().ConfigureAwait(false);
+            var app = await GetAppManifestAsync().ConfigureAwait(false);
 
             if (id == default)
             {
@@ -511,12 +695,12 @@ namespace TeamCloud.Providers.GitHub.Services
             }
         }
 
-        internal Task HandleWebhook(string eventType, string payload)
-            => eventType.ToLowerInvariant() switch
+        internal Task HandleWebhookAsync(string eventType, string payload)
+            => eventType?.ToUpperInvariant() switch
             {
-                "ping" => HandlePing(payload),
-                "installation" => HandleInstallation(payload),
-                _ => HandleOther(eventType, payload)
+                "PING" => HandlePing(payload),
+                "INSTALLATION" => HandleInstallationAsync(payload),
+                _ => HandleOtherAsync(eventType, payload)
             };
 
         private Task HandlePing(string payload)
@@ -528,17 +712,17 @@ namespace TeamCloud.Providers.GitHub.Services
             return Task.FromResult(ping);
         }
 
-        private async Task HandleInstallation(string payload)
+        private async Task HandleInstallationAsync(string payload)
         {
             var hook = SimpleJsonSerializer.Deserialize<GitHubAppInstallationHook>(payload);
 
-            await SetSecret(hook.Installation)
+            await SetSecretAsync(hook.Installation)
                 .ConfigureAwait(false);
 
             //log?.LogWarning($"Received GitHub Webhook: [ EventType: installation, Action: {hook.Action ?? "null"} ]");
         }
 
-        private Task HandleOther(string eventType, string payload)
+        private Task HandleOtherAsync(string eventType, string payload)
         {
             var hook = SimpleJsonSerializer.Deserialize<GitHubHookPayload>(payload);
 

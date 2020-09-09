@@ -13,7 +13,6 @@ using TeamCloud.Model;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
-using TeamCloud.Model.Data.Core;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.GitHub.Activities;
 using TeamCloud.Serialization;
@@ -44,10 +43,7 @@ namespace TeamCloud.Providers.GitHub.Orchestrations
                         .CallActivityWithRetryAsync(nameof(ProjectDeleteActivity), command.Payload)
                         .ConfigureAwait(true);
 
-                    commandResult.Result = new ProviderOutput
-                    {
-
-                    };
+                    commandResult.Result = new ProviderOutput();
                 }
                 catch (Exception exc)
                 {

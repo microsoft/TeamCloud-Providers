@@ -8,21 +8,13 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using TeamCloud.Providers.GitHub.Services;
 
 namespace TeamCloud.Providers.GitHub
 {
-    public class AppSetupTrigger
+    public static class AppSetupTrigger
     {
-        readonly GitHubService github;
-
-        public AppSetupTrigger(GitHubService github)
-        {
-            this.github = github ?? throw new ArgumentNullException(nameof(github));
-        }
-
         [FunctionName(nameof(AppSetupTrigger))]
-        public IActionResult Run(
+        public static IActionResult Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "setup")] HttpRequestMessage httpRequest)
         {
             if (httpRequest is null)
@@ -42,7 +34,7 @@ namespace TeamCloud.Providers.GitHub
             };
         }
 
-        private string Html =>
+        private static string Html =>
 $@"
 <!DOCTYPE html>
 <html lang=""en-US"">

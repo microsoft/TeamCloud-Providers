@@ -32,7 +32,7 @@ namespace TeamCloud.Providers.GitHub
                 throw new ArgumentNullException(nameof(httpRequest));
 
             var isConfigured = await github
-                .IsConfigured()
+                .IsConfiguredAsync()
                 .ConfigureAwait(false);
 
             if (isConfigured)
@@ -55,7 +55,7 @@ namespace TeamCloud.Providers.GitHub
             };
         }
 
-        private string Html(string host) =>
+        private static string Html(string host) =>
 $@"
 <!DOCTYPE html>
 <html lang=""en-US"">
@@ -144,7 +144,7 @@ $@"
 </html>
 ";
 
-        private string CompleteHtml =>
+        private static string CompleteHtml =>
 $@"
 <!DOCTYPE html>
 <html lang=""en-US"">

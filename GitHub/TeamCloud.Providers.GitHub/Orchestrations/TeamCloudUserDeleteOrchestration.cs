@@ -1,4 +1,4 @@
-﻿/**
+/**
  *  Copyright (c) Microsoft Corporation.
  *  Licensed under the MIT License.
  */
@@ -19,9 +19,9 @@ using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.GitHub.Orchestrations
 {
-    public static class ProjectCreateOrchestration
+    public static class TeamCloudUserDeleteOrchestration
     {
-        [FunctionName(nameof(ProjectCreateOrchestration))]
+        [FunctionName(nameof(TeamCloudUserDeleteOrchestration))]
         public static async Task RunOrchestration(
             [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
             ILogger log)
@@ -29,7 +29,7 @@ namespace TeamCloud.Providers.GitHub.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var command = functionContext.GetInput<ProviderProjectCreateCommand>();
+            var command = functionContext.GetInput<ProviderTeamCloudUserDeleteCommand>();
             var commandResult = command.CreateResult();
             var commandLog = functionContext.CreateReplaySafeLogger(log ?? NullLogger.Instance);
 
@@ -37,10 +37,10 @@ namespace TeamCloud.Providers.GitHub.Orchestrations
             {
                 try
                 {
-                    functionContext.SetCustomStatus("Creating resources", commandLog);
+                    functionContext.SetCustomStatus("Deleting user", commandLog);
 
                     await functionContext
-                        .CallActivityWithRetryAsync(nameof(ProjectCreateActivity), command.Payload)
+                        .CallActivityWithRetryAsync(nameof(TeamCloudUserDeleteActivity), command.Payload)
                         .ConfigureAwait(true);
 
                     commandResult.Result = new ProviderOutput();

@@ -4,35 +4,49 @@
  */
 
 using System;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using TeamCloud.Model;
-using TeamCloud.Model.Commands;
+using TeamCloud.Model.Data;
+using TeamCloud.Orchestration;
 using TeamCloud.Serialization;
+using TeamCloud.Providers.GitHub.Services;
+
 
 namespace TeamCloud.Providers.GitHub.Activities
 {
-    public static class ProjectUpdateActivity
+    public class ProjectUpdateActivity
     {
-        [FunctionName(nameof(ProjectUpdateActivity))]
-        public static Dictionary<string, string> RunActivity(
-            [ActivityTrigger] ProviderProjectUpdateCommand command,
+        private readonly GitHubService github;
+
+        public ProjectUpdateActivity(GitHubService github)
+        {
+            this.github = github ?? throw new ArgumentNullException(nameof(github));
+        }
+
+        [FunctionName(nameof(ProjectUpdateActivity)), RetryOptions(10, FirstRetryInterval = "00:02:00")]
+        public async Task RunActivity(
+            [ActivityTrigger] Project project,
             ILogger log)
         {
-            if (command is null)
-                throw new ArgumentNullException(nameof(command));
+            if (project is null)
+                throw new ArgumentNullException(nameof(project));
 
-            using (log.BeginCommandScope(command))
+            using (log.BeginProjectScope(project))
             {
                 try
                 {
-                    return new Dictionary<string, string>();
+                    await github
+                        .UpdateTeamAsync(project)
+                        .ConfigureAwait(false);
+
+                    log.LogInformation($"Updated GitHub resources for project.");
                 }
                 catch (Exception exc)
                 {
-                    log.LogError(exc, $"{nameof(ProviderProjectUpdateCommand)} failed: {exc.Message}");
+                    log.LogError(exc, $"{nameof(ProjectUpdateActivity)} failed: {exc.Message}");
 
                     throw exc.AsSerializable();
                 }

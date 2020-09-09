@@ -38,8 +38,10 @@ namespace TeamCloud.Providers.GitHub.Activities
                 try
                 {
                     await github
-                        .DeleteTeamCloudProject(project)
+                        .DeleteTeamCloudProjectAsync(project)
                         .ConfigureAwait(false);
+
+                    log.LogInformation($"Deleted GitHub resources for project.");
                 }
                 catch (Exception exc)
                 {
