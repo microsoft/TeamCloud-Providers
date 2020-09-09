@@ -4,18 +4,14 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
-using TeamCloud.Azure;
 using TeamCloud.Model;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Serialization;
-using TeamCloud.Providers.Core.Clients;
 using TeamCloud.Providers.GitHub.Services;
 
 

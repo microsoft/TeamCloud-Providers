@@ -40,7 +40,7 @@ namespace TeamCloud.Providers.GitHub.Orchestrations
                     functionContext.SetCustomStatus("Updating resources", commandLog);
 
                     await functionContext
-                        .CallActivityWithRetryAsync(nameof(ProjectUpdateActivity), command)
+                        .CallActivityWithRetryAsync(nameof(ProjectUpdateActivity), command.Payload)
                         .ConfigureAwait(true);
 
                     commandResult.Result = new ProviderOutput();
