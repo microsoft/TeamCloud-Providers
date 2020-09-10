@@ -10,9 +10,9 @@ using TeamCloud.Model.Commands.Core;
 
 namespace TeamCloud.Providers.Core.Orchestrations
 {
-    public static class ProviderCommandFallbackOrchestration
+    public static class ProviderCommandIgnoreOrchestration
     {
-        [FunctionName(nameof(ProviderCommandFallbackOrchestration))]
+        [FunctionName(nameof(ProviderCommandIgnoreOrchestration))]
         public static ICommandResult RunOrchestrator(
             [OrchestrationTrigger] IDurableOrchestrationContext functionContext)
         {
@@ -21,6 +21,12 @@ namespace TeamCloud.Providers.Core.Orchestrations
 
             var command = functionContext.GetInput<IProviderCommand>();
             var commandResult = command.CreateResult();
+
+            commandResult.Errors.Add(new CommandError()
+            {
+                Message = $"Command '{command.GetType().Name}' is ignored.",
+                Severity = CommandErrorSeverity.Warning
+            });
 
             return commandResult;
         }

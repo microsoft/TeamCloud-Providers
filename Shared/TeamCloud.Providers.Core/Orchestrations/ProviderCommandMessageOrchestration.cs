@@ -50,34 +50,16 @@ namespace TeamCloud.Providers.Core.Orchestrations
                     .CallActivityWithRetryAsync<string>(nameof(ProviderCommandDispatchActivity), command)
                     .ConfigureAwait(true);
 
+                commandOrchestrationName ??= nameof(ProviderCommandIgnoreOrchestration);
+
                 var commandOrchestrationInstanceId = CommandTrigger.GetCommandOrchestrationInstanceId(command);
 
-                if (string.IsNullOrEmpty(commandOrchestrationName))
-                {
-                    // there was no orchestration name found for the current command !!!
-                    // to keep the our suborchestration per command logic alive we trigger
-                    // a fallback orchestration in this case.
+                commandLog
+                    .LogInformation($"Dispatching command '{command.GetType()}' ({commandMessage.CommandId}) >>> {commandOrchestrationName} ({commandOrchestrationInstanceId})");
 
-                    commandLog
-                        .LogInformation($"Dispatching command '{command.GetType()}' ({command.CommandId}) >>> FALLBACK ({commandOrchestrationInstanceId})");
-
-                    commandResult = await functionContext
-                        .CallSubOrchestratorWithRetryAsync<ICommandResult>(nameof(ProviderCommandFallbackOrchestration), commandOrchestrationInstanceId, command)
-                        .ConfigureAwait(true);
-                }
-                else
-                {
-                    // this is the default case - the given command requested a command 
-                    // result by callback. means; the current orchestration instance has 
-                    // to wait for the result and send it back to callback url.
-
-                    commandLog
-                        .LogInformation($"Dispatching command '{command.GetType()}' ({commandMessage.CommandId}) >>> {commandOrchestrationName} ({commandOrchestrationInstanceId})");
-
-                    commandResult = await functionContext
-                        .CallSubOrchestratorWithRetryAsync<ICommandResult>(commandOrchestrationName, commandOrchestrationInstanceId, command)
-                        .ConfigureAwait(true);
-                }
+                commandResult = await functionContext
+                    .CallSubOrchestratorWithRetryAsync<ICommandResult>(commandOrchestrationName, commandOrchestrationInstanceId, command)
+                    .ConfigureAwait(true);
 
                 var timeoutDuration = TimeSpan.FromMinutes(5);
                 var timeout = functionContext.CurrentUtcDateTime.Add(timeoutDuration);
