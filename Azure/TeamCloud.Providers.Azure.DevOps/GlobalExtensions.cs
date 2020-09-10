@@ -149,7 +149,7 @@ namespace TeamCloud.Providers.Azure.DevOps
             throw new ArgumentOutOfRangeException(nameof(originId));
 
             string GetCacheKey(string identifier)
-                => $"{nameof(GetUserDescriptorAsync)}|{originId}";
+                => $"{nameof(GetUserDescriptorAsync)}|{identifier}";
         }
 
         internal static async Task<Guid> GetProjectIdAsync(this ProjectHttpClient client, Project project, IDistributedCache cache = null)
@@ -191,7 +191,7 @@ namespace TeamCloud.Providers.Azure.DevOps
                         SlidingExpiration = TimeSpan.FromHours(1)
                     });
 
-                    if (project.Id.Equals(projectId))
+                    if (project.Id.Equals(projectId, StringComparison.OrdinalIgnoreCase))
                     {
                         return azdoProject.Id;
                     }

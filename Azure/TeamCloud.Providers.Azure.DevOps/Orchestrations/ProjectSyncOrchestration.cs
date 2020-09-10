@@ -44,11 +44,10 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
             }
             catch (Exception exc)
             {
-                log.LogError(exc, $"Failed to synchronize users for project {project.Id}: {exc.Message}");
+                log.LogError(exc, $"Synchronizing project {project.Id} failed: {exc.Message}");
 
                 throw exc.AsSerializable();
             }
         }
-
     }
 }

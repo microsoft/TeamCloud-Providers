@@ -53,8 +53,6 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
                 {
                     commandResult ??= command.CreateResult();
                     commandResult.Errors.Add(exc);
-
-                    throw exc.AsSerializable();
                 }
                 finally
                 {

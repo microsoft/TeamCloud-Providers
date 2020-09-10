@@ -12,7 +12,6 @@ using TeamCloud.Model;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Orchestration;
-using TeamCloud.Serialization;
 
 namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
 {
@@ -40,8 +39,6 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
                 {
                     commandResult ??= command.CreateResult();
                     commandResult.Errors.Add(exc);
-
-                    throw exc.AsSerializable();
                 }
                 finally
                 {

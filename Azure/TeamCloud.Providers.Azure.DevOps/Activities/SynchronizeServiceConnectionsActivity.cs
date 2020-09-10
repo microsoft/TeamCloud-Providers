@@ -117,6 +117,8 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
             }
             catch (Exception exc)
             {
+                log.LogError(exc, $"Synchronizing service connections for project {project.Id} failed: {exc.Message}");
+
                 throw exc.AsSerializable();
             }
 

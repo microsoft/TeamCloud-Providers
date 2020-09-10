@@ -70,7 +70,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
                 }
                 catch (Exception exc)
                 {
-                    log.LogWarning(exc, $"{nameof(SynchronizeLinksActivity)} failed: {exc.Message}");
+                    log.LogWarning(exc, $"Synchronizing links for project {project.Id} failed: {exc.Message}");
 
                     throw exc.AsSerializable();
                 }

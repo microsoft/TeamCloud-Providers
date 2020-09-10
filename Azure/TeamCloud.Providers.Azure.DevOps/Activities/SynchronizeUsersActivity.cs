@@ -16,7 +16,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.VisualStudio.Services.Graph.Client;
 using TeamCloud.Model.Data;
-using TeamCloud.Model.Data.Core;
 using TeamCloud.Providers.Azure.DevOps.Services;
 using TeamCloud.Serialization;
 
@@ -68,11 +67,11 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
                     .ConfigureAwait(false);
 
                 await Task
-                    .WhenAll(new Task[]
-                    {
+                    .WhenAll
+                    (
                         SyncGroupAsync(true, project.Users.Where(u => u.IsOwner(project.Id))),
                         SyncGroupAsync(false, project.Users.Where(u => u.IsMember(project.Id)))
-                    })
+                    )
                     .ConfigureAwait(false);
 
                 async Task SyncGroupAsync(bool projectOwners, IEnumerable<User> users)
@@ -88,13 +87,15 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
                         .AsContinousEnumerationAsync(token => graphClient.ListGroupsAsync(azdoProjectDescriptor.Value, continuationToken: token));
 
                     var group = await groups
-                        .SingleOrDefaultAwaitAsync(g => new ValueTask<bool>(g.Origin.Equals("vsts") && g.DisplayName.Equals(groupName, StringComparison.OrdinalIgnoreCase)))
+                        .SingleOrDefaultAwaitAsync(g => new ValueTask<bool>(g.Origin.Equals("vsts", StringComparison.OrdinalIgnoreCase) && g.DisplayName.Equals(groupName, StringComparison.OrdinalIgnoreCase)))
                         .ConfigureAwait(false);
 
                     var currentUserDescriptors = Array.Empty<string>();
 
                     if (group is null)
                     {
+                        log.LogInformation($"Creating group '{groupName}'");
+
                         group = await graphClient.CreateGroupAsync(new GraphGroupVstsCreationContext
                         {
                             DisplayName = groupName,
@@ -127,7 +128,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
                         .ConfigureAwait(false);
 
                     var contributors = await groups
-                        .SingleOrDefaultAwaitAsync(g => new ValueTask<bool>(g.Origin.Equals("vsts") && g.DisplayName.Equals("Contributors", StringComparison.OrdinalIgnoreCase)))
+                        .SingleOrDefaultAwaitAsync(g => new ValueTask<bool>(g.Origin.Equals("vsts", StringComparison.OrdinalIgnoreCase) && g.DisplayName.Equals("Contributors", StringComparison.OrdinalIgnoreCase)))
                         .ConfigureAwait(false);
 
                     if (contributors != null)
@@ -153,6 +154,8 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
 
                     if (string.IsNullOrEmpty(descriptor))
                     {
+                        log.LogInformation($"Creating user '{user.Id}'");
+
                         var graphUser = await graphClient.CreateUserAsync(new GraphUserOriginIdCreationContext()
                         {
                             OriginId = user.Id
@@ -187,6 +190,8 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
             }
             catch (Exception exc)
             {
+                log.LogError(exc, $"Synchronizing users for project {project.Id} failed: {exc.Message}");
+
                 throw exc.AsSerializable();
             }
         }

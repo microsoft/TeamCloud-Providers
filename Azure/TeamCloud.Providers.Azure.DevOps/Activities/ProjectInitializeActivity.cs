@@ -53,7 +53,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
 
                     var azdoProject = await page
                         .AsContinousEnumerationAsync((continuationToken) => projectClient.GetProjects(ProjectState.WellFormed, continuationToken: continuationToken))
-                        .SingleAwaitAsync(p => new ValueTask<bool>(p.Name.Equals(project.Name)))
+                        .SingleAwaitAsync(p => new ValueTask<bool>(p.Name.Equals(project.Name, StringComparison.Ordinal)))
                         .ConfigureAwait(false);
 
                     var azdoProjectProperties = await projectClient
@@ -61,7 +61,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
                         .ConfigureAwait(false);
 
                     var projectId = azdoProjectProperties
-                        .SingleOrDefault(p => p.Name.Equals(GlobalConstants.TeamCloudProjectIdPropertyKey))?
+                        .SingleOrDefault(p => p.Name.Equals(GlobalConstants.TeamCloudProjectIdPropertyKey, StringComparison.OrdinalIgnoreCase))?
                         .Value as string;
 
                     if (string.IsNullOrEmpty(projectId))
