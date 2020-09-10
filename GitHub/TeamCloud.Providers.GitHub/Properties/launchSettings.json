@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TeamCloud.Providers.GitHub": {
+      "commandName": "Project",
+      "commandLineArgs": "start -p 7104"
+    }
+  }
+}
