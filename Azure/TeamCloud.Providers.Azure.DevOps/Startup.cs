@@ -55,6 +55,7 @@ namespace TeamCloud.Providers.Azure.DevOps
                         .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration), settings => settings.OrchstrationTimeout = (command) => TimeSpan.FromMinutes(5))
                         .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
                         .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
+                        .MapCommand<ProviderProjectDeleteCommand>(nameof(ProjectDeleteOrchestration))
                         .MapCommand<ProviderEventCommand>(nameof(ProviderEventOrchestration))
                         .IgnoreCommand<IProviderCommand>();
                 });
