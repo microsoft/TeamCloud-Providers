@@ -17,6 +17,7 @@ using TeamCloud.Orchestration;
 using TeamCloud.Serialization;
 using TeamCloud.Providers.Core.Clients;
 using TeamCloud.Providers.GitHub.Services;
+using ApiUrls = Octokit.ApiUrls;
 
 namespace TeamCloud.Providers.GitHub.Activities
 {
@@ -70,19 +71,19 @@ namespace TeamCloud.Providers.GitHub.Activities
                     new ProjectLink
                     {
                         Title = "GitHub Team",
-                        HRef = team.Url,
+                        HRef = $"{team.Organization.Url.Replace("api.", string.Empty, StringComparison.OrdinalIgnoreCase)}/teams/{team.Slug}",
                         Type = ProjectLinkType.Link
                     }.WithGeneratedId("team", projectId),
                     new ProjectLink
                     {
                         Title = "GitHub Repo",
-                        HRef = repo.Url,
+                        HRef = repo.HtmlUrl,
                         Type = ProjectLinkType.GitRepository
                     }.WithGeneratedId("repo", projectId),
                     new ProjectLink
                     {
                         Title = "GitHub Project",
-                        HRef = proj.Url,
+                        HRef = $"{proj.OwnerUrl.Replace("api.", string.Empty, StringComparison.OrdinalIgnoreCase)}/projects/{proj.Number}",
                         Type = ProjectLinkType.Link
                     }.WithGeneratedId("project", projectId)
                 };
