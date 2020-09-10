@@ -13,3 +13,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Microsoft.Naming", "CA1724:Type Names Should Not Match Namespaces")]
 [assembly: SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix")]
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types")]
+[assembly: SuppressMessage("Performance", "CA1822:Mark members as static")]

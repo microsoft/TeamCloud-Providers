@@ -10,6 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Design", "CA1056:Uri properties should not be strings")]
 [assembly: SuppressMessage("Design", "CA1054:Uri parameters should not be strings")]
 [assembly: SuppressMessage("Design", "CA1055:Uri return values should not be strings")]
+[assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types")]
 [assembly: SuppressMessage("Microsoft.Naming", "CA1724:Type Names Should Not Match Namespaces")]
 [assembly: SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix")]
-[assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types")]
+[assembly: SuppressMessage("Performance", "CA1822:Mark members as static")]

@@ -15,7 +15,6 @@ using Microsoft.Extensions.DependencyInjection;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
-using TeamCloud.Model.Data.Core;
 
 namespace TeamCloud.Providers.Testing.Services
 {
@@ -50,7 +49,9 @@ namespace TeamCloud.Providers.Testing.Services
 
         internal async Task StartAsync()
         {
-            await host.StartAsync();
+            await host
+                .StartAsync()
+                .ConfigureAwait(false);
 
             ReferenceLink.BaseUrl = host.ServerFeatures.Get<IServerAddressesFeature>()?
                 .Addresses.FirstOrDefault(url => url.StartsWith("http://", StringComparison.OrdinalIgnoreCase));
