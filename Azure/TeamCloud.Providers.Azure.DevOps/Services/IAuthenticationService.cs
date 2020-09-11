@@ -19,8 +19,6 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
 
         Task<string> GetServiceUrlAsync(ServiceEndpoint serviceEndpoint);
 
-        //Task<VssConnection> GetConnectionAsync();
-
         Task<T> GetClientAsync<T>(CancellationToken cancellationToken = default) where T : VssHttpClientBase;
 
         Task<bool> IsAuthorizedAsync();

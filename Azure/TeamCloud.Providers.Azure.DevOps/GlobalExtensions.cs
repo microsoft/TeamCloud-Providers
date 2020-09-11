@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.VisualStudio.Services.Graph.Client;
@@ -19,6 +20,9 @@ namespace TeamCloud.Providers.Azure.DevOps
 {
     internal static class GlobalExtensions
     {
+        internal static string UrlDecode(this string source)
+            => HttpUtility.UrlDecode(source ?? string.Empty);
+
         internal static Dictionary<string, string[]> ToDictionary(this NameValueCollection collection)
             => collection.Cast<string>().ToDictionary(key => key, key => collection.GetValues(key));
 

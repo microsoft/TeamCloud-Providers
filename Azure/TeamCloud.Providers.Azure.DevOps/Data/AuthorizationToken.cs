@@ -27,21 +27,21 @@ namespace TeamCloud.Providers.Azure.DevOps.Data
             if (string.IsNullOrEmpty(token))
                 return null;
 
-            return new JwtSecurityTokenHandler()
-                .ReadJwtToken(token)
-                .ValidTo;
+            try
+            {
+                return new JwtSecurityTokenHandler()
+                    .ReadJwtToken(token)
+                    .ValidTo;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
-        private readonly Lazy<DateTime?> accessTokenExpiresInstance;
-        private readonly Lazy<DateTime?> resetTokenExpiresInstance;
         private string organization;
 
-        public AuthorizationToken()
-        {
-            accessTokenExpiresInstance = new Lazy<DateTime?>(() => GetTokenExpirationDate(AccessToken));
-            resetTokenExpiresInstance = new Lazy<DateTime?>(() => GetTokenExpirationDate(RefreshToken));
-        }
-
+        [JsonProperty("organization")]
         public string Organization
         {
             get => FormatOrganizationUrl(organization);
@@ -58,13 +58,15 @@ namespace TeamCloud.Providers.Azure.DevOps.Data
         public string AccessToken { get; set; }
 
         [JsonIgnore]
-        public DateTime? AccessTokenExpires => accessTokenExpiresInstance.Value;
+        public DateTime? AccessTokenExpires
+            => GetTokenExpirationDate(AccessToken);
 
         [JsonProperty("refresh_token")]
         public string RefreshToken { get; set; }
 
         [JsonIgnore]
-        public DateTime? RefreshTokenExpires => resetTokenExpiresInstance.Value;
+        public DateTime? RefreshTokenExpires
+            => GetTokenExpirationDate(RefreshToken);
 
     }
 }

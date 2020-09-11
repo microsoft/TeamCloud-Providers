@@ -8,6 +8,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
+using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.Services.OAuth;
 using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
@@ -19,40 +22,75 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
     public sealed class AuthenticationService : IAuthenticationService, IAuthenticationSetup
     {
         private readonly ISecretsService secretsService;
+        private readonly IDistributedLockManager distributedLockManager;
+        private readonly ILogger<AuthenticationService> logger;
 
-        public AuthenticationService(ISecretsService secretsService)
+        public AuthenticationService(ISecretsService secretsService, IDistributedLockManager distributedLockManager, ILogger<AuthenticationService> logger = null)
         {
             this.secretsService = secretsService ?? throw new ArgumentNullException(nameof(secretsService));
+            this.distributedLockManager = distributedLockManager ?? throw new ArgumentNullException(nameof(distributedLockManager));
+            this.logger = logger ?? NullLogger<AuthenticationService>.Instance;
         }
 
-        private async Task<AuthorizationToken> GetAuthorizationTokenAsync()
+        private async Task<AuthorizationToken> GetValidAuthorizationTokenAsync()
         {
-            var secret = await secretsService
-                .GetSecretAsync(nameof(AuthenticationService))
+            var token = await ((IAuthenticationSetup)this)
+                .GetAsync()
                 .ConfigureAwait(false);
 
-            if (string.IsNullOrEmpty(secret))
-                return null;
-
-            var token = JsonConvert.DeserializeObject<AuthorizationToken>(secret);
-
-            if (token.AccessTokenExpires.GetValueOrDefault(DateTime.UtcNow).AddMinutes(-1) < DateTime.UtcNow)
+            if (IsTokenExpired(token))
             {
-                token = await AuthorizationHandler
-                    .RefreshAsync(token)
+                var distributedLock = await distributedLockManager
+                    .TryLockAsync(null, nameof(AuthorizationToken), this.GetType().Name, Guid.NewGuid().ToString(), TimeSpan.FromMinutes(1), CancellationToken.None)
                     .ConfigureAwait(false);
 
-                await ((IAuthenticationSetup)this)
-                    .SetupAsync(token)
-                    .ConfigureAwait(false);
+                logger.LogInformation($"Acquired lock {distributedLock.LockId}");
+
+                try
+                {
+                    token = await ((IAuthenticationSetup)this)
+                        .GetAsync()
+                        .ConfigureAwait(false);
+
+                    if (IsTokenExpired(token))
+                    {
+                        logger.LogInformation($"Current authorization token expires {token.AccessTokenExpires}");
+
+                        var refreshedToken = await AuthorizationHandler
+                            .RefreshAsync(token)
+                            .ConfigureAwait(false);
+
+                        if (refreshedToken != null)
+                        {
+                            logger.LogInformation($"Refreshed authorization token expires {refreshedToken.AccessTokenExpires}");
+
+                            await ((IAuthenticationSetup)this)
+                                .SetAsync(refreshedToken)
+                                .ConfigureAwait(false);
+
+                            token = refreshedToken;
+                        }
+                    }
+                }
+                finally
+                {
+                    await distributedLockManager
+                        .ReleaseLockAsync(distributedLock, CancellationToken.None)
+                        .ConfigureAwait(false);
+
+                    logger.LogInformation($"Released lock {distributedLock.LockId}");
+                }
             }
 
             return token;
+
+            static bool IsTokenExpired(AuthorizationToken authorizationToken)
+                => authorizationToken != null && authorizationToken.AccessTokenExpires.GetValueOrDefault(DateTime.UtcNow).AddMinutes(-30) < DateTime.UtcNow;
         }
 
         public async Task<string> GetTokenAsync()
         {
-            var authorizationToken = await GetAuthorizationTokenAsync()
+            var authorizationToken = await GetValidAuthorizationTokenAsync()
                 .ConfigureAwait(false);
 
             return authorizationToken?.AccessToken;
@@ -63,17 +101,12 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
             var organization = await GetOrganizationNameAsync()
                 .ConfigureAwait(false);
 
-            return serviceEndpoint switch
-            {
-                ServiceEndpoint.ApiRoot => $"https://dev.azure.com/{organization}/_apis",
-                ServiceEndpoint.UserEntitlements => $"https://vsaex.dev.azure.com/{organization}/_apis/userentitlements",
-                _ => throw new NotSupportedException($"Service endpoint of type '{serviceEndpoint}' is not supported"),
-            };
+            return serviceEndpoint.ToUrl(organization);
         }
 
         public async Task<string> GetOrganizationUrlAsync()
         {
-            var authorizationToken = await GetAuthorizationTokenAsync()
+            var authorizationToken = await GetValidAuthorizationTokenAsync()
                 .ConfigureAwait(false);
 
             return authorizationToken?.Organization;
@@ -107,24 +140,24 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
 
         public async Task<bool> IsAuthorizedAsync()
         {
-            var authorizationToken = await GetAuthorizationTokenAsync()
+            var authorizationToken = await GetValidAuthorizationTokenAsync()
                 .ConfigureAwait(false);
 
             if (authorizationToken is null)
                 return false;
 
-            var result = await new AuthorizationValidator()
+            var result = await new AuthorizationTokenValidator()
                 .ValidateAsync(authorizationToken)
                 .ConfigureAwait(false);
 
             return result.IsValid;
         }
 
-        async Task IAuthenticationSetup.SetupAsync(AuthorizationToken authorizationToken)
+        async Task<AuthorizationToken> IAuthenticationSetup.SetAsync(AuthorizationToken authorizationToken)
         {
             if (authorizationToken != null)
             {
-                var result = await new AuthorizationValidator()
+                var result = await new AuthorizationTokenValidator()
                     .ValidateAsync(authorizationToken)
                     .ConfigureAwait(false);
 
@@ -136,15 +169,31 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
                 ? null
                 : JsonConvert.SerializeObject(authorizationToken);
 
-            _ = await secretsService
+            authorizationSecret = await secretsService
                 .SetSecretAsync(nameof(AuthenticationService), authorizationSecret)
                 .ConfigureAwait(false);
+
+            return string.IsNullOrEmpty(authorizationSecret)
+                ? null
+                : JsonConvert.DeserializeObject<AuthorizationToken>(authorizationSecret);
+        }
+
+        async Task<AuthorizationToken> IAuthenticationSetup.GetAsync()
+        {
+            var secret = await secretsService
+                .GetSecretAsync(nameof(AuthenticationService))
+                .ConfigureAwait(false);
+
+            if (string.IsNullOrEmpty(secret))
+                return null;
+
+            return JsonConvert.DeserializeObject<AuthorizationToken>(secret);
         }
 
         public async Task<T> GetClientAsync<T>(CancellationToken cancellationToken = default)
             where T : VssHttpClientBase
         {
-            var token = await GetAuthorizationTokenAsync()
+            var token = await GetValidAuthorizationTokenAsync()
                 .ConfigureAwait(false);
 
             if (token is null)
@@ -155,7 +204,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
             var connection = new VssConnection(connectionUri, connectionCred);
 
             return await connection
-                .GetClientAsync<T>()
+                .GetClientAsync<T>(cancellationToken)
                 .ConfigureAwait(false);
         }
     }

@@ -10,6 +10,8 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
 {
     public interface IAuthenticationSetup
     {
-        Task SetupAsync(AuthorizationToken authorizationToken);
+        Task<AuthorizationToken> SetAsync(AuthorizationToken authorizationToken);
+
+        Task<AuthorizationToken> GetAsync();
     }
 }

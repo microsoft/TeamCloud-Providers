@@ -14,9 +14,9 @@ using TeamCloud.Http;
 
 namespace TeamCloud.Providers.Azure.DevOps.Data
 {
-    public class AuthorizationValidator : AbstractValidator<AuthorizationToken>
+    public class AuthorizationTokenValidator : AbstractValidator<AuthorizationToken>
     {
-        public AuthorizationValidator()
+        public AuthorizationTokenValidator()
         {
             this.CascadeMode = CascadeMode.StopOnFirstFailure;
 

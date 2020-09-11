@@ -7,7 +7,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
 {
     public enum ServiceEndpoint
     {
-        ApiRoot,
+        Root,
         UserEntitlements
     }
 }

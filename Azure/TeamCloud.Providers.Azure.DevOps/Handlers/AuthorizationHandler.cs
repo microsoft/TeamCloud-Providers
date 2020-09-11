@@ -37,6 +37,22 @@ namespace TeamCloud.Providers.Azure.DevOps.Handlers
 
         private readonly IAuthenticationService authenticationService;
 
+        private static async Task<string> GetBadRequestErrorDescriptionAsync(HttpResponseMessage httpResponseMessage)
+        {
+            try
+            {
+                var json = await httpResponseMessage
+                    .ReadAsJsonAsync()
+                    .ConfigureAwait(false);
+
+                return json?.SelectToken("$..ErrorDescription")?.ToString() ?? json.ToString();
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         private static async Task<AuthorizationSession> GetAuthorizationSessionAsync(CloudTable sessionTable, Guid sessionId)
         {
             if (sessionTable is null)
@@ -106,8 +122,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Handlers
             };
 
             var response = await VisualStudioTokenUrl
-                .WithHeader("Accept", "application/json")
-                //.WithHeaders(new MediaTypeWithQualityHeaderValue("application/json"))
+                .WithHeaders(new MediaTypeWithQualityHeaderValue("application/json"))
                 .AllowAnyHttpStatus()
                 .PostUrlEncodedAsync(form)
                 .ConfigureAwait(false);
@@ -122,6 +137,9 @@ namespace TeamCloud.Providers.Azure.DevOps.Handlers
             }
             else if (response.StatusCode == HttpStatusCode.BadRequest)
             {
+                var error = await GetBadRequestErrorDescriptionAsync(response)
+                    .ConfigureAwait(false);
+
                 token = null;
             }
             else
@@ -158,6 +176,9 @@ namespace TeamCloud.Providers.Azure.DevOps.Handlers
 
         private Task<IActionResult> AuthorizeGet(HttpRequestMessage requestMessage)
         {
+            var queryString = requestMessage.RequestUri.ParseQueryString();
+            var queryError = queryString.GetValues("error")?.FirstOrDefault()?.UrlDecode();
+
             using var stream = Assembly.GetExecutingAssembly()
                 .GetManifestResourceStream($"{this.GetType().FullName}.html");
 
@@ -172,7 +193,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Handlers
 
             string ReplaceTokens(string content) => Regex.Replace(content, "{@(\\w+)}", (match) => match.Groups[1].Value switch
             {
-                "Error" => requestMessage.RequestUri.ParseQueryString().GetValues("error")?.FirstOrDefault(),
+                "Error" => queryError,
                 "ApplicationWebsite" => FunctionsEnvironment.GetHostUrlAsync().SyncResult(),
                 "ApplicationCallback" => FunctionsEnvironment.GetFunctionUrlAsync(nameof(AuthorizationHandler) + nameof(Callback)).SyncResult(),
                 "Organization" => authenticationService.GetOrganizationUrlAsync().SyncResult() ?? string.Empty,
@@ -277,9 +298,14 @@ namespace TeamCloud.Providers.Azure.DevOps.Handlers
                                 if (authenticationService is IAuthenticationSetup authenticationSetup)
                                 {
                                     await authenticationSetup
-                                        .SetupAsync(token)
+                                        .SetAsync(token)
                                         .ConfigureAwait(false);
                                 }
+                            }
+                            else if (response.StatusCode == HttpStatusCode.BadRequest)
+                            {
+                                error = await GetBadRequestErrorDescriptionAsync(response)
+                                    .ConfigureAwait(false);
                             }
                             else
                             {
