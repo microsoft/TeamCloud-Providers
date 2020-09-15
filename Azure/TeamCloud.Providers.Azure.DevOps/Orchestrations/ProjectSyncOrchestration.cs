@@ -34,7 +34,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
                 var tasks = new List<Task>()
                 {
                     functionContext.CallActivityWithRetryAsync(nameof(SynchronizeLinksActivity), project),
-                    functionContext.CallActivityWithRetryAsync(nameof(SynchronizeServiceConnectionsActivity), project),
+                    functionContext.CallActivityWithRetryAsync(nameof(SynchronizeServiceEndpointsActivity), project),
                     functionContext.CallActivityWithRetryAsync(nameof(SynchronizeUsersActivity), project)
                 };
 

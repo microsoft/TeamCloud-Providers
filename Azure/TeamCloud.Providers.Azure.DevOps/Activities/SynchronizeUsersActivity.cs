@@ -94,7 +94,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
 
                     if (group is null)
                     {
-                        log.LogInformation($"Creating group '{groupName}'");
+                        log.LogInformation($"Creating group '{groupName}' in project '{azdoProject.Name}'");
 
                         group = await graphClient.CreateGroupAsync(new GraphGroupVstsCreationContext
                         {
@@ -154,7 +154,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
 
                     if (string.IsNullOrEmpty(descriptor))
                     {
-                        log.LogInformation($"Creating user '{user.Id}'");
+                        log.LogInformation($"Creating user '{user.Id}' in project '{azdoProject.Name}'");
 
                         var graphUser = await graphClient.CreateUserAsync(new GraphUserOriginIdCreationContext()
                         {

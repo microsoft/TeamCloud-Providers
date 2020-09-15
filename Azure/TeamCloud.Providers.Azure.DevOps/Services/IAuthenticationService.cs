@@ -13,6 +13,8 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
     {
         Task<string> GetTokenAsync();
 
+        Task<string> GetSubjectDescriptorAsync();
+
         Task<string> GetOrganizationUrlAsync();
 
         Task<string> GetOrganizationNameAsync();

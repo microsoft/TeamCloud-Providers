@@ -8,12 +8,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
+using Flurl.Http;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.Services.OAuth;
 using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
+using TeamCloud.Http;
 using TeamCloud.Providers.Azure.DevOps.Data;
 using TeamCloud.Providers.Azure.DevOps.Handlers;
 
@@ -94,6 +96,24 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
                 .ConfigureAwait(false);
 
             return authorizationToken?.AccessToken;
+        }
+
+        public async Task<string> GetSubjectDescriptorAsync()
+        {
+            var token = await GetTokenAsync()
+                .ConfigureAwait(false);
+
+            var org = await GetOrganizationNameAsync()
+                .ConfigureAwait(false);
+
+            var json = await $"https://{org}.vssps.visualstudio.com/_apis/connectionData"
+                .WithOAuthBearerToken(token)
+                .GetJObjectAsync()
+                .ConfigureAwait(false);
+
+            return json.SelectTokens("$..subjectDescriptor")
+                .FirstOrDefault()?
+                .ToString();
         }
 
         public async Task<string> GetServiceUrlAsync(ServiceEndpoint serviceEndpoint)
