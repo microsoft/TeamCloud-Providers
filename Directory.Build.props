@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <TeamCloudPackageVersion>0.2.251-pre</TeamCloudPackageVersion>
+    <TeamCloudPackageVersion>0.2.255-pre</TeamCloudPackageVersion>
   </PropertyGroup>
   
   <ItemGroup Condition="Exists('..\GlobalSuppressions.cs')">
