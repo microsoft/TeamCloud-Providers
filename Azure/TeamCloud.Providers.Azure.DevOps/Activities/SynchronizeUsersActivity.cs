@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.VisualStudio.Services.Graph.Client;
 using TeamCloud.Model.Data;
+using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.DevOps.Services;
 using TeamCloud.Serialization;
 
@@ -32,7 +33,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
             this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
-        [FunctionName(nameof(SynchronizeUsersActivity))]
+        [FunctionName(nameof(SynchronizeUsersActivity)), RetryOptions(3)]
         public async Task RunActivity(
             [ActivityTrigger] Project project,
             ILogger log)
@@ -115,7 +116,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
                     }
 
                     var targetUserDescriptors = await Task
-                        .WhenAll(users.Select(user => ResolveUserDescriptorAsync(user)))
+                        .WhenAll(users.Where(user => user.UserType == UserType.User).Select(user => ResolveUserDescriptorAsync(user)))
                         .ConfigureAwait(false);
 
                     var membershipTasks = new List<Task>();
@@ -148,44 +149,56 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
 
                 async Task<string> ResolveUserDescriptorAsync(User user)
                 {
-                    var descriptor = await graphClient
-                        .GetUserDescriptorAsync(Guid.Parse(user.Id), cache)
-                        .ConfigureAwait(false);
+                    if (user is null)
+                        throw new ArgumentNullException(nameof(user));
 
-                    if (string.IsNullOrEmpty(descriptor))
+                    try
                     {
-                        log.LogInformation($"Creating user '{user.Id}' in project '{azdoProject.Name}'");
+                        var descriptor = await graphClient
+                            .GetUserDescriptorAsync(Guid.Parse(user.Id), cache)
+                            .ConfigureAwait(false);
 
-                        var graphUser = await graphClient.CreateUserAsync(new GraphUserOriginIdCreationContext()
+                        if (string.IsNullOrEmpty(descriptor))
                         {
-                            OriginId = user.Id
+                            log.LogInformation($"Creating user '{user.Id}' in project '{azdoProject.Name}'");
 
-                        }).ConfigureAwait(false);
+                            var graphUser = await graphClient.CreateUserAsync(new GraphUserOriginIdCreationContext()
+                            {
+                                OriginId = user.Id
 
-                        var token = await authenticationService
-                            .GetTokenAsync()
-                            .ConfigureAwait(false);
+                            }).ConfigureAwait(false);
 
-                        var userEntitlementsServiceUrl = await authenticationService
-                            .GetServiceUrlAsync(ServiceEndpoint.UserEntitlements)
-                            .ConfigureAwait(false);
+                            var token = await authenticationService
+                                .GetTokenAsync()
+                                .ConfigureAwait(false);
 
-                        var userEntitlement = new
-                        {
-                            user = graphUser,
-                            accessLevel = new { accountLicenseType = "express" }
-                        };
+                            var userEntitlementsServiceUrl = await authenticationService
+                                .GetServiceUrlAsync(ServiceEndpoint.UserEntitlements)
+                                .ConfigureAwait(false);
 
-                        _ = await userEntitlementsServiceUrl
-                            .SetQueryParam("api-version", "5.0-preview.2")
-                            .WithOAuthBearerToken(token)
-                            .PostJsonAsync(userEntitlement)
-                            .ConfigureAwait(false);
+                            var userEntitlement = new
+                            {
+                                user = graphUser,
+                                accessLevel = new { accountLicenseType = "express" }
+                            };
 
-                        descriptor = graphUser.Descriptor;
+                            _ = await userEntitlementsServiceUrl
+                                .SetQueryParam("api-version", "5.0-preview.2")
+                                .WithOAuthBearerToken(token)
+                                .PostJsonAsync(userEntitlement)
+                                .ConfigureAwait(false);
+
+                            descriptor = graphUser.Descriptor;
+                        }
+
+                        return descriptor;
                     }
+                    catch (Exception exc)
+                    {
+                        log.LogError(exc, $"Faile to resolve user {user.Id}: {exc.Message}");
 
-                    return descriptor;
+                        throw;
+                    }
                 }
             }
             catch (Exception exc)

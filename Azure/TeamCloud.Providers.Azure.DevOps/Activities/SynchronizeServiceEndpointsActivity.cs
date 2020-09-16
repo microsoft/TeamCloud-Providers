@@ -17,6 +17,7 @@ using Microsoft.VisualStudio.Services.ServiceEndpoints.WebApi;
 using TeamCloud.Azure;
 using TeamCloud.Azure.Resources;
 using TeamCloud.Model.Data;
+using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.DevOps.Services;
 using TeamCloud.Providers.Core.Clients;
 using TeamCloud.Serialization;
@@ -38,7 +39,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Activities
             this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
-        [FunctionName(nameof(SynchronizeServiceEndpointsActivity))]
+        [FunctionName(nameof(SynchronizeServiceEndpointsActivity)), RetryOptions(3)]
         public async Task RunActivity(
             [ActivityTrigger] Project project,
             ILogger log)

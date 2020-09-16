@@ -7,8 +7,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.VisualStudio.Services.Graph.Client;
@@ -20,6 +22,34 @@ namespace TeamCloud.Providers.Azure.DevOps
 {
     internal static class GlobalExtensions
     {
+        internal static async Task<IDistributedLock> AcquireLockAsync(this IDistributedLockManager distributedLockManager, string lockId, string lockOwner, TimeSpan? lockPeriod = default, TimeSpan? acquisitionTimeout = default, CancellationToken cancellationToken = default)
+        {
+            if (distributedLockManager is null)
+                throw new ArgumentNullException(nameof(distributedLockManager));
+
+            if (string.IsNullOrEmpty(lockId))
+                throw new ArgumentException($"'{nameof(lockId)}' cannot be null or empty", nameof(lockId));
+
+            if (string.IsNullOrEmpty(lockOwner))
+                throw new ArgumentException($"'{nameof(lockOwner)}' cannot be null or empty", nameof(lockOwner));
+
+
+            using var acquisitionCancellationTokenSource = new CancellationTokenSource(acquisitionTimeout.GetValueOrDefault(TimeSpan.FromMinutes(1)));
+            using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(acquisitionCancellationTokenSource.Token, cancellationToken);
+
+            while (!linkedCancellationTokenSource.Token.IsCancellationRequested)
+            {
+                var distributedLock = await distributedLockManager
+                    .TryLockAsync(null, lockId, lockOwner, null, lockPeriod.GetValueOrDefault(TimeSpan.FromMinutes(1)), linkedCancellationTokenSource.Token)
+                    .ConfigureAwait(false);
+
+                if (distributedLock != null)
+                    return distributedLock;
+            }
+
+            throw new TimeoutException($"Unable to acquire lock {lockId} for owner {lockOwner}");
+        }
+
         internal static string UrlDecode(this string source)
             => HttpUtility.UrlDecode(source ?? string.Empty);
 

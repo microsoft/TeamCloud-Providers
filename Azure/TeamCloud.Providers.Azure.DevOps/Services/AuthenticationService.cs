@@ -42,9 +42,22 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
 
             if (IsTokenExpired(token))
             {
-                var distributedLock = await distributedLockManager
-                    .TryLockAsync(null, nameof(AuthorizationToken), this.GetType().Name, Guid.NewGuid().ToString(), TimeSpan.FromMinutes(1), CancellationToken.None)
-                    .ConfigureAwait(false);
+                IDistributedLock distributedLock;
+
+                try
+                {
+                    distributedLock = await distributedLockManager
+                        .AcquireLockAsync(nameof(AuthorizationToken), this.GetType().Name)
+                        .ConfigureAwait(false);
+                }
+                catch (TimeoutException exc)
+                {
+                    logger.LogWarning(exc, $"Failed to acquire distributed lock to refresh authorization token: {exc.Message}");
+
+                    return await ((IAuthenticationSetup)this)
+                        .GetAsync()
+                        .ConfigureAwait(false);
+                }
 
                 logger.LogInformation($"Acquired lock {distributedLock.LockId}");
 
@@ -56,7 +69,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
 
                     if (IsTokenExpired(token))
                     {
-                        logger.LogInformation($"Current authorization token expires {token.AccessTokenExpires}");
+                        logger.LogInformation($"Current authorization token expires {token?.AccessTokenExpires}");
 
                         var refreshedToken = await AuthorizationHandler
                             .RefreshAsync(token)
@@ -64,7 +77,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
 
                         if (refreshedToken != null)
                         {
-                            logger.LogInformation($"Refreshed authorization token expires {refreshedToken.AccessTokenExpires}");
+                            logger.LogInformation($"Refreshed authorization token expires {refreshedToken?.AccessTokenExpires}");
 
                             await ((IAuthenticationSetup)this)
                                 .SetAsync(refreshedToken)
