@@ -5,8 +5,8 @@
 
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
+using TeamCloud.Providers.Core.Model;
 
 namespace TeamCloud.Providers.Core.Orchestrations
 {
@@ -19,12 +19,12 @@ namespace TeamCloud.Providers.Core.Orchestrations
             if (functionContext is null)
                 throw new System.ArgumentNullException(nameof(functionContext));
 
-            var command = functionContext.GetInput<IProviderCommand>();
-            var commandResult = command.CreateResult();
+            var commandContext = functionContext.GetInput<ProviderCommandContext>();
+            var commandResult = commandContext.Command.CreateResult();
 
             commandResult.Errors.Add(new CommandError()
             {
-                Message = $"Command '{command.GetType().Name}' is ignored.",
+                Message = $"Command '{commandContext.Command.GetType().Name}' is ignored.",
                 Severity = CommandErrorSeverity.Warning
             });
 

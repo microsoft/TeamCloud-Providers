@@ -10,12 +10,13 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using TeamCloud.Model.Commands;
+using TeamCloud.Providers.Core.Model;
 
-namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
+namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations.Commands
 {
-    public static class ProviderEventOrchestration
+    public static class ProviderEventCommandOrchestration
     {
-        [FunctionName(nameof(ProviderEventOrchestration))]
+        [FunctionName(nameof(ProviderEventCommandOrchestration))]
         public static Task RunOrchestration(
             [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
             ILogger log)
@@ -23,7 +24,8 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var command = functionContext.GetInput<ProviderEventCommand>();
+            var commandContext = functionContext.GetInput<ProviderCommandContext>();
+            var command = (ProviderEventCommand)commandContext.Command;
             var commandLog = functionContext.CreateReplaySafeLogger(log ?? NullLogger.Instance);
 
             return Task.CompletedTask;

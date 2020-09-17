@@ -20,6 +20,7 @@ using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Validation;
 using TeamCloud.Providers.Core.Configuration;
+using TeamCloud.Providers.Core.Model;
 using TeamCloud.Providers.Core.Orchestrations;
 
 namespace TeamCloud.Providers.Core.API
@@ -117,32 +118,38 @@ namespace TeamCloud.Providers.Core.API
 
         private async Task<IActionResult> HandlePostAsync(IDurableClient durableClient, HttpRequestMessage requestMessage, ILogger log)
         {
-            ProviderCommandMessage message;
+            ProviderCommandMessage commandMessage;
 
             try
             {
-                message = await requestMessage.Content
+                commandMessage = await requestMessage.Content
                     .ReadAsJsonAsync<ProviderCommandMessage>()
                     .ConfigureAwait(false);
 
-                if (message?.Command is null)
+                if (commandMessage?.Command is null)
                     return new BadRequestResult();
 
-                message.Validate(throwOnValidationError: true);
+                commandMessage.Validate(throwOnValidationError: true);
             }
             catch (ValidationException)
             {
                 return new BadRequestResult();
             }
 
-            var instanceId = GetCommandMessageOrchestrationInstanceId(message.Command.CommandId);
+            var instanceId = GetCommandMessageOrchestrationInstanceId(commandMessage.Command.CommandId);
 
             try
             {
-                log.LogInformation($"Starting provider command message orchestration for command {message.Command.CommandId}");
+                log.LogInformation($"Starting provider command message orchestration for command {commandMessage.Command.CommandId}");
+
+                var commandContext = new ProviderCommandContext()
+                {
+                    Command = commandMessage.Command,
+                    Context = requestMessage.RequestUri.ParseQueryString()
+                };
 
                 _ = await durableClient
-                    .StartNewAsync(nameof(ProviderCommandMessageOrchestration), instanceId, message)
+                    .StartNewAsync(nameof(ProviderCommandMessageOrchestration), instanceId, (commandMessage, commandContext))
                     .ConfigureAwait(false);
             }
             catch (Exception exc)
@@ -158,24 +165,24 @@ namespace TeamCloud.Providers.Core.API
 
                     if (commandMessageStatus != null)
                     {
-                        log.LogWarning(exc, $"Provider command message orchestration for command {message.Command.CommandId} already started: {exc.Message}");
+                        log.LogWarning(exc, $"Provider command message orchestration for command {commandMessage.Command.CommandId} already started: {exc.Message}");
 
                         return new System.Web.Http.ConflictResult();
                     }
                 }
 
-                log.LogError(exc, $"Failed to start provider command message orchestration for command {message.Command.CommandId}: {exc.Message}");
+                log.LogError(exc, $"Failed to start provider command message orchestration for command {commandMessage.Command.CommandId}: {exc.Message}");
 
                 throw;
             }
 
             var commandResult = await durableClient
-                .GetCommandResultAsync(message.Command)
+                .GetCommandResultAsync(commandMessage.Command)
                 .ConfigureAwait(false);
 
-            commandResult ??= message.Command.CreateResult();
+            commandResult ??= commandMessage.Command.CreateResult();
 
-            return CreateCommandResultResponse(message.Command, commandResult);
+            return CreateCommandResultResponse(commandMessage.Command, commandResult);
         }
 
         private IActionResult CreateCommandResultResponse(ICommand command, ICommandResult commandResult)

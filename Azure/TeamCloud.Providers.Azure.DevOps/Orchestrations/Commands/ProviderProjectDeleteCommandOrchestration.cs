@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -12,14 +13,16 @@ using Microsoft.Extensions.Logging.Abstractions;
 using TeamCloud.Model;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
+using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
-using TeamCloud.Serialization;
+using TeamCloud.Providers.Azure.DevOps.Activities;
+using TeamCloud.Providers.Core.Model;
 
-namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
+namespace TeamCloud.Providers.Azure.DevOps.Orchestrations.Commands
 {
-    public static class ProjectUpdateOrchestration
+    public static class ProviderProjectDeleteCommandOrchestration
     {
-        [FunctionName(nameof(ProjectUpdateOrchestration))]
+        [FunctionName(nameof(ProviderProjectDeleteCommandOrchestration))]
         public static async Task RunOrchestration(
             [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
             ILogger log)
@@ -27,7 +30,9 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var command = functionContext.GetInput<ProviderProjectUpdateCommand>();
+            var commandContext = functionContext.GetInput<ProviderCommandContext>();
+            var command = (ProviderProjectDeleteCommand)commandContext.Command;
+
             var commandResult = command.CreateResult();
             var commandLog = functionContext.CreateReplaySafeLogger(log ?? NullLogger.Instance);
 
@@ -36,15 +41,19 @@ namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations
                 try
                 {
                     await functionContext
-                        .CallSubOrchestratorWithRetryAsync(nameof(ProjectSyncOrchestration), command.Payload)
+                        .EnsureAuthorizedAsync()
                         .ConfigureAwait(true);
+
+                    await functionContext
+                        .CallOperationAsync(nameof(ProjectDeleteActivity), command.Payload)
+                        .ConfigureAwait(true);
+
+                    commandResult.Result = new ProviderOutput { Properties = new Dictionary<string, string>() };
                 }
                 catch (Exception exc)
                 {
                     commandResult ??= command.CreateResult();
                     commandResult.Errors.Add(exc);
-
-                    throw exc.AsSerializable();
                 }
                 finally
                 {

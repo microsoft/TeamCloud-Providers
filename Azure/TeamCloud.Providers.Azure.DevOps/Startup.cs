@@ -18,7 +18,7 @@ using TeamCloud.Http;
 using TeamCloud.Model.Commands;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Azure.DevOps;
-using TeamCloud.Providers.Azure.DevOps.Orchestrations;
+using TeamCloud.Providers.Azure.DevOps.Orchestrations.Commands;
 using TeamCloud.Providers.Azure.DevOps.Services;
 using TeamCloud.Providers.Core;
 using TeamCloud.Providers.Core.Configuration;
@@ -52,11 +52,10 @@ namespace TeamCloud.Providers.Azure.DevOps
                 .AddTeamCloudCommandOrchestration(configuration =>
                 {
                     configuration
-                        .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration), settings => settings.OrchstrationTimeout = (command) => TimeSpan.FromMinutes(5))
-                        .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
-                        .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
-                        .MapCommand<ProviderProjectDeleteCommand>(nameof(ProjectDeleteOrchestration))
-                        .MapCommand<ProviderEventCommand>(nameof(ProviderEventOrchestration))
+                        .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterCommandOrchestration), settings => settings.OrchstrationTimeout = (command) => TimeSpan.FromMinutes(5))
+                        .MapCommand<ProviderProjectCreateCommand>(nameof(ProviderProjectCreateCommandOrchestration))
+                        .MapCommand<ProviderProjectUpdateCommand>(nameof(ProviderProjectUpdateCommandOrchestration))
+                        .MapCommand<ProviderProjectDeleteCommand>(nameof(ProviderProjectDeleteCommandOrchestration))
                         .IgnoreCommand<IProviderCommand>();
                 });
 

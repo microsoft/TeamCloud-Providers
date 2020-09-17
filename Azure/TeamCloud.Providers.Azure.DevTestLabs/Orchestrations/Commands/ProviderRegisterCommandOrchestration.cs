@@ -1,4 +1,4 @@
-﻿/**
+/**
  *  Copyright (c) Microsoft Corporation.
  *  Licensed under the MIT License.
  */
@@ -12,14 +12,18 @@ using Microsoft.Extensions.Logging.Abstractions;
 using TeamCloud.Model;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
+using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
+using TeamCloud.Providers.Azure.DevTestLabs.Activities;
+using TeamCloud.Providers.Core;
+using TeamCloud.Providers.Core.Model;
 using TeamCloud.Serialization;
 
-namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
+namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations.Commands
 {
-    public static class ProjectUpdateOrchestration
+    public static class ProviderRegisterCommandOrchestration
     {
-        [FunctionName(nameof(ProjectUpdateOrchestration))]
+        [FunctionName(nameof(ProviderRegisterCommandOrchestration))]
         public static async Task RunOrchestration(
             [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
             ILogger log)
@@ -27,7 +31,9 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var command = functionContext.GetInput<ProviderProjectUpdateCommand>();
+            var commandContext = functionContext.GetInput<ProviderCommandContext>();
+            var command = (ProviderRegisterCommand)commandContext.Command;
+
             var commandResult = command.CreateResult();
             var commandLog = functionContext.CreateReplaySafeLogger(log ?? NullLogger.Instance);
 
@@ -35,9 +41,18 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
             {
                 try
                 {
-                    await functionContext
-                        .CallSubOrchestratorWithRetryAsync(nameof(ProjectSyncOrchestration), command.Payload)
+                    if (Guid.TryParse(command.Payload?.TeamCloudApplicationInsightsKey, out var instrumentationKey))
+                    {
+                        await functionContext
+                            .SetInstrumentationKeyAsync(instrumentationKey)
+                            .ConfigureAwait(true);
+                    }
+
+                    var providerRegistraion = await functionContext
+                        .CallActivityWithRetryAsync<ProviderRegistration>(nameof(ProviderRegisterActivity), command)
                         .ConfigureAwait(true);
+
+                    commandResult.Result = providerRegistraion;
                 }
                 catch (Exception exc)
                 {

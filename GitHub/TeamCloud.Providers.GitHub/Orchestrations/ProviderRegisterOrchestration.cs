@@ -17,6 +17,7 @@ using TeamCloud.Providers.GitHub.Activities;
 using TeamCloud.Providers.Core;
 using TeamCloud.Serialization;
 using TeamCloud.Model.Data;
+using TeamCloud.Providers.Core.Model;
 
 namespace TeamCloud.Providers.GitHub.Orchestrations
 {
@@ -30,7 +31,9 @@ namespace TeamCloud.Providers.GitHub.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var command = functionContext.GetInput<ProviderRegisterCommand>();
+            var commandContext = functionContext.GetInput<ProviderCommandContext>();
+            var command = (ProviderRegisterCommand)commandContext.Command;
+
             var commandResult = command.CreateResult();
             var commandLog = functionContext.CreateReplaySafeLogger(log ?? NullLogger.Instance);
 

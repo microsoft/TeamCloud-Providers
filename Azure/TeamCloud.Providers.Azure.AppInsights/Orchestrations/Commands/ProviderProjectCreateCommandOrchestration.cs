@@ -1,9 +1,10 @@
-/**
+﻿/**
  *  Copyright (c) Microsoft Corporation.
  *  Licensed under the MIT License.
  */
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -14,14 +15,16 @@ using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
-using TeamCloud.Providers.Azure.DevOps.Activities;
-using TeamCloud.Providers.Core;
+using TeamCloud.Orchestration.Deployment;
+using TeamCloud.Providers.Azure.AppInsights.Activities;
+using TeamCloud.Providers.Core.Model;
+using TeamCloud.Serialization;
 
-namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
+namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations.Commands
 {
-    public static class ProviderRegisterOrchestration
+    public static class ProviderProjectCreateCommandOrchestration
     {
-        [FunctionName(nameof(ProviderRegisterOrchestration))]
+        [FunctionName(nameof(ProviderProjectCreateCommandOrchestration))]
         public static async Task RunOrchestration(
             [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
             ILogger log)
@@ -29,7 +32,9 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var command = functionContext.GetInput<ProviderRegisterCommand>();
+            var commandContext = functionContext.GetInput<ProviderCommandContext>();
+            var command = (ProviderProjectCreateCommand)commandContext.Command;
+
             var commandResult = command.CreateResult();
             var commandLog = functionContext.CreateReplaySafeLogger(log ?? NullLogger.Instance);
 
@@ -37,23 +42,27 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
             {
                 try
                 {
-                    if (Guid.TryParse(command.Payload?.TeamCloudApplicationInsightsKey, out var instrumentationKey))
-                    {
-                        await functionContext
-                            .SetInstrumentationKeyAsync(instrumentationKey)
-                            .ConfigureAwait(true);
-                    }
+                    functionContext.SetCustomStatus("Deploy resources", commandLog);
 
-                    var providerRegistration = await functionContext
-                        .CallActivityWithRetryAsync<ProviderRegistration>(nameof(ProviderRegisterActivity), command)
+                    var deploymentOutput = await functionContext
+                        .CallDeploymentAsync(nameof(ProjectCreateActivity), command.Payload)
                         .ConfigureAwait(true);
 
-                    commandResult.Result = providerRegistration;
+                    commandResult.Result = new ProviderOutput
+                    {
+                        Properties = deploymentOutput.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString())
+                    };
+
+                    await functionContext
+                        .CallSubOrchestratorWithRetryAsync(nameof(ProjectSyncOrchestration), command.Payload)
+                        .ConfigureAwait(true);
                 }
                 catch (Exception exc)
                 {
                     commandResult ??= command.CreateResult();
                     commandResult.Errors.Add(exc);
+
+                    throw exc.AsSerializable();
                 }
                 finally
                 {

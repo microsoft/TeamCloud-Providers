@@ -1,10 +1,9 @@
-﻿/**
+/**
  *  Copyright (c) Microsoft Corporation.
  *  Licensed under the MIT License.
  */
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -15,13 +14,16 @@ using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
-using TeamCloud.Providers.Azure.DevOps.Activities;
+using TeamCloud.Providers.Azure.AppInsights.Activities;
+using TeamCloud.Providers.Core;
+using TeamCloud.Providers.Core.Model;
+using TeamCloud.Serialization;
 
-namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
+namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations.Commands
 {
-    public static class ProjectUpdateOrchestration
+    public static class ProviderRegisterCommandOrchestration
     {
-        [FunctionName(nameof(ProjectUpdateOrchestration))]
+        [FunctionName(nameof(ProviderRegisterCommandOrchestration))]
         public static async Task RunOrchestration(
             [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
             ILogger log)
@@ -29,7 +31,9 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var command = functionContext.GetInput<ProviderProjectUpdateCommand>();
+            var commandContext = functionContext.GetInput<ProviderCommandContext>();
+            var command = (ProviderRegisterCommand)commandContext.Command;
+
             var commandResult = command.CreateResult();
             var commandLog = functionContext.CreateReplaySafeLogger(log ?? NullLogger.Instance);
 
@@ -37,24 +41,25 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
             {
                 try
                 {
-                    await functionContext
-                        .EnsureAuthorizedAsync()
+                    if (Guid.TryParse(command.Payload?.TeamCloudApplicationInsightsKey, out var instrumentationKey))
+                    {
+                        await functionContext
+                            .SetInstrumentationKeyAsync(instrumentationKey)
+                            .ConfigureAwait(true);
+                    }
+
+                    var providerRegistraion = await functionContext
+                        .CallActivityWithRetryAsync<ProviderRegistration>(nameof(ProviderRegisterActivity), command)
                         .ConfigureAwait(true);
 
-                    await functionContext
-                        .CallActivityWithRetryAsync(nameof(ProjectUpdateActivity), command.Payload)
-                        .ConfigureAwait(true);
-
-                    await functionContext
-                        .CallSubOrchestratorWithRetryAsync(nameof(ProjectSyncOrchestration), command.Payload)
-                        .ConfigureAwait(true);
-
-                    commandResult.Result = new ProviderOutput { Properties = new Dictionary<string, string>() };
+                    commandResult.Result = providerRegistraion;
                 }
                 catch (Exception exc)
                 {
                     commandResult ??= command.CreateResult();
                     commandResult.Errors.Add(exc);
+
+                    throw exc.AsSerializable();
                 }
                 finally
                 {

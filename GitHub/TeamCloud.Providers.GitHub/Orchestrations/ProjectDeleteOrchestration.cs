@@ -14,6 +14,7 @@ using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
+using TeamCloud.Providers.Core.Model;
 using TeamCloud.Providers.GitHub.Activities;
 using TeamCloud.Serialization;
 
@@ -29,7 +30,9 @@ namespace TeamCloud.Providers.GitHub.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var command = functionContext.GetInput<ProviderProjectDeleteCommand>();
+            var commandContext = functionContext.GetInput<ProviderCommandContext>();
+            var command = (ProviderProjectDeleteCommand)commandContext.Command;
+
             var commandResult = command.CreateResult();
             var commandLog = functionContext.CreateReplaySafeLogger(log ?? NullLogger.Instance);
 

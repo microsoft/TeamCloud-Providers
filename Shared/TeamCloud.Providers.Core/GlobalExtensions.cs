@@ -13,11 +13,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TeamCloud.Audit;
 using TeamCloud.Configuration;
+using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Core.Activities;
 using TeamCloud.Providers.Core.API;
 using TeamCloud.Providers.Core.Configuration;
+using TeamCloud.Providers.Core.Model;
 
 namespace TeamCloud.Providers.Core
 {
@@ -99,11 +101,10 @@ namespace TeamCloud.Providers.Core
 
             if (commandStatus?.Input?.HasValues ?? false)
             {
-                var commandMessage = commandStatus.Input
-                    .ToObject<ICommandMessage>();
+                var (commandMessage, commandContext) = commandStatus.Input
+                    .ToObject<(ProviderCommandMessage, ProviderCommandContext)>();
 
-                if (commandMessage.Command != null)
-                    return commandMessage.Command;
+                return commandMessage.Command ?? commandContext.Command;
             }
 
             return null;

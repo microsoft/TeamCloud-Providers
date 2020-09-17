@@ -25,7 +25,7 @@ using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Orchestration.Deployment;
 using TeamCloud.Providers.Azure.DevTestLabs;
-using TeamCloud.Providers.Azure.DevTestLabs.Orchestrations;
+using TeamCloud.Providers.Azure.DevTestLabs.Orchestrations.Commands;
 using TeamCloud.Providers.Core;
 using TeamCloud.Providers.Core.Configuration;
 
@@ -62,10 +62,10 @@ namespace TeamCloud.Providers.Azure.DevTestLabs
                 .AddTeamCloudCommandOrchestration(configuration =>
                 {
                     configuration
-                        .MapCommand<ProviderEventCommand>(nameof(ProviderEventOrchestration))
-                        .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration), settings => settings.OrchstrationTimeout = (command) => TimeSpan.FromMinutes(5))
-                        .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
-                        .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
+                        .MapCommand<ProviderEventCommand>(nameof(ProviderEventCommandOrchestration))
+                        .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterCommandOrchestration), settings => settings.OrchstrationTimeout = (command) => TimeSpan.FromMinutes(5))
+                        .MapCommand<ProviderProjectCreateCommand>(nameof(ProviderProjectCreateCommandOrchestration))
+                        .MapCommand<ProviderProjectUpdateCommand>(nameof(ProviderProjectUpdateCommandOrchestration))
                         .IgnoreCommand<IProviderCommand>()
                         .SubscribeEvent(ProviderEventSubscription.ResourceWriteSuccess)
                         .SubscribeEvent(ProviderEventSubscription.ResourceDeleteSuccess);

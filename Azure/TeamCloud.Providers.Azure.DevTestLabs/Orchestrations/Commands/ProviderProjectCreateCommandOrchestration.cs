@@ -4,7 +4,7 @@
  */
 
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -15,13 +15,16 @@ using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
-using TeamCloud.Providers.Azure.DevOps.Activities;
+using TeamCloud.Orchestration.Deployment;
+using TeamCloud.Providers.Azure.DevTestLabs.Activities;
+using TeamCloud.Providers.Core.Model;
+using TeamCloud.Serialization;
 
-namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
+namespace TeamCloud.Providers.Azure.DevTestLabs.Orchestrations.Commands
 {
-    public static class ProjectCreateOrchestration
+    public static class ProviderProjectCreateCommandOrchestration
     {
-        [FunctionName(nameof(ProjectCreateOrchestration))]
+        [FunctionName(nameof(ProviderProjectCreateCommandOrchestration))]
         public static async Task RunOrchestration(
             [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
             ILogger log)
@@ -29,7 +32,9 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var command = functionContext.GetInput<ProviderProjectCreateCommand>();
+            var commandContext = functionContext.GetInput<ProviderCommandContext>();
+            var command = (ProviderProjectCreateCommand)commandContext.Command;
+
             var commandResult = command.CreateResult();
             var commandLog = functionContext.CreateReplaySafeLogger(log ?? NullLogger.Instance);
 
@@ -37,28 +42,25 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
             {
                 try
                 {
-                    await functionContext
-                        .EnsureAuthorizedAsync()
+                    var deploymentOutput = await functionContext
+                        .CallDeploymentAsync(nameof(ProjectCreateActivity), command.Payload)
                         .ConfigureAwait(true);
 
-                    await functionContext
-                        .CallOperationAsync(nameof(ProjectCreateActivity), command.Payload)
-                        .ConfigureAwait(true);
+                    commandResult.Result = new ProviderOutput
+                    {
+                        Properties = deploymentOutput.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString())
+                    };
 
                     await functionContext
-                        .CallActivityWithRetryAsync(nameof(ProjectInitializeActivity), command.Payload)
+                        .CallSubOrchestratorWithRetryAsync(nameof(ProjectSyncOrchestration), command.Payload)
                         .ConfigureAwait(true);
-
-                    await functionContext
-                        .CallSubOrchestratorAsync(nameof(ProjectSyncOrchestration), command.Payload)
-                        .ConfigureAwait(true);
-
-                    commandResult.Result = new ProviderOutput { Properties = new Dictionary<string, string>() };
                 }
                 catch (Exception exc)
                 {
                     commandResult ??= command.CreateResult();
                     commandResult.Errors.Add(exc);
+
+                    throw exc.AsSerializable();
                 }
                 finally
                 {

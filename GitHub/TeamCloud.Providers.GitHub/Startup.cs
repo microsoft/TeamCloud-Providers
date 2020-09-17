@@ -17,6 +17,7 @@ using TeamCloud.Providers.Core;
 using TeamCloud.Providers.Core.Configuration;
 using TeamCloud.Providers.GitHub;
 using TeamCloud.Providers.GitHub.Orchestrations;
+using TeamCloud.Providers.GitHub.Orchestrations.Commands;
 using TeamCloud.Providers.GitHub.Services;
 
 [assembly: FunctionsStartup(typeof(Startup))]

@@ -24,7 +24,7 @@ using TeamCloud.Model.Commands;
 using TeamCloud.Orchestration;
 using TeamCloud.Orchestration.Deployment;
 using TeamCloud.Providers.Azure.AppInsights;
-using TeamCloud.Providers.Azure.AppInsights.Orchestrations;
+using TeamCloud.Providers.Azure.AppInsights.Orchestrations.Commands;
 using TeamCloud.Providers.Core;
 using TeamCloud.Providers.Core.Configuration;
 
@@ -61,9 +61,9 @@ namespace TeamCloud.Providers.Azure.AppInsights
                 .AddTeamCloudCommandOrchestration(configuration =>
                 {
                     configuration
-                        .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration), settings => settings.OrchstrationTimeout = (command) => TimeSpan.FromMinutes(5))
-                        .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
-                        .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
+                        .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterCommandOrchestration), settings => settings.OrchstrationTimeout = (command) => TimeSpan.FromMinutes(5))
+                        .MapCommand<ProviderProjectCreateCommand>(nameof(ProviderProjectCreateCommandOrchestration))
+                        .MapCommand<ProviderProjectUpdateCommand>(nameof(ProviderProjectUpdateCommandOrchestration))
                         .IgnoreCommand<IProviderCommand>();
                 });
         }

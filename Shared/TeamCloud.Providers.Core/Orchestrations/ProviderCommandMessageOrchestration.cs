@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -14,6 +15,7 @@ using TeamCloud.Model.Commands.Core;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Core.Activities;
 using TeamCloud.Providers.Core.API;
+using TeamCloud.Providers.Core.Model;
 
 namespace TeamCloud.Providers.Core.Orchestrations
 {
@@ -31,12 +33,9 @@ namespace TeamCloud.Providers.Core.Orchestrations
             if (durableClient is null)
                 throw new ArgumentNullException(nameof(durableClient));
 
-            var commandMessage = functionContext.GetInput<ProviderCommandMessage>()
-                ?? throw new ArgumentException("Command message is null", nameof(functionContext));
+            var (commandMessage, commandContext) = functionContext.GetInput<(ProviderCommandMessage, ProviderCommandContext)>();
 
-            var command = commandMessage.Command
-                ?? throw new ArgumentException("Command message does not contain a command", nameof(functionContext));
-
+            var command = commandContext.Command;
             var commandResult = command.CreateResult();
             var commandLog = functionContext.CreateReplaySafeLogger(log ?? NullLogger.Instance);
 
@@ -54,11 +53,12 @@ namespace TeamCloud.Providers.Core.Orchestrations
 
                 var commandOrchestrationInstanceId = CommandTrigger.GetCommandOrchestrationInstanceId(command);
 
-                commandLog
-                    .LogInformation($"Dispatching command '{command.GetType()}' ({commandMessage.CommandId}) >>> {commandOrchestrationName} ({commandOrchestrationInstanceId})");
+                commandLog.LogInformation(string.Join(Environment.NewLine,
+                    $"Dispatching command '{command.GetType()}' ({commandMessage.CommandId}) >>> {commandOrchestrationName} ({commandOrchestrationInstanceId})",
+                    string.Join(Environment.NewLine, commandContext.Context?.AllKeys.Select(k => $"- {k} = {string.Join(", ", commandContext.Context.GetValues(k))}"))));
 
                 commandResult = await functionContext
-                    .CallSubOrchestratorWithRetryAsync<ICommandResult>(commandOrchestrationName, commandOrchestrationInstanceId, command)
+                    .CallSubOrchestratorWithRetryAsync<ICommandResult>(commandOrchestrationName, commandOrchestrationInstanceId, commandContext)
                     .ConfigureAwait(true);
 
                 var timeoutDuration = TimeSpan.FromMinutes(5);

@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
@@ -12,20 +13,24 @@ using TeamCloud.Model;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Orchestration;
+using TeamCloud.Providers.Core.Model;
+using TeamCloud.Serialization;
 
-namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
+namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations.Commands
 {
-    public static class ProviderEventOrchestration
+    public static class ProviderProjectUpdateCommandOrchestration
     {
-        [FunctionName(nameof(ProviderEventOrchestration))]
-        public static void RunOrchestration(
+        [FunctionName(nameof(ProviderProjectUpdateCommandOrchestration))]
+        public static async Task RunOrchestration(
             [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
             ILogger log)
         {
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var command = functionContext.GetInput<ProviderEventCommand>();
+            var commandContext = functionContext.GetInput<ProviderCommandContext>();
+            var command = (ProviderProjectUpdateCommand)commandContext.Command;
+
             var commandResult = command.CreateResult();
             var commandLog = functionContext.CreateReplaySafeLogger(log ?? NullLogger.Instance);
 
@@ -33,12 +38,16 @@ namespace TeamCloud.Providers.Azure.DevOps.Orchestrations
             {
                 try
                 {
-
+                    await functionContext
+                        .CallSubOrchestratorWithRetryAsync(nameof(ProjectSyncOrchestration), command.Payload)
+                        .ConfigureAwait(true);
                 }
                 catch (Exception exc)
                 {
                     commandResult ??= command.CreateResult();
                     commandResult.Errors.Add(exc);
+
+                    throw exc.AsSerializable();
                 }
                 finally
                 {

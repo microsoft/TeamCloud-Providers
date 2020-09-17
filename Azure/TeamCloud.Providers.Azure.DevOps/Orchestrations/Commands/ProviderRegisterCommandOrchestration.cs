@@ -13,17 +13,16 @@ using TeamCloud.Model;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
-using TeamCloud.Model.Data.Core;
 using TeamCloud.Orchestration;
-using TeamCloud.Providers.Azure.AppInsights.Activities;
+using TeamCloud.Providers.Azure.DevOps.Activities;
 using TeamCloud.Providers.Core;
-using TeamCloud.Serialization;
+using TeamCloud.Providers.Core.Model;
 
-namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
+namespace TeamCloud.Providers.Azure.DevOps.Orchestrations.Commands
 {
-    public static class ProviderRegisterOrchestration
+    public static class ProviderRegisterCommandOrchestration
     {
-        [FunctionName(nameof(ProviderRegisterOrchestration))]
+        [FunctionName(nameof(ProviderRegisterCommandOrchestration))]
         public static async Task RunOrchestration(
             [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
             ILogger log)
@@ -31,7 +30,9 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var command = functionContext.GetInput<ProviderRegisterCommand>();
+            var commandContext = functionContext.GetInput<ProviderCommandContext>();
+            var command = (ProviderRegisterCommand)commandContext.Command;
+
             var commandResult = command.CreateResult();
             var commandLog = functionContext.CreateReplaySafeLogger(log ?? NullLogger.Instance);
 
@@ -46,18 +47,16 @@ namespace TeamCloud.Providers.Azure.AppInsights.Orchestrations
                             .ConfigureAwait(true);
                     }
 
-                    var providerRegistraion = await functionContext
+                    var providerRegistration = await functionContext
                         .CallActivityWithRetryAsync<ProviderRegistration>(nameof(ProviderRegisterActivity), command)
                         .ConfigureAwait(true);
 
-                    commandResult.Result = providerRegistraion;
+                    commandResult.Result = providerRegistration;
                 }
                 catch (Exception exc)
                 {
                     commandResult ??= command.CreateResult();
                     commandResult.Errors.Add(exc);
-
-                    throw exc.AsSerializable();
                 }
                 finally
                 {
