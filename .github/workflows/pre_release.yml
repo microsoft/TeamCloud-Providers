@@ -123,7 +123,7 @@ jobs:
               'description': 'GitHub Actions Provider for TeamCloud',
               'zipUrl': 'https://github.com/microsoft/TeamCloud-Providers/releases/download/v${{ steps.gitversion.outputs.majorMinorPatch }}/TeamCloud.Providers.GitHub.Actions.zip',
               'deployUrl': 'https://github.com/microsoft/TeamCloud-Providers/releases/download/v${{ steps.gitversion.outputs.majorMinorPatch }}/teamcloud.providers.github.actions.json',
-              'version': 'v${{ steps.gitversion.outputs.majorMinorPatch }}'
+              'version': 'v${{ steps.gitversion.outputs.majorMinorPatch }}',
               'type': 'Service'
           }
           providers['github.repos'] = {
