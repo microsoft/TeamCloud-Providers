@@ -17,9 +17,9 @@ namespace TeamCloud.Providers.GitHub
 {
     public class AppCreatedTrigger
     {
-        readonly GitHubService github;
+        readonly GitHubAppService github;
 
-        public AppCreatedTrigger(GitHubService github)
+        public AppCreatedTrigger(GitHubAppService github)
         {
             this.github = github ?? throw new ArgumentNullException(nameof(github));
         }
@@ -41,7 +41,7 @@ namespace TeamCloud.Providers.GitHub
             log.LogWarning($"GitHub code: {code ?? "null"}");
 
             var app = await github
-                .GetAppManifestAsync(code)
+                .ConvertAppManifestAsync(code)
                 .ConfigureAwait(false);
 
             if (app is null)

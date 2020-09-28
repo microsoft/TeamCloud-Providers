@@ -126,7 +126,7 @@ namespace TeamCloud.Providers.GitHub.Services
 
     public class StringPrivateKeySource : IPrivateKeySource
     {
-        protected readonly string Key;
+        private readonly string Key;
 
         public StringPrivateKeySource(string key)
         {

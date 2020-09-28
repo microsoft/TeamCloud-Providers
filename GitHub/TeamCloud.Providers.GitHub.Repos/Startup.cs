@@ -16,15 +16,15 @@ using TeamCloud.Orchestration;
 using TeamCloud.Providers.Core;
 using TeamCloud.Providers.Core.Configuration;
 using TeamCloud.Providers.GitHub.Services;
-using TeamCloud.Providers.GitHub.Actions;
-using TeamCloud.Providers.GitHub.Actions.Orchestrations;
-using TeamCloud.Providers.GitHub.Actions.Services;
+using TeamCloud.Providers.GitHub.Repos;
+using TeamCloud.Providers.GitHub.Repos.Orchestrations;
+using TeamCloud.Providers.GitHub.Repos.Services;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 [assembly: FunctionsImport(typeof(TeamCloudProvidersCoreStartup))]
 [assembly: FunctionsImport(typeof(TeamCloudOrchestrationStartup))]
 
-namespace TeamCloud.Providers.GitHub.Actions
+namespace TeamCloud.Providers.GitHub.Repos
 {
     public class Startup : FunctionsStartup
     {
@@ -54,13 +54,12 @@ namespace TeamCloud.Providers.GitHub.Actions
                 {
                     configuration
                         .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration), (command) => TimeSpan.FromMinutes(5))
-                        // .MapCommand<ProviderRegisterCommand>(nameof(CommandDispatchOrchestration), (command) => TimeSpan.FromMinutes(5))
-                        .MapCommand<ProviderProjectCreateCommand>(nameof(CommandDispatchOrchestration))
-                        .MapCommand<ProviderProjectUpdateCommand>(nameof(CommandDispatchOrchestration))
-                        .MapCommand<ProviderProjectDeleteCommand>(nameof(CommandDispatchOrchestration))
-                        .MapCommand<ProviderTeamCloudUserCreateCommand>(nameof(CommandDispatchOrchestration))
-                        .MapCommand<ProviderTeamCloudUserDeleteCommand>(nameof(CommandDispatchOrchestration))
-                        .MapCommand<ProviderTeamCloudUserUpdateCommand>(nameof(CommandDispatchOrchestration))
+                        .MapCommand<ProviderProjectCreateCommand>(nameof(ProjectCreateOrchestration))
+                        .MapCommand<ProviderProjectUpdateCommand>(nameof(ProjectUpdateOrchestration))
+                        .MapCommand<ProviderProjectDeleteCommand>(nameof(ProjectDeleteOrchestration))
+                        .MapCommand<ProviderTeamCloudUserCreateCommand>(nameof(TeamCloudUserCreateOrchestration))
+                        .MapCommand<ProviderTeamCloudUserDeleteCommand>(nameof(TeamCloudUserDeleteOrchestration))
+                        .MapCommand<ProviderTeamCloudUserUpdateCommand>(nameof(TeamCloudUserUpdateOrchestration))
                         .IgnoreCommand<IProviderCommand>();
                 });
 

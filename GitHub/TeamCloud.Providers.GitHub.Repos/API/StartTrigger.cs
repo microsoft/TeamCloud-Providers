@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using TeamCloud.Providers.GitHub.Services;
 
-namespace TeamCloud.Providers.GitHub.Actions
+namespace TeamCloud.Providers.GitHub.Repos
 {
     public class StartTrigger
     {
@@ -61,7 +61,7 @@ $@"
 <html lang=""en-US"">
 <head>
     <meta charset=""utf-8"">
-    <title>GitHub Actions Provider Setup</title>
+    <title>GitHub Provider Setup</title>
     <style>
         body {{ font-family: Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.5; color: #24292e; margin: 0; }}
         .intro {{ display: flex; padding-bottom: 8px; padding-top: 40px; margin-bottom: 16px; border-bottom: 1px solid #e1e4e8; flex-flow: row wrap; }}
@@ -82,7 +82,7 @@ $@"
 <body>
     <header></header>
     <div class=""intro"">
-        <h1>GitHub Actions Provider Setup</h1>
+        <h1>GitHub Provider Setup</h1>
     </div>
     <form id=""manifest_form"" action="""" method=""post"">
         <ul>
@@ -116,16 +116,23 @@ $@"
                     ""url"": ""{host}/api/events"",
                     ""active"": true
                 }},
-                ""default_events"": {{
-                    ""workflow_run""
-                }},
                 ""default_permissions"": {{
                     ""actions"": ""write"",
                     ""administration"": ""write"",
+                    ""checks"": ""write"",
                     ""contents"": ""write"",
+                    ""issues"": ""write"",
                     ""metadata"": ""read"",
+                    ""pull_requests"": ""write"",
+                    ""repository_projects"": ""admin"",
+                    ""vulnerability_alerts"": ""read"",
                     ""workflows"": ""write"",
-                    ""organization_plan"": ""read""
+                    ""members"": ""write"",
+                    ""organization_administration"": ""write"",
+                    ""organization_plan"": ""read"",
+                    ""organization_projects"": ""admin"",
+                    ""team_discussions"": ""write"",
+                    ""emails"": ""read""
                 }}
             }});
         }}
