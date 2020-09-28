@@ -99,21 +99,24 @@ jobs:
               'description': 'Azure App Insights Provider for TeamCloud',
               'zipUrl': 'https://github.com/microsoft/TeamCloud-Providers/releases/download/v${{ steps.gitversion.outputs.majorMinorPatch }}/TeamCloud.Providers.Azure.AppInsights.zip',
               'deployUrl': 'https://github.com/microsoft/TeamCloud-Providers/releases/download/v${{ steps.gitversion.outputs.majorMinorPatch }}/teamcloud.providers.azure.appinsights.json',
-              'version': 'v${{ steps.gitversion.outputs.majorMinorPatch }}'
+              'version': 'v${{ steps.gitversion.outputs.majorMinorPatch }}',
+              'type': 'standard'
           }
           providers['azure.devops'] = {
               'name': 'TeamCloud.Providers.Azure.DevOps',
               'description': 'Azure DevOps Provider for TeamCloud',
               'zipUrl': 'https://github.com/microsoft/TeamCloud-Providers/releases/download/v${{ steps.gitversion.outputs.majorMinorPatch }}/TeamCloud.Providers.Azure.DevOps.zip',
               'deployUrl': 'https://github.com/microsoft/TeamCloud-Providers/releases/download/v${{ steps.gitversion.outputs.majorMinorPatch }}/teamcloud.providers.azure.devops.json',
-              'version': 'v${{ steps.gitversion.outputs.majorMinorPatch }}'
+              'version': 'v${{ steps.gitversion.outputs.majorMinorPatch }}',
+              'type': 'standard'
           }
           providers['azure.devtestlabs'] = {
               'name': 'TeamCloud.Providers.Azure.DevTestLabs',
               'description': 'Azure DevTest Labs Provider for TeamCloud',
               'zipUrl': 'https://github.com/microsoft/TeamCloud-Providers/releases/download/v${{ steps.gitversion.outputs.majorMinorPatch }}/TeamCloud.Providers.Azure.DevTestLabs.zip',
               'deployUrl': 'https://github.com/microsoft/TeamCloud-Providers/releases/download/v${{ steps.gitversion.outputs.majorMinorPatch }}/teamcloud.providers.azure.devtestlabs.json',
-              'version': 'v${{ steps.gitversion.outputs.majorMinorPatch }}'
+              'version': 'v${{ steps.gitversion.outputs.majorMinorPatch }}',
+              'type': 'standard'
           }
           providers['github.actions'] = {
               'name': 'TeamCloud.Providers.GitHub.Actions',
@@ -121,13 +124,15 @@ jobs:
               'zipUrl': 'https://github.com/microsoft/TeamCloud-Providers/releases/download/v${{ steps.gitversion.outputs.majorMinorPatch }}/TeamCloud.Providers.GitHub.Actions.zip',
               'deployUrl': 'https://github.com/microsoft/TeamCloud-Providers/releases/download/v${{ steps.gitversion.outputs.majorMinorPatch }}/teamcloud.providers.github.actions.json',
               'version': 'v${{ steps.gitversion.outputs.majorMinorPatch }}'
+              'type': 'service'
           }
           providers['github.repos'] = {
               'name': 'TeamCloud.Providers.GitHub.Repos',
               'description': 'GitHub Provider for TeamCloud',
               'zipUrl': 'https://github.com/microsoft/TeamCloud-Providers/releases/download/v${{ steps.gitversion.outputs.majorMinorPatch }}/TeamCloud.Providers.GitHub.Repos.zip',
               'deployUrl': 'https://github.com/microsoft/TeamCloud-Providers/releases/download/v${{ steps.gitversion.outputs.majorMinorPatch }}/teamcloud.providers.github.repos.json',
-              'version': 'v${{ steps.gitversion.outputs.majorMinorPatch }}'
+              'version': 'v${{ steps.gitversion.outputs.majorMinorPatch }}',
+              'type': 'standard'
           }
           index['providers'] = providers
           with open('index.json', 'w') as f:
