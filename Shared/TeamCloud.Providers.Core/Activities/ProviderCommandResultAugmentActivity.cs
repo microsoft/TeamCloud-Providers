@@ -51,7 +51,7 @@ namespace TeamCloud.Providers.Core.Activities
                         .ApplyStatus(commandStatus);
                 }
 
-                if (commandResult is ProviderRegisterCommandResult providerRegisterCommandResult)
+                if (commandResult is ProviderRegisterCommandResult providerRegisterCommandResult && providerRegisterCommandResult.Result != null)
                 {
                     providerRegisterCommandResult.Result
                         .EventSubscriptions = orchestrationConfiguration.Subscriptions;
