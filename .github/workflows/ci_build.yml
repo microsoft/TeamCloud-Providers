@@ -15,7 +15,8 @@ jobs:
           [
             'Shared/TeamCloud.Providers.Core/TeamCloud.Providers.Core.csproj',
             'Azure/TeamCloud.Providers.Azure.sln',
-            'GitHub/TeamCloud.Providers.GitHub/TeamCloud.Providers.GitHub.csproj',
+            'GitHub/TeamCloud.Providers.GitHub/TeamCloud.Providers.GitHub.Actions.csproj',
+            'GitHub/TeamCloud.Providers.GitHub/TeamCloud.Providers.GitHub.Repos.csproj',
           ]
 
     steps:
