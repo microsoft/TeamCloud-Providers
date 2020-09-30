@@ -200,7 +200,7 @@
         },
         "url": {
             "type": "string",
-            "value": "[concat('https://', variables('functionAppNameLower'), '.azurewebsites.net')]"
+            "value": "[concat('https://', variables('functionAppNameLower'), '.azurewebsites.net', '/api/command')]"
         },
         "authCode": {
             "type": "string",
