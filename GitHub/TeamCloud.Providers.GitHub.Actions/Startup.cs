@@ -53,6 +53,7 @@ namespace TeamCloud.Providers.GitHub.Actions
                 .AddTeamCloudCommandOrchestration(configuration =>
                 {
                     configuration
+                        .RequireQueryParam("repo")
                         .MapCommand<ProviderRegisterCommand>(nameof(ProviderRegisterOrchestration), (command) => TimeSpan.FromMinutes(5))
                         // .MapCommand<ProviderRegisterCommand>(nameof(CommandDispatchOrchestration), (command) => TimeSpan.FromMinutes(5))
                         .MapCommand<ProviderProjectCreateCommand>(nameof(CommandDispatchOrchestration))
