@@ -53,7 +53,7 @@ namespace TeamCloud.Providers.Core.API
             if (configuration.RequiredQueryParams.Any())
             {
                 var queryParams = requestMessage.RequestUri.ParseQueryString();
-                if (configuration.RequiredQueryParams.Any(p => !queryParams.GetValues(p).Any()))
+                if (configuration.RequiredQueryParams.Any(p => !(queryParams.GetValues(p)?.Any() ?? false)))
                     return new BadRequestObjectResult($"The following query string paramaters are required: '{string.Join(", ", configuration.RequiredQueryParams)}'");
             }
 
@@ -89,7 +89,7 @@ namespace TeamCloud.Providers.Core.API
                 providerId = values.FirstOrDefault();
 
             if (string.IsNullOrEmpty(providerId))
-                providerId = requestMessage.RequestUri.ParseQueryString().GetValues("providerId").FirstOrDefault();
+                providerId = requestMessage.RequestUri.ParseQueryString().GetValues("providerId")?.FirstOrDefault();
 
             if (string.IsNullOrEmpty(providerId))
                 return new BadRequestResult();
