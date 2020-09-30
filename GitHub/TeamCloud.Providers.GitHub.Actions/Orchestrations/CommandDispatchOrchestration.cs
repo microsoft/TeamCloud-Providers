@@ -10,10 +10,11 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using TeamCloud.Model;
-using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
+using TeamCloud.Providers.Core;
+using TeamCloud.Providers.Core.Model;
 using TeamCloud.Providers.GitHub.Actions.Activities;
 using TeamCloud.Serialization;
 
@@ -29,7 +30,9 @@ namespace TeamCloud.Providers.GitHub.Actions.Orchestrations
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var command = functionContext.GetInput<IProviderCommand>();
+            var commandContext = functionContext.GetInput<ProviderCommandContext>();
+            var command = commandContext.Command;
+
             var commandResult = command.CreateResult();
             var commandLog = functionContext.CreateReplaySafeLogger(log ?? NullLogger.Instance);
 
@@ -40,13 +43,13 @@ namespace TeamCloud.Providers.GitHub.Actions.Orchestrations
                     functionContext.SetCustomStatus("Dispatching workflow", commandLog);
 
                     await functionContext
-                        .CallActivityWithRetryAsync(nameof(CommandDispatchActivity), command)
+                        .CallActivityWithRetryAsync(nameof(CommandDispatchActivity), commandContext)
                         .ConfigureAwait(true);
 
                     functionContext.SetCustomStatus("Waiting for workflow to complete", commandLog);
 
                     commandResult = await functionContext
-                        .WaitForExternalEvent<ICommandResult>(command.CommandId.ToString(), CommandResult.MaximumTimeout)
+                        .WaitForExternalEvent<ICommandResult>(command.CommandOrchestrationInstanceId(), CommandResult.MaximumTimeout)
                         .ConfigureAwait(true);
 
                     functionContext.SetCustomStatus("Workflow completed", commandLog);

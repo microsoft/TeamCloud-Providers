@@ -11,7 +11,8 @@ using Microsoft.Extensions.Logging;
 using TeamCloud.Orchestration;
 using TeamCloud.Serialization;
 using TeamCloud.Providers.GitHub.Actions.Services;
-using TeamCloud.Model.Commands;
+using TeamCloud.Providers.Core.Model;
+using System.Linq;
 
 namespace TeamCloud.Providers.GitHub.Actions.Activities
 {
@@ -32,7 +33,8 @@ namespace TeamCloud.Providers.GitHub.Actions.Activities
             if (functionContext is null)
                 throw new ArgumentNullException(nameof(functionContext));
 
-            var command = functionContext.GetInput<IProviderCommand>();
+            var commandContext = functionContext.GetInput<ProviderCommandContext>();
+            var command = commandContext.Command;
 
             try
             {

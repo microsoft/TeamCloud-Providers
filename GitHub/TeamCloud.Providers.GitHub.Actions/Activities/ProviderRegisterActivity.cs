@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -12,6 +13,7 @@ using TeamCloud.Azure;
 using TeamCloud.Model;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data;
+using TeamCloud.Providers.Core.Model;
 using TeamCloud.Providers.GitHub.Actions.Services;
 using TeamCloud.Serialization;
 
@@ -30,11 +32,14 @@ namespace TeamCloud.Providers.GitHub.Actions.Activities
 
         [FunctionName(nameof(ProviderRegisterActivity))]
         public async Task<ProviderRegistration> RunActivityAsync(
-            [ActivityTrigger] ProviderRegisterCommand command,
+            [ActivityTrigger] IDurableActivityContext functionContext,
             ILogger log)
         {
-            if (command is null)
-                throw new ArgumentNullException(nameof(command));
+            if (functionContext is null)
+                throw new ArgumentNullException(nameof(functionContext));
+
+            var commandContext = functionContext.GetInput<ProviderCommandContext>();
+            var command = commandContext.Command;
 
             using (log.BeginCommandScope(command))
             {
