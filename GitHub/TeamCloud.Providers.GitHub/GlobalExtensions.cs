@@ -45,17 +45,40 @@ namespace TeamCloud.Providers.GitHub
             => payload?.Sender?.Login?.Contains((app ?? throw new ArgumentNullException(nameof(app))).Slug, StringComparison.OrdinalIgnoreCase) ?? false;
 
 
-        public static bool Completed(this WorkflowRun run)
-            => run?.Status?.Equals("completed", StringComparison.OrdinalIgnoreCase) ?? false;
 
         public static bool Queued(this WorkflowRun run)
             => run?.Status?.Equals("queued", StringComparison.OrdinalIgnoreCase) ?? false;
 
-        public static bool Failed(this WorkflowRun run)
+        public static bool InProgress(this WorkflowRun run)
+            => run?.Status?.Equals("in_progress", StringComparison.OrdinalIgnoreCase) ?? false;
+
+        public static bool Completed(this WorkflowRun run)
+            => run?.Status?.Equals("completed", StringComparison.OrdinalIgnoreCase) ?? false;
+
+
+        public static bool ConclusionSucceeded(this WorkflowRun run)
+            => run?.Conclusion?.Equals("success", StringComparison.OrdinalIgnoreCase) ?? false;
+
+        public static bool ConclusionFailed(this WorkflowRun run)
             => run?.Conclusion?.Equals("failure", StringComparison.OrdinalIgnoreCase) ?? false;
 
-        public static bool Succeeded(this WorkflowRun run)
-            => run?.Conclusion?.Equals("success", StringComparison.OrdinalIgnoreCase) ?? false;
+        public static bool ConclusionNeutral(this WorkflowRun run)
+            => run?.Conclusion?.Equals("neutral", StringComparison.OrdinalIgnoreCase) ?? false;
+
+        public static bool ConclusionCancelled(this WorkflowRun run)
+            => run?.Conclusion?.Equals("cancelled", StringComparison.OrdinalIgnoreCase) ?? false;
+
+        public static bool ConclusionSkipped(this WorkflowRun run)
+            => run?.Conclusion?.Equals("skipped", StringComparison.OrdinalIgnoreCase) ?? false;
+
+        public static bool ConclusionTimedOut(this WorkflowRun run)
+            => run?.Conclusion?.Equals("timed_out", StringComparison.OrdinalIgnoreCase) ?? false;
+
+        public static bool ConclusionActionRequiered(this WorkflowRun run)
+            => run?.Conclusion?.Equals("action_required", StringComparison.OrdinalIgnoreCase) ?? false;
+
+        public static bool ConclusionActionStale(this WorkflowRun run)
+            => run?.Conclusion?.Equals("stale", StringComparison.OrdinalIgnoreCase) ?? false;
 
 
         public static bool Failed(this WorkflowJob job)

@@ -20,8 +20,8 @@ namespace TeamCloud.Providers.GitHub.Data
         public string HeadSha { get; set; }
         public int RunNumber { get; set; }
         public string Event { get; set; }
-        public string Status { get; set; }
-        public string Conclusion { get; set; }
+        public string Status { get; set; } // can be: queued, in_progress, completed
+        public string Conclusion { get; set; } // can be: success, failure, neutral, cancelled, skipped, timed_out, action_required, stale
         public long WorkflowId { get; set; }
         public string Url { get; set; }
         public string HtmlUrl { get; set; }
