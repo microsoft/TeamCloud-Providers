@@ -4,6 +4,12 @@
     "azureFunctions.projectRuntime": "~3",
     "azureFunctions.preDeployTask": "publish",
     "azureFunctions.templateFilter": "All",
+    "files.exclude": {
+        "**/bin": true,
+        "**/obj": true,
+        "**/.git": true,
+        "**/.DS_Store": true
+    },
     "spellright.language": [
         "en"
     ],
