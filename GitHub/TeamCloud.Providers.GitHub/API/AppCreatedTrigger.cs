@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -32,8 +33,7 @@ namespace TeamCloud.Providers.GitHub
             if (httpRequest is null)
                 throw new ArgumentNullException(nameof(httpRequest));
 
-            var query = httpRequest.RequestUri.ParseQueryString();
-            var code = query["code"];
+            var code = httpRequest.RequestUri.ParseQueryString().GetValues("code")?.FirstOrDefault();
 
             if (string.IsNullOrEmpty(code))
                 throw new InvalidOperationException("Parameter 'code' is required in the query string.");

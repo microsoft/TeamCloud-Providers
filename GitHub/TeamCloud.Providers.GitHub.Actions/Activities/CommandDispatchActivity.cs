@@ -41,7 +41,7 @@ namespace TeamCloud.Providers.GitHub.Actions.Activities
                 var repo = commandContext.Context.GetValues("repo").FirstOrDefault();
 
                 if (string.IsNullOrEmpty(repo))
-                    throw new ArgumentException("'repo' must be provided as a query parameter with the repository name");
+                    throw new InvalidOperationException("Parameter 'repo' is required in the query string.");
 
                 await github
                     .SendRepositoryEventAsync(repo, command, log)
