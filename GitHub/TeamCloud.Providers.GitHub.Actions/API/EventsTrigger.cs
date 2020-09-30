@@ -11,6 +11,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using TeamCloud.Providers.Core;
 using TeamCloud.Providers.GitHub.Actions.Services;
 
 namespace TeamCloud.Providers.GitHub.Actions
@@ -46,15 +47,22 @@ namespace TeamCloud.Providers.GitHub.Actions
                 if (eventType.Equals("workflow_run", StringComparison.OrdinalIgnoreCase))
                 {
                     // log.LogWarning("EventsTrigger: Handeling webhook");
-                    var commandResult = await github.HandleWorkflowRunAsync(payload, log)
+                    var (command, commandResult) = await github
+                        .HandleWorkflowRunAsync(payload, log)
                         .ConfigureAwait(false);
 
-                    if (!(commandResult is null))
+                    if (!(command is null))
                     {
-                        // log.LogWarning("EventsTrigger: Raising event");
-                        await functionClient
-                            .RaiseEventAsync(commandResult.CommandId.ToString(), commandResult.CommandId.ToString(), commandResult)
-                            .ConfigureAwait(false);
+                        var instanceId = command.CommandOrchestrationInstanceId();
+
+                        if (!(commandResult is null))
+                        {
+                            // log.LogWarning("EventsTrigger: Raising event");
+
+                            await functionClient
+                                .RaiseEventAsync(instanceId, instanceId, commandResult)
+                                .ConfigureAwait(false);
+                        }
                     }
                 }
                 else

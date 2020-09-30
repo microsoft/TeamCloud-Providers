@@ -41,8 +41,6 @@ namespace TeamCloud.Providers.GitHub.Actions.Services
                 .GetAppManifestAsync()
                 .ConfigureAwait(false);
 
-            // var url = $"https://api.github.com/repos/{app.Owner.Login}/{repo}/dispatches";
-
             var payload = JsonConvert.SerializeObject(new RepositoryDispatchEvent
             {
                 EventType = GetEventType(command),
@@ -73,8 +71,7 @@ namespace TeamCloud.Providers.GitHub.Actions.Services
         private static string GetEventType(IProviderCommand command) => command switch
         {
             ProviderEventCommand _ => "tc_event",
-            // ProviderProjectCreateCommand _ => "tc_project_create",
-            ProviderProjectCreateCommand _ => "tc_project_test",
+            ProviderProjectCreateCommand _ => "tc_project_create",
             ProviderProjectDeleteCommand _ => "tc_project_delete",
             ProviderProjectUpdateCommand _ => "tc_project_update",
             ProviderProjectUserCreateCommand _ => "tc_project_user_create",
@@ -155,7 +152,7 @@ namespace TeamCloud.Providers.GitHub.Actions.Services
             return command;
         }
 
-        internal async Task<ICommandResult> HandleWorkflowRunAsync(string payload, ILogger log = null)
+        internal async Task<(IProviderCommand, ICommandResult)> HandleWorkflowRunAsync(string payload, ILogger log = null)
         {
             var run = SimpleJsonSerializer.Deserialize<WorkflowRunPayload>(payload);
 
@@ -168,40 +165,26 @@ namespace TeamCloud.Providers.GitHub.Actions.Services
             if (!run.IsSentBy(app))
             {
                 log?.LogWarning($"[ Ignoring workflow run because sender '{run.Sender?.Login ?? "null"}' does not containt app slug '{app.Slug}'");
-                return null;
+                return (null, null);
             }
 
             if (run.Completed() && run.WorkflowRun.Completed())
             {
-                // log.LogWarning($"WorkflowRun Url: {run.WorkflowRun.Url}");
-                // log.LogWarning($"WorkflowRun ArtifactsUrl: {run.WorkflowRun.ArtifactsUrl}");
-
                 var command = await GetProviderCommandAsync(run.WorkflowRun, log)
                     .ConfigureAwait(false);
 
-                if (run.WorkflowRun.Succeeded())
+                var commandResult = command.CreateResult();
+
+                if (run.WorkflowRun.ConclusionFailed())
                 {
-                    // log.LogWarning($"Command.commandId: {command.CommandId}");
-                    // log.LogWarning($"Command Payload: {command.Payload}");
-
-                    return command.CreateResult();
+                    log?.LogWarning("WorkflowRun Conclusion was 'failure'");
+                    commandResult.Errors.Add(new Exception($"GitHub workflow '{run.Workflow.Name}' completed with conclusion 'failure'. You may view results at: {run.WorkflowRun.HtmlUrl}"));
                 }
-                else if (run.WorkflowRun.Failed())
-                {
-                    log?.LogWarning("WorkflowRun Conclusion was not 'success'");
-                    // log.LogWarning(payload);
 
-                    var commandResult = command.CreateResult();
-                    commandResult.Errors.Add(new Exception($"GitHub workflow '{run.Workflow.Name}' failed. You may view results at: {run.WorkflowRun.HtmlUrl}"));
-                    return commandResult;
-                }
-            }
-            else if (run.Action.Equals("requested", StringComparison.OrdinalIgnoreCase))
-            {
-
+                return (command, commandResult);
             }
 
-            return null;
+            return (null, null);
         }
 
         internal Task HandleWebhookAsync(string eventType, string payload, ILogger log = null)
@@ -217,8 +200,10 @@ namespace TeamCloud.Providers.GitHub.Actions.Services
             var hook = SimpleJsonSerializer.Deserialize<WebhookPayload>(payload);
 
             if (!eventType.Equals("workflow_run", StringComparison.OrdinalIgnoreCase))
+            {
                 log?.LogWarning($"Received GitHub Webhook: [ EventType: {eventType}, Action: {hook.Action ?? "null"} ]");
-            // log?.LogWarning(payload);
+                // log?.LogWarning(payload);
+            }
 
             return Task.FromResult(hook);
         }

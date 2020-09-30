@@ -45,6 +45,11 @@ namespace TeamCloud.Providers.GitHub.Actions.Activities
             {
                 try
                 {
+                    var repo = commandContext.Context.GetValues("repo").FirstOrDefault();
+
+                    if (string.IsNullOrEmpty(repo))
+                        throw new ArgumentException("'repo' must be provided as a query parameter with the repository name");
+
                     var identity = await azureSessionService
                         .GetIdentityAsync()
                         .ConfigureAwait(false);
@@ -56,7 +61,7 @@ namespace TeamCloud.Providers.GitHub.Actions.Activities
                     };
 
                     await github
-                        .SendRepositoryEventAsync("workflow-provider", command, log)
+                        .SendRepositoryEventAsync(repo, command, log)
                         .ConfigureAwait(false);
 
                     return registration;
