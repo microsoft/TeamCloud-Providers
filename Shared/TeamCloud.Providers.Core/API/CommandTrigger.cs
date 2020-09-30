@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentValidation;
@@ -27,18 +28,6 @@ namespace TeamCloud.Providers.Core.API
 {
     public sealed class CommandTrigger
     {
-        internal static string GetCommandOrchestrationInstanceId(Guid commandId)
-            => commandId.ToString();
-
-        internal static string GetCommandOrchestrationInstanceId(ICommand command)
-            => GetCommandOrchestrationInstanceId(command.CommandId);
-
-        internal static string GetCommandMessageOrchestrationInstanceId(Guid commandId)
-            => $"{GetCommandOrchestrationInstanceId(commandId)}-message";
-
-        internal static string GetCommandMessageOrchestrationInstanceId(ICommand command)
-            => GetCommandMessageOrchestrationInstanceId(command.CommandId);
-
         private readonly IOrchestrationConfiguration configuration;
         private readonly IHttpContextAccessor httpContextAccessor;
 
@@ -65,41 +54,42 @@ namespace TeamCloud.Providers.Core.API
 
             try
             {
-                switch (requestMessage)
+                actionResult = requestMessage switch
                 {
-                    case HttpRequestMessage msg when msg.Method == HttpMethod.Get:
-
-                        if (string.IsNullOrEmpty(commandId))
-                            actionResult = new NotFoundResult();
-                        else
-                            actionResult = await HandleGetAsync(durableClient, Guid.Parse(commandId)).ConfigureAwait(false);
-
-                        break;
-
-                    case HttpRequestMessage msg when msg.Method == HttpMethod.Post:
-
-                        actionResult = await HandlePostAsync(durableClient, requestMessage, log).ConfigureAwait(false);
-
-                        break;
-
-                    default:
-                        throw new NotSupportedException($"Http method '{requestMessage.Method}' is not supported");
+                    HttpRequestMessage msg when msg.Method == HttpMethod.Get => await HandleGetAsync(durableClient, requestMessage, commandId).ConfigureAwait(false),
+                    HttpRequestMessage msg when msg.Method == HttpMethod.Post => await HandlePostAsync(durableClient, requestMessage, log).ConfigureAwait(false),
+                    _ => throw new NotSupportedException($"Http method '{requestMessage.Method}' is not supported")
                 };
             }
             catch (Exception exc)
             {
                 log.LogError(exc, $"Processing request failed: {requestMessage.Method.ToString().ToUpperInvariant()} {requestMessage.RequestUri}");
 
-                throw; // re-throw exception and use the default InternalServerError behaviour 
+                throw; // re-throw exception and use the default InternalServerError behaviour
             }
 
             return actionResult;
         }
 
-        private async Task<IActionResult> HandleGetAsync(IDurableClient durableClient, Guid commandId)
+        private async Task<IActionResult> HandleGetAsync(IDurableClient durableClient, HttpRequestMessage requestMessage, string commandId)
         {
+            if (string.IsNullOrEmpty(commandId))
+                return new NotFoundResult();
+
+            string providerId = null;
+
+            if (requestMessage.Headers.TryGetValues("x-teamcloud-provider", out var values))
+                providerId = values.FirstOrDefault();
+
+            if (string.IsNullOrEmpty(providerId))
+                providerId = requestMessage.RequestUri.ParseQueryString().GetValues("providerId").FirstOrDefault();
+
+            if (string.IsNullOrEmpty(providerId))
+                return new BadRequestResult();
+
+
             var command = await durableClient
-                .GetCommandAsync(commandId)
+                .GetCommandAsync(Guid.Parse(commandId), providerId)
                 .ConfigureAwait(false);
 
             if (command != null)
@@ -136,7 +126,7 @@ namespace TeamCloud.Providers.Core.API
                 return new BadRequestResult();
             }
 
-            var instanceId = GetCommandMessageOrchestrationInstanceId(commandMessage.Command.CommandId);
+            var instanceId = commandMessage.Command.CommandMessageOrchestrationInstanceId();
 
             try
             {

@@ -17,7 +17,6 @@ using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Core.Activities;
-using TeamCloud.Providers.Core.API;
 using TeamCloud.Providers.Core.Configuration;
 using TeamCloud.Providers.Core.Model;
 
@@ -41,7 +40,7 @@ namespace TeamCloud.Providers.Core
             return commandResult;
 
             static DateTime? GetNullWhenMinValue(DateTime dateTime)
-                => (dateTime == DateTime.MinValue ? default(DateTime?) : dateTime);
+                => dateTime == DateTime.MinValue ? default(DateTime?) : dateTime;
         }
 
         public static Task AuditAsync(this IDurableOrchestrationContext functionContext, ICommand command, ICommandResult commandResult = default)
@@ -77,26 +76,26 @@ namespace TeamCloud.Providers.Core
             return services;
         }
 
-        public static async Task<ICommand> GetCommandAsync(this IDurableClient durableClient, Guid commandId)
+        public static async Task<IProviderCommand> GetCommandAsync(this IDurableClient durableClient, Guid commandId, string providerId)
         {
             if (durableClient is null)
                 throw new ArgumentNullException(nameof(durableClient));
 
             var commandStatus = await durableClient
-                .GetStatusAsync(CommandTrigger.GetCommandOrchestrationInstanceId(commandId))
+                .GetStatusAsync(CommandOrchestrationInstanceId(commandId, providerId))
                 .ConfigureAwait(false);
 
             if (commandStatus?.Input?.HasValues ?? false)
             {
                 var command = commandStatus.Input
-                    .ToObject<ICommand>();
+                    .ToObject<IProviderCommand>();
 
                 if (command != null)
                     return command;
             }
 
             commandStatus = await durableClient
-                .GetStatusAsync(CommandTrigger.GetCommandMessageOrchestrationInstanceId(commandId))
+                .GetStatusAsync(CommandMessageOrchestrationInstanceId(commandId, providerId))
                 .ConfigureAwait(false);
 
             if (commandStatus?.Input?.HasValues ?? false)
@@ -110,13 +109,13 @@ namespace TeamCloud.Providers.Core
             return null;
         }
 
-        public static async Task<ICommandResult> GetCommandResultAsync(this IDurableClient durableClient, Guid commandId)
+        public static async Task<ICommandResult> GetCommandResultAsync(this IDurableClient durableClient, Guid commandId, string providerId)
         {
             if (durableClient is null)
                 throw new ArgumentNullException(nameof(durableClient));
 
             var command = await durableClient
-                .GetCommandAsync(commandId)
+                .GetCommandAsync(commandId, providerId)
                 .ConfigureAwait(false);
 
             if (command is null)
@@ -127,7 +126,7 @@ namespace TeamCloud.Providers.Core
                 .ConfigureAwait(false);
         }
 
-        public static async Task<ICommandResult> GetCommandResultAsync(this IDurableClient durableClient, ICommand command)
+        public static async Task<ICommandResult> GetCommandResultAsync(this IDurableClient durableClient, IProviderCommand command)
         {
             if (durableClient is null)
                 throw new ArgumentNullException(nameof(durableClient));
@@ -136,7 +135,7 @@ namespace TeamCloud.Providers.Core
                 throw new ArgumentNullException(nameof(command));
 
             var commandStatus = await durableClient
-                .GetStatusAsync(CommandTrigger.GetCommandOrchestrationInstanceId(command))
+                .GetStatusAsync(command.CommandOrchestrationInstanceId())
                 .ConfigureAwait(false);
 
             if (commandStatus is null)
@@ -154,7 +153,7 @@ namespace TeamCloud.Providers.Core
                 // command result (e.g. if a send operation fails).
 
                 var commandMessageStatus = await durableClient
-                    .GetStatusAsync(CommandTrigger.GetCommandMessageOrchestrationInstanceId(command))
+                    .GetStatusAsync(command.CommandMessageOrchestrationInstanceId())
                     .ConfigureAwait(false);
 
                 if (commandMessageStatus?.Output.HasValues ?? false)
@@ -216,6 +215,32 @@ namespace TeamCloud.Providers.Core
                 sanitizedHubName += TaskHubPadding;
 
             return sanitizedHubName;
+        }
+
+        public static string CommandOrchestrationInstanceId(this IProviderCommand command)
+        {
+            if (command is null)
+                throw new ArgumentNullException(nameof(command));
+
+            return $"{command.ProviderId}-{command.CommandId}";
+        }
+
+        public static string CommandOrchestrationInstanceId(Guid commandId, string providerId)
+        {
+            return $"{providerId}-{commandId}";
+        }
+
+        public static string CommandMessageOrchestrationInstanceId(this IProviderCommand command)
+        {
+            if (command is null)
+                throw new ArgumentNullException(nameof(command));
+
+            return $"{command.ProviderId}-{command.CommandId}-message";
+        }
+
+        public static string CommandMessageOrchestrationInstanceId(Guid commandId, string providerId)
+        {
+            return $"{providerId}-{commandId}-message";
         }
     }
 }

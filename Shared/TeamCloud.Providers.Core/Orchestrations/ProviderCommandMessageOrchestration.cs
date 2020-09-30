@@ -14,7 +14,6 @@ using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Orchestration;
 using TeamCloud.Providers.Core.Activities;
-using TeamCloud.Providers.Core.API;
 using TeamCloud.Providers.Core.Model;
 
 namespace TeamCloud.Providers.Core.Orchestrations
@@ -51,7 +50,7 @@ namespace TeamCloud.Providers.Core.Orchestrations
 
                 commandOrchestrationName ??= nameof(ProviderCommandIgnoreOrchestration);
 
-                var commandOrchestrationInstanceId = CommandTrigger.GetCommandOrchestrationInstanceId(command);
+                var commandOrchestrationInstanceId = command.CommandOrchestrationInstanceId();
 
                 commandLog.LogInformation(string.Join(Environment.NewLine,
                     $"Dispatching command '{command.GetType()}' ({commandMessage.CommandId}) >>> {commandOrchestrationName} ({commandOrchestrationInstanceId})",
@@ -68,7 +67,7 @@ namespace TeamCloud.Providers.Core.Orchestrations
                 {
                     // there is a chance that the suborchestration used to agument the command result
                     // doesn't reflect the final runtime status (completed / failed / canceled) because
-                    // of timing issues in the durable functions runtime. to void a none final runtime 
+                    // of timing issues in the durable functions runtime. to void a none final runtime
                     // status reported back to the orchestrator we loop / wait for this runtime status.
 
                     commandResult = await functionContext
@@ -107,9 +106,9 @@ namespace TeamCloud.Providers.Core.Orchestrations
                     if (!string.IsNullOrEmpty(commandMessage.CallbackUrl))
                     {
                         // try to send back the command result back to the callback url
-                        // this operation is part of the overall command processing and 
-                        // exceptions caused by this operation will be part of the 
-                        // command result (and will be returned if the orchestrator 
+                        // this operation is part of the overall command processing and
+                        // exceptions caused by this operation will be part of the
+                        // command result (and will be returned if the orchestrator
                         // fetches the command result via a GET request)
 
                         await functionContext
