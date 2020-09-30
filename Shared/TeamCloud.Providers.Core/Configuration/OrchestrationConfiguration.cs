@@ -11,6 +11,8 @@ namespace TeamCloud.Providers.Core.Configuration
 {
     public interface IOrchestrationConfiguration
     {
+        ISet<string> RequiredQueryParams { get; }
+
         IDictionary<Type, IOrchestrationSettings> Orchestrations { get; }
 
         ISet<ProviderEventSubscription> Subscriptions { get; }
@@ -21,6 +23,9 @@ namespace TeamCloud.Providers.Core.Configuration
     public sealed class OrchestrationConfiguration : IOrchestrationConfiguration
     {
         internal OrchestrationConfiguration() { }
+
+        public ISet<string> RequiredQueryParams { get; }
+            = new HashSet<string>();
 
         public IDictionary<Type, IOrchestrationSettings> Orchestrations { get; }
             = new Dictionary<Type, IOrchestrationSettings>();

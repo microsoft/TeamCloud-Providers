@@ -50,6 +50,13 @@ namespace TeamCloud.Providers.Core.API
             if (durableClient is null)
                 throw new ArgumentNullException(nameof(durableClient));
 
+            if (configuration.RequiredQueryParams.Any())
+            {
+                var queryParams = requestMessage.RequestUri.ParseQueryString();
+                if (configuration.RequiredQueryParams.Any(p => !queryParams.GetValues(p).Any()))
+                    return new BadRequestObjectResult($"The following query string paramaters are required: '{string.Join(", ", configuration.RequiredQueryParams)}'");
+            }
+
             IActionResult actionResult;
 
             try

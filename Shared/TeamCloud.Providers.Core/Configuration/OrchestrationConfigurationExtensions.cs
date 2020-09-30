@@ -7,12 +7,25 @@ using System;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
-using TeamCloud.Providers.Core.Handlers;
 
 namespace TeamCloud.Providers.Core.Configuration
 {
     public static class OrchestrationConfigurationExtensions
     {
+        public static IOrchestrationConfiguration RequireQueryParam(this IOrchestrationConfiguration configuration, string queryParam)
+        {
+            if (configuration is null)
+                throw new ArgumentNullException(nameof(configuration));
+
+            if (string.IsNullOrWhiteSpace(queryParam))
+                throw new ArgumentException("Must have a value.", nameof(queryParam));
+
+            if (!configuration.RequiredQueryParams.Contains(queryParam))
+                configuration.RequiredQueryParams.Add(queryParam);
+
+            return configuration;
+        }
+
         public static IOrchestrationConfiguration SubscribeEvent(this IOrchestrationConfiguration configuration, ProviderEventSubscription providerEventSubscription)
         {
             if (configuration is null)
