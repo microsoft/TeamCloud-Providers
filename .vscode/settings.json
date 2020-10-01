@@ -1,0 +1,18 @@
+{
+    "azureFunctions.projectLanguage": "C#",
+    "azureFunctions.projectRuntime": "~3",
+    "spellright.language": [
+        "en"
+    ],
+    "spellright.documentTypes": [
+        "latex",
+        "plaintext"
+    ],
+    "files.exclude": {
+        "**/.vs": true,
+        "**/bin": true,
+        "**/obj": true,
+        "**/.git": true,
+        "**/.DS_Store": true
+    }
+}

@@ -31,6 +31,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GitHub", "GitHub", "{869623
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TeamCloud.Providers.GitHub", "GitHub\TeamCloud.Providers.GitHub\TeamCloud.Providers.GitHub.csproj", "{194ED075-176F-4565-81D0-296373340687}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeamCloud.Providers.GitHub.Repos", "GitHub\TeamCloud.Providers.GitHub.Repos\TeamCloud.Providers.GitHub.Repos.csproj", "{DB65BB77-DDC0-48CB-8857-F571F166D15E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeamCloud.Providers.GitHub.Actions", "GitHub\TeamCloud.Providers.GitHub.Actions\TeamCloud.Providers.GitHub.Actions.csproj", "{5B8D757E-32BA-4969-A55F-E8C8E9C352C7}"
+EndProject
+
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Items", "_Items", "{19DF5DFF-C703-4AFB-8F93-E8F17065B18E}"
 	ProjectSection(SolutionItems) = preProject
 		Azure\Directory.Build.props = Azure\Directory.Build.props
@@ -112,6 +117,14 @@ Global
 		{194ED075-176F-4565-81D0-296373340687}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{194ED075-176F-4565-81D0-296373340687}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{194ED075-176F-4565-81D0-296373340687}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB65BB77-DDC0-48CB-8857-F571F166D15E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB65BB77-DDC0-48CB-8857-F571F166D15E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB65BB77-DDC0-48CB-8857-F571F166D15E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB65BB77-DDC0-48CB-8857-F571F166D15E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B8D757E-32BA-4969-A55F-E8C8E9C352C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B8D757E-32BA-4969-A55F-E8C8E9C352C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B8D757E-32BA-4969-A55F-E8C8E9C352C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B8D757E-32BA-4969-A55F-E8C8E9C352C7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -131,6 +144,8 @@ Global
 		{19DF5DFF-C703-4AFB-8F93-E8F17065B18E} = {39CC4533-4261-410D-AFEB-AB5AD7A900F3}
 		{C066EE06-20C0-4AFB-9F62-EB30E45E8600} = {D302A0F0-9163-4417-A75E-221033204694}
 		{9CB24BB6-685D-4CF7-A40B-E3D4A2C1E0B6} = {86962343-2A42-4BC9-967A-C959CAFD9047}
+		{DB65BB77-DDC0-48CB-8857-F571F166D15E} = {86962343-2A42-4BC9-967A-C959CAFD9047}
+		{5B8D757E-32BA-4969-A55F-E8C8E9C352C7} = {86962343-2A42-4BC9-967A-C959CAFD9047}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B3E8DE1-93F5-4A85-8ABF-EDDB4371ECD4}
