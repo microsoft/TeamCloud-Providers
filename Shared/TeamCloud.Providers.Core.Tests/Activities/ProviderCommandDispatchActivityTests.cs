@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using NSubstitute;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
@@ -14,6 +15,7 @@ using Xunit;
 
 namespace TeamCloud.Providers.Core.Activities
 {
+    [SuppressMessage("Microsoft.Performance", "CA1812:Avoid Uninstantiated Internal Classes", Justification = "Dynamically instatiated")]
     public class ProviderCommandDispatchActivityTests
     {
         [Fact]
@@ -183,10 +185,10 @@ namespace TeamCloud.Providers.Core.Activities
 
         #region Mocks
 
-        public class TestPayload
+        internal class TestPayload
         { }
 
-        public class TestCommand : ProviderCommand<TestPayload, TestCommandResult>
+        internal class TestCommand : ProviderCommand<TestPayload, TestCommandResult>
         {
             private static readonly User DefaultUser = new User()
             {
@@ -203,16 +205,16 @@ namespace TeamCloud.Providers.Core.Activities
             { }
         }
 
-        public class TestCommandResult : CommandResult<TestPayload>
+        internal class TestCommandResult : CommandResult<TestPayload>
         { }
 
-        public class TestCommandOrchestration
+        internal class TestCommandOrchestration
         { }
 
-        public class TestInheritedCommand : TestCommand
+        internal class TestInheritedCommand : TestCommand
         { }
 
-        public class TestInheritedCommandOrchestration
+        internal class TestInheritedCommandOrchestration
         { }
 
         #endregion Mocks

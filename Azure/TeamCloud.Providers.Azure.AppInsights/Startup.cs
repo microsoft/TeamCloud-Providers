@@ -78,7 +78,7 @@ namespace TeamCloud.Providers.Azure.AppInsights
             return ConfigureEnvironment(environment, configuration).Build();
         }
 
-        private static IConfigurationBuilder ConfigureEnvironment(IHostEnvironment hostingEnvironment, IConfiguration configuration)
+        private static IConfigurationBuilder ConfigureEnvironment(IHostEnvironment hostEnvironment, IConfiguration configuration)
         {
             var configurationBuilder = new ConfigurationBuilder()
                 .AddConfiguration(configuration);
@@ -98,7 +98,7 @@ namespace TeamCloud.Providers.Azure.AppInsights
 
                 configurationBuilder.AddAzureKeyVault($"https://{keyVaultName}.vault.azure.net/", keyVaultClient, new DefaultKeyVaultSecretManager());
             }
-            else if (hostingEnvironment.IsDevelopment())
+            else if (hostEnvironment.IsDevelopment())
             {
                 // for development we use the local secret store as a fallback if not KeyVaultName is provided
                 // see: https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-3.1

@@ -44,7 +44,7 @@ namespace TeamCloud.Providers.GitHub.Actions.Activities
                     throw new InvalidOperationException("Parameter 'repo' is required in the query string.");
 
                 await github
-                    .SendRepositoryEventAsync(repo, command, log)
+                    .SendRepositoryEventAsync(repo, command)
                     .ConfigureAwait(false);
 
                 log.LogInformation($"Dispatched workflow.");

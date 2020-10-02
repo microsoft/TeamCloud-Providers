@@ -235,7 +235,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Services
 
             var connectionUri = new Uri(token.Organization);
             var connectionCred = new VssOAuthAccessTokenCredential(token.AccessToken);
-            var connection = new VssConnection(connectionUri, connectionCred);
+            using var connection = new VssConnection(connectionUri, connectionCred);
 
             return await connection
                 .GetClientAsync<T>(cancellationToken)

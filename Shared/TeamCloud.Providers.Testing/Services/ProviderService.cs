@@ -236,7 +236,7 @@ namespace TeamCloud.Providers.Testing.Services
             var match = Regex.Match(data, @"(?:https?):\/\/0.0.0.0:\d+");
 
             if (match.Success)
-                BaseUrl = match.Value.Replace("0.0.0.0", "localhost");
+                BaseUrl = match.Value.Replace("0.0.0.0", "localhost", StringComparison.InvariantCulture);
 
             Debug.WriteLine(data);
         }

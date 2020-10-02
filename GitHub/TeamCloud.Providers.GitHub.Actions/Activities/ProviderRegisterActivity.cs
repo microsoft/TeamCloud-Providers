@@ -61,7 +61,7 @@ namespace TeamCloud.Providers.GitHub.Actions.Activities
                     };
 
                     await github
-                        .SendRepositoryEventAsync(repo, command, log)
+                        .SendRepositoryEventAsync(repo, command)
                         .ConfigureAwait(false);
 
                     return registration;

@@ -49,7 +49,7 @@ namespace TeamCloud.Providers.GitHub.Actions.Orchestrations
                     }
 
                     var providerRegistraion = await functionContext
-                        .CallActivityWithRetryAsync<ProviderRegistration>(nameof(ProviderRegisterActivity), command)
+                        .CallActivityWithRetryAsync<ProviderRegistration>(nameof(ProviderRegisterActivity), commandContext)
                         .ConfigureAwait(true);
 
                     commandResult.Result = providerRegistraion;

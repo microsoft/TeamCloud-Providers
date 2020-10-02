@@ -62,13 +62,13 @@ namespace TeamCloud.Providers.Azure.DevOps
             var serviceProvider = builder.Services
                 .BuildServiceProvider();
 
-            var hostingEnvironment = serviceProvider
-                .GetRequiredService<IHostingEnvironment>();
+            var hostEnvironment = serviceProvider
+                .GetRequiredService<IHostEnvironment>();
 
             var configuration = serviceProvider
                 .GetRequiredService<IConfiguration>();
 
-            if (hostingEnvironment.IsDevelopment())
+            if (hostEnvironment.IsDevelopment())
             {
                 builder.Services
                     .AddSingleton<ISecretsService, StorageSecretsService>();

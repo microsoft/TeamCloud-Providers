@@ -3,3 +3,8 @@ end_of_line = crlf
 
 [*.xml]
 indent_style = space
+
+[*.{cs,vb}]
+
+# CA2234: Pass System.Uri objects instead of strings
+dotnet_code_quality.ca2234.api_surface = private, internal

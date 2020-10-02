@@ -34,6 +34,9 @@ namespace TeamCloud.Providers.Azure.DevOps.Commands
 
         protected virtual void ModifyCommandPayload(JObject commandJson)
         {
+            if (commandJson is null)
+                throw new ArgumentNullException(nameof(commandJson));
+
             (commandJson.SelectToken("$.payload.id") as JValue)?.SetValue(payloadId);
             (commandJson.SelectToken("$.payload.name") as JValue)?.SetValue(payloadName);
         }

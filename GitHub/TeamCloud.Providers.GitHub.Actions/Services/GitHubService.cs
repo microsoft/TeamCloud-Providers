@@ -31,7 +31,7 @@ namespace TeamCloud.Providers.GitHub.Actions.Services
             this.githubAppService = githubAppService ?? throw new ArgumentNullException(nameof(githubAppService));
         }
 
-        public async Task SendRepositoryEventAsync(string repo, IProviderCommand command, ILogger log = null)
+        public async Task SendRepositoryEventAsync(string repo, IProviderCommand command)
         {
             var client = await githubAppService
                 .GetAppClientAsync()
@@ -48,7 +48,7 @@ namespace TeamCloud.Providers.GitHub.Actions.Services
             });
 
             // var statusCode = await client
-            var result = await client
+            _ = await client
                 .Connection
                 .Post<HttpStatusCode>(new Uri($"/repos/{app.Owner.Login}/{repo}/dispatches", uriKind: UriKind.Relative), payload, "application/vnd.github.v3+json", "application/json")
                 // .Post(new Uri($"/repos/{app.Owner.Login}/{repo}/dispatches", uriKind: UriKind.Relative), payload, "application/vnd.github.v3+json")
@@ -84,24 +84,24 @@ namespace TeamCloud.Providers.GitHub.Actions.Services
             _ => throw new NotSupportedException()
         };
 
-        private async Task<WorkflowJobs> GetWorkflowJobsAsync(WorkflowRun workflowRun, ILogger log = null)
-        {
-            var client = await githubAppService
-                .GetAppClientAsync()
-                .ConfigureAwait(false);
+        // private async Task<WorkflowJobs> GetWorkflowJobsAsync(WorkflowRun workflowRun, ILogger log = null)
+        // {
+        //     var client = await githubAppService
+        //         .GetAppClientAsync()
+        //         .ConfigureAwait(false);
 
-            var jobsResponse = await client
-                .Connection
-                .Get<WorkflowJobs>(new Uri(workflowRun.JobsUrl), new Dictionary<string, string>(), "application/vnd.github.v3+json")
-                .ConfigureAwait(false);
+        //     var jobsResponse = await client
+        //         .Connection
+        //         .Get<WorkflowJobs>(new Uri(workflowRun.JobsUrl), new Dictionary<string, string>(), "application/vnd.github.v3+json")
+        //         .ConfigureAwait(false);
 
-            if (jobsResponse.HttpResponse.StatusCode != HttpStatusCode.OK)
-                throw new Exception("Failed to get jobs for workflow run");
+        //     if (jobsResponse.HttpResponse.StatusCode != HttpStatusCode.OK)
+        //         throw new Exception("Failed to get jobs for workflow run");
 
-            return jobsResponse.Body;
-        }
+        //     return jobsResponse.Body;
+        // }
 
-        private async Task<IProviderCommand> GetProviderCommandAsync(WorkflowRun workflowRun, ILogger log = null)
+        private async Task<IProviderCommand> GetProviderCommandAsync(WorkflowRun workflowRun)
         {
             var client = await githubAppService
                 .GetAppClientAsync()
@@ -170,7 +170,7 @@ namespace TeamCloud.Providers.GitHub.Actions.Services
 
             if (run.Completed() && run.WorkflowRun.Completed())
             {
-                var command = await GetProviderCommandAsync(run.WorkflowRun, log)
+                var command = await GetProviderCommandAsync(run.WorkflowRun)
                     .ConfigureAwait(false);
 
                 var commandResult = command.CreateResult();

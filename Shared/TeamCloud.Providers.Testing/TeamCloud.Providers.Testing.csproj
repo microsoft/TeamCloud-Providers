@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <Company>Microsoft Corporation</Company>
     <Product>TeamCloud</Product>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -55,10 +59,10 @@
       <Pack>True</Pack>
       <PackagePath>build</PackagePath>
     </None>
-    <None Update="build\TeamCloud.Providers.Testing.props">
+    <None Include=".\build\TeamCloud.Providers.Testing.props">
       <Pack>True</Pack>
       <PackagePath>build</PackagePath>
     </None>
   </ItemGroup>
-  
+
 </Project>

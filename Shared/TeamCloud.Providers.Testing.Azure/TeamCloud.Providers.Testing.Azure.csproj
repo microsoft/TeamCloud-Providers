@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <Company>Microsoft Corporation</Company>
     <Product>TeamCloud</Product>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -31,7 +35,7 @@
     <PackageReference Include="TeamCloud.Azure.Deployment" Version="$(TeamCloudPackageVersion)" />
     <PackageReference Include="TeamCloud.Azure.Resources" Version="$(TeamCloudPackageVersion)" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\TeamCloud.Providers.Testing\TeamCloud.Providers.Testing.csproj" />
   </ItemGroup>
@@ -42,5 +46,5 @@
       <PackagePath></PackagePath>
     </None>
   </ItemGroup>
-  
+
 </Project>

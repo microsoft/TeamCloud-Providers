@@ -10,7 +10,7 @@ namespace TeamCloud.Providers.Azure.DevOps.Data
 {
     public sealed class AuthorizationSession : TableEntityBase
     {
-        public static string[] Scopes = new string[]
+        public static readonly string[] Scopes = new string[]
         {
             "vso.analytics",
             "vso.auditlog",

@@ -4,14 +4,15 @@
  */
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace TeamCloud.Providers.Testing.Services
 {
+    [SuppressMessage("Microsoft.Performance", "CA1812:Avoid Uninstantiated Internal Classes", Justification = "Dynamically instatiated")]
     class OrchestratorStartup
     {
         public OrchestratorStartup(IConfiguration configuration)
@@ -21,7 +22,7 @@ namespace TeamCloud.Providers.Testing.Services
 
         public IConfiguration Configuration { get; }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             app
                 .UsePathBase(new PathString("/api"))

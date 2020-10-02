@@ -61,12 +61,12 @@ namespace TeamCloud.Providers.Testing.Services
             => ReferenceLink.BaseUrl;
 
         public string GetCallbackUrl(IProviderCommand providerCommand)
-            => BaseUrl.AppendPathSegment($"api/callback/{providerCommand.CommandId}");
+            => BaseUrl.AppendPathSegment($"api/callback/{(providerCommand ?? throw new ArgumentNullException(nameof(providerCommand))).CommandId}");
 
         public ICommandResult GetCommandResult(Guid commandId)
             => results.TryGetValue(commandId, out var commandResult) ? commandResult : null;
 
         public bool AddCommandResult(ICommandResult commandResult)
-            => results.TryAdd(commandResult.CommandId, commandResult);
+            => results.TryAdd((commandResult ?? throw new ArgumentNullException(nameof(commandResult))).CommandId, commandResult);
     }
 }
