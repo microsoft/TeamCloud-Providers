@@ -44,7 +44,7 @@
     <PackageReference Include="TeamCloud.Model" Version="$(TeamCloudPackageVersion)" />
     <PackageReference Include="TeamCloud.Model.Validation" Version="$(TeamCloudPackageVersion)" />
     <PackageReference Include="TeamCloud.Orchestration" Version="$(TeamCloudPackageVersion)" />
-    <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
+    <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.2.2" />
   </ItemGroup>
 
   <ItemGroup>
