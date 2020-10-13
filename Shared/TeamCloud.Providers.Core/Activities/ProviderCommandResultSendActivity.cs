@@ -31,7 +31,7 @@ namespace TeamCloud.Providers.Core.Activities
 
             try
             {
-                log.LogInformation($"Sending command result ({commandResult.CommandId}) to {callbackUrl}: {JsonConvert.SerializeObject(commandResult)}");
+                log.LogInformation($"Sending command result ({commandResult.CommandId}) to {callbackUrl}:\n{JsonConvert.SerializeObject(commandResult, Formatting.Indented)}");
 
                 await callbackUrl
                     .PostJsonAsync(commandResult)

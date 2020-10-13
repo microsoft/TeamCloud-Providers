@@ -60,6 +60,8 @@ namespace TeamCloud.Providers.GitHub.Repos
                         .MapCommand<ProviderTeamCloudUserCreateCommand>(nameof(TeamCloudUserCreateOrchestration))
                         .MapCommand<ProviderTeamCloudUserDeleteCommand>(nameof(TeamCloudUserDeleteOrchestration))
                         .MapCommand<ProviderTeamCloudUserUpdateCommand>(nameof(TeamCloudUserUpdateOrchestration))
+                        .MapCommand<ProviderComponentCreateCommand>(nameof(ComponentCreateOrchestration))
+                        .MapCommand<ProviderComponentDeleteCommand>(nameof(ComponentDeleteOrchestration))
                         .IgnoreCommand<IProviderCommand>();
                 });
 

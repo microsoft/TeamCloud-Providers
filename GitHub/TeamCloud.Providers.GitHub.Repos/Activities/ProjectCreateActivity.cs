@@ -17,7 +17,6 @@ using TeamCloud.Orchestration;
 using TeamCloud.Serialization;
 using TeamCloud.Providers.Core.Clients;
 using TeamCloud.Providers.GitHub.Repos.Services;
-using ApiUrls = Octokit.ApiUrls;
 
 namespace TeamCloud.Providers.GitHub.Repos.Activities
 {
@@ -87,5 +86,11 @@ namespace TeamCloud.Providers.GitHub.Repos.Activities
                         Type = ProjectLinkType.Link
                     }.WithGeneratedId("project", projectId)
                 };
+    }
+
+    internal static class ProjectCreateExtension
+    {
+        public static Task CreateProjectAsync(this IDurableOrchestrationContext orchestrationContext, Project project)
+            => orchestrationContext.CallActivityWithRetryAsync(nameof(ProjectCreateActivity), project);
     }
 }

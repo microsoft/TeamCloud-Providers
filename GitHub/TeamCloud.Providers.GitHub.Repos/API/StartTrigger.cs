@@ -131,8 +131,7 @@ $@"
                     ""organization_administration"": ""write"",
                     ""organization_plan"": ""read"",
                     ""organization_projects"": ""admin"",
-                    ""team_discussions"": ""write"",
-                    ""emails"": ""read""
+                    ""team_discussions"": ""write""
                 }}
             }});
         }}

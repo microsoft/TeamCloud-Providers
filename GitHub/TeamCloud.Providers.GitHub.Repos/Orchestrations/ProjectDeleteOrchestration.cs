@@ -17,6 +17,7 @@ using TeamCloud.Orchestration;
 using TeamCloud.Providers.Core.Model;
 using TeamCloud.Serialization;
 using TeamCloud.Providers.GitHub.Repos.Activities;
+using System.Linq;
 
 namespace TeamCloud.Providers.GitHub.Repos.Orchestrations
 {
@@ -43,8 +44,23 @@ namespace TeamCloud.Providers.GitHub.Repos.Orchestrations
                     functionContext.SetCustomStatus("Deleting resources", commandLog);
 
                     await functionContext
-                        .CallActivityWithRetryAsync(nameof(ProjectDeleteActivity), command.Payload)
+                        .DeleteProjectAsync(command.Payload)
                         .ConfigureAwait(true);
+
+                    functionContext.SetCustomStatus("Getting components", commandLog);
+
+                    var components = await functionContext
+                        .ListComponentsAsync(command)
+                        .ConfigureAwait(true);
+
+                    if (components.Any())
+                    {
+                        functionContext.SetCustomStatus("Deleting components", commandLog);
+
+                        await Task
+                            .WhenAll(components.Select(c => functionContext.DeleteComponentAsync(command, c)))
+                            .ConfigureAwait(true);
+                    }
 
                     commandResult.Result = new ProviderOutput();
                 }

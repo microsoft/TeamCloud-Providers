@@ -52,4 +52,11 @@ namespace TeamCloud.Providers.GitHub.Repos.Activities
             }
         }
     }
+
+    internal static class ProjectDeleteExtension
+    {
+        public static Task DeleteProjectAsync(this IDurableOrchestrationContext orchestrationContext, Project project)
+            => orchestrationContext.CallActivityWithRetryAsync(nameof(ProjectDeleteActivity), project);
+    }
+
 }

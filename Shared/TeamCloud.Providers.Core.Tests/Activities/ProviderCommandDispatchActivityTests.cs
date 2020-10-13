@@ -201,7 +201,7 @@ namespace TeamCloud.Providers.Core.Activities
             public TestCommand() : this(DefaultUser, DefaultPayload)
             { }
 
-            public TestCommand(User user, TestPayload payload) : base(user, payload)
+            public TestCommand(User user, TestPayload payload) : base(CommandAction.Unknown, user, payload)
             { }
         }
 

@@ -7,12 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Flurl.Http;
 using Microsoft.Extensions.Logging;
 using Octokit;
 using Octokit.Internal;
 using TeamCloud.Model.Data;
 using TeamCloud.Providers.GitHub.Data;
+using TeamCloud.Providers.GitHub.Repos.Data;
 using TeamCloud.Providers.GitHub.Services;
 
 namespace TeamCloud.Providers.GitHub.Repos.Services
@@ -196,10 +196,56 @@ namespace TeamCloud.Providers.GitHub.Repos.Services
             return team;
         }
 
-        public async Task<Repository> CreateRepositoryAsync(Model.Data.Project project, Team team)
+        public Task<Repository> CreateRepositoryAsync(Model.Data.Project project, Team team)
         {
             if (team is null)
                 throw new ArgumentNullException(nameof(team));
+
+            var provider = project?.Type?.Providers?.FirstOrDefault(p => p.Id == "github.repos");
+
+            var newRepository = new NewRepository(project.Name)
+            {
+                AutoInit = true,
+                Description = $"Repository for TeamCloud project {project.Name}",
+                LicenseTemplate = provider?.Properties.GetValueInsensitive(AvailableProperties.LicenseTemplate),
+                GitignoreTemplate = provider?.Properties.GetValueInsensitive(AvailableProperties.GitignoreTemplate)
+            };
+
+            return CreateRepositoryInternalAsync(team, newRepository);
+        }
+
+        public async Task<Repository> CreateRepositoryAsync(Model.Data.Project project, RepoComponentInput input)
+        {
+            if (project is null)
+                throw new ArgumentNullException(nameof(project));
+
+            if (input is null)
+                throw new ArgumentNullException(nameof(input));
+
+            var team = await GetTeamInternalAsync(project.Name)
+                .ConfigureAwait(false);
+
+            var provider = project?.Type?.Providers?.FirstOrDefault(p => p.Id == "github.repos");
+
+            var newRepository = new NewRepository(input.Name)
+            {
+                AutoInit = true,
+                Description = input.Description ?? $"Repository for TeamCloud project {project.Name}",
+                LicenseTemplate = provider?.Properties.GetValueInsensitive(AvailableProperties.LicenseTemplate),
+                GitignoreTemplate = provider?.Properties.GetValueInsensitive(AvailableProperties.GitignoreTemplate)
+            };
+
+            return await CreateRepositoryInternalAsync(team, newRepository)
+                .ConfigureAwait(false);
+        }
+
+        private async Task<Repository> CreateRepositoryInternalAsync(Team team, NewRepository newRepository)
+        {
+            if (team is null)
+                throw new ArgumentNullException(nameof(team));
+
+            if (newRepository is null)
+                throw new ArgumentNullException(nameof(newRepository));
 
             var client = await githubAppService
                 .GetAppClientAsync()
@@ -208,16 +254,6 @@ namespace TeamCloud.Providers.GitHub.Repos.Services
             var app = await githubAppService
                 .GetAppManifestAsync()
                 .ConfigureAwait(false);
-
-            var gitHubProvider = project?.Type?.Providers?.FirstOrDefault(p => p.Id == "github");
-
-            var newRepository = new NewRepository(project.Name)
-            {
-                AutoInit = true,
-                Description = $"Repository for TeamCloud project {project.Name}",
-                LicenseTemplate = gitHubProvider?.Properties.GetValueInsensitive(AvailableProperties.LicenseTemplate),
-                GitignoreTemplate = gitHubProvider?.Properties.GetValueInsensitive(AvailableProperties.GitignoreTemplate)
-            };
 
             var repository = await client
                 .Repository
@@ -242,11 +278,38 @@ namespace TeamCloud.Providers.GitHub.Repos.Services
             return repository;
         }
 
-        public async Task DeleteRepositoryAsync(Model.Data.Project project)
+        public Task DeleteRepositoryAsync(Model.Data.Project project)
         {
             if (project is null)
                 throw new ArgumentNullException(nameof(project));
 
+            return DeleteRepositoryInternalAsync(project.Name);
+        }
+
+        public async Task DeleteRepositoryAsync(RepoComponent component)
+        {
+            if (component is null)
+                throw new ArgumentNullException(nameof(component));
+
+            var client = await githubAppService
+                .GetAppClientAsync()
+                .ConfigureAwait(false);
+
+            try
+            {
+                await client
+                    .Repository
+                    .Delete(component.Id)
+                    .ConfigureAwait(false);
+            }
+            catch (NotFoundException)
+            {
+                return; // already deleted, swallow execption
+            }
+        }
+
+        private async Task DeleteRepositoryInternalAsync(string name)
+        {
             var client = await githubAppService
                 .GetAppClientAsync()
                 .ConfigureAwait(false);
@@ -259,7 +322,7 @@ namespace TeamCloud.Providers.GitHub.Repos.Services
             {
                 await client
                     .Repository
-                    .Delete(app.Owner.Login, project.Name)
+                    .Delete(app.Owner.Login, name)
                     .ConfigureAwait(false);
             }
             catch (NotFoundException)
@@ -632,7 +695,7 @@ namespace TeamCloud.Providers.GitHub.Repos.Services
 
             if (!eventType.Equals("workflow_run", StringComparison.OrdinalIgnoreCase))
                 log?.LogWarning($"Received GitHub Webhook: [ EventType: {eventType}, Action: {hook.Action ?? "null"} ]");
-            // log?.LogWarning(payload);
+            log?.LogWarning(payload);
 
             return Task.FromResult(hook);
         }

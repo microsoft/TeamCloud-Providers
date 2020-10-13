@@ -13,19 +13,15 @@ using TeamCloud.Model;
 using TeamCloud.Model.Commands;
 using TeamCloud.Model.Commands.Core;
 using TeamCloud.Orchestration;
-using TeamCloud.Providers.Core;
-using TeamCloud.Serialization;
-using TeamCloud.Model.Data;
 using TeamCloud.Providers.Core.Model;
+using TeamCloud.Serialization;
 using TeamCloud.Providers.GitHub.Repos.Activities;
-using TeamCloud.Providers.GitHub.Repos.Data;
-using Newtonsoft.Json.Schema.Generation;
 
 namespace TeamCloud.Providers.GitHub.Repos.Orchestrations
 {
-    public static class ProviderRegisterOrchestration
+    public static class ComponentCreateOrchestration
     {
-        [FunctionName(nameof(ProviderRegisterOrchestration))]
+        [FunctionName(nameof(ComponentCreateOrchestration))]
         public static async Task RunOrchestration(
             [OrchestrationTrigger] IDurableOrchestrationContext functionContext,
             ILogger log)
@@ -34,7 +30,7 @@ namespace TeamCloud.Providers.GitHub.Repos.Orchestrations
                 throw new ArgumentNullException(nameof(functionContext));
 
             var commandContext = functionContext.GetInput<ProviderCommandContext>();
-            var command = (ProviderRegisterCommand)commandContext.Command;
+            var command = (ProviderComponentCreateCommand)commandContext.Command;
 
             var commandResult = command.CreateResult();
             var commandLog = functionContext.CreateReplaySafeLogger(log ?? NullLogger.Instance);
@@ -43,31 +39,11 @@ namespace TeamCloud.Providers.GitHub.Repos.Orchestrations
             {
                 try
                 {
-                    if (Guid.TryParse(command.Payload?.TeamCloudApplicationInsightsKey, out var instrumentationKey))
-                    {
-                        await functionContext
-                            .SetInstrumentationKeyAsync(instrumentationKey)
-                            .ConfigureAwait(true);
-                    }
+                    functionContext.SetCustomStatus("Creating component", commandLog);
 
-                    var providerRegistraion = await functionContext
-                        .CallActivityWithRetryAsync<ProviderRegistration>(nameof(ProviderRegisterActivity), command)
+                    commandResult.Result = await functionContext
+                        .CreateComponentAsync(command)
                         .ConfigureAwait(true);
-
-                    var repoOffer = new ComponentOffer
-                    {
-                        Id = "github.repos.repo",
-                        DisplayName = "New GitHub Repo",
-                        Description = "Create a new GitHub repository for this project",
-                        ProviderId = "github.repos",
-                        InputJsonSchema = new JSchemaGenerator().Generate(typeof(RepoComponentInput)).ToString()
-                    };
-
-                    repoOffer = await functionContext
-                        .CallActivityWithRetryAsync<ComponentOffer>(nameof(OfferSetActivity), new OfferSetActivity.Input { Command = command, Offer = repoOffer })
-                        .ConfigureAwait(true);
-
-                    commandResult.Result = providerRegistraion;
                 }
                 catch (Exception exc)
                 {
