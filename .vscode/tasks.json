@@ -5,14 +5,14 @@
             "type": "func",
             "dependsOn": "buildProj",
             "options": {
-                "cwd": "${workspaceFolder}/${input:provider}/bin/Debug/netcoreapp3.1",
+                "cwd": "${workspaceFolder}/${input:provider}/bin/Debug/netcoreapp3.1"
             },
             "command": "start",
             "isBackground": true,
             "problemMatcher": "$func-watch",
             "presentation": {
                 "panel": "dedicated",
-                "showReuseMessage": false,
+                "showReuseMessage": false
             }
         },
         {
@@ -46,7 +46,7 @@
                 "clean",
                 "${workspaceFolder}/${input:provider}",
                 "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary",
+                "/consoleloggerparameters:NoSummary"
             ],
             "type": "process",
             "problemMatcher": "$msCompile",
@@ -89,7 +89,7 @@
                 "clean",
                 "${workspaceFolder}/TeamCloud.Providers.sln",
                 "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary",
+                "/consoleloggerparameters:NoSummary"
             ],
             "type": "process",
             "problemMatcher": "$msCompile",
@@ -100,6 +100,19 @@
                 "group": "build",
                 "showReuseMessage": false
             }
+        },
+        {
+            "label": "deleteTaskHub",
+            "command": "func",
+            "args": [
+                "durable",
+                "delete-task-hub",
+                "--connection-string-setting",
+                "DurableFunctionsHubStorage"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/${input:provider}"
+            },
         }
     ],
     "inputs": [
