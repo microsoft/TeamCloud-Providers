@@ -135,7 +135,7 @@ namespace TeamCloud.Providers.Core.Clients
                     .PutAsync(azureSessionService, payload, tokenCallback)
                     .ConfigureAwait(false);
             }
-            catch (FlurlHttpException exc) when (exc.Call.HttpStatus == System.Net.HttpStatusCode.NotFound)
+            catch (FlurlHttpException exc) when (exc.Call.HttpStatus == HttpStatusCode.NotFound)
             {
                 return await referenceLink
                     .PostAsync(azureSessionService, payload, tokenCallback)

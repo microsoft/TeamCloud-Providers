@@ -53,15 +53,15 @@ namespace TeamCloud.Providers.Azure.DevOps.Data
 
         public AuthorizationSession()
         {
-            TableEntity.RowKey = Guid.NewGuid().ToString();
-            TableEntity.PartitionKey = PartitionKeyPropertyValue;
+            RowKey = Guid.NewGuid().ToString();
+            PartitionKey = PartitionKeyPropertyValue;
         }
 
         [JsonIgnore]
         public Guid Id
         {
-            get => Guid.Parse(TableEntity.RowKey);
-            set => TableEntity.RowKey = value.ToString();
+            get => Guid.Parse(RowKey);
+            set => RowKey = value.ToString();
         }
 
         public string Organization { get; set; }
