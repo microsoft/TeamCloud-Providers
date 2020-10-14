@@ -11,7 +11,7 @@ jobs:
   build:
     name: Create new Pre-release
     if: "!contains(join(github.event.commits.*.message), '+norelease')"
-    runs-on: ubuntu-20.04 # change to ubuntu-latest once 20.04 LTS moves from preview
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code

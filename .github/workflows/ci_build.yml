@@ -7,7 +7,7 @@ on:
 jobs:
   build:
     name: Build Providers
-    runs-on: ubuntu-20.04 # change to ubuntu-latest once 20.04 LTS moves from preview
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
