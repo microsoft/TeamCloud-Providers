@@ -11,7 +11,7 @@ jobs:
   build:
     name: Create new Pre-release
     if: "!contains(join(github.event.commits.*.message), '+norelease')"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04 # change to ubuntu-latest once 20.04 LTS moves from preview
 
     steps:
       - name: Checkout Code
@@ -34,7 +34,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '3.1.300'
+          dotnet-version: '3.1.403'
 
       - name: Build & Package Core for Pre-release
         run: dotnet build Shared/TeamCloud.Providers.Core/TeamCloud.Providers.Core.csproj -o Prerelease -c ${{ env.BUILD_CONFIGURATION }} -p:VersionPrefix="${{ steps.gitversion.outputs.majorMinorPatch }}" -p:AssemblyVersion="${{ steps.gitversion.outputs.assemblySemVer }}" -p:FileVersion="${{ steps.gitversion.outputs.assemblySemFileVer }}" -p:IncludeSymbols=true --version-suffix "pre"
