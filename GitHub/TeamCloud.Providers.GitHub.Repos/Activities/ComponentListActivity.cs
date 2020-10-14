@@ -13,11 +13,9 @@ using TeamCloud.Model.Data;
 using TeamCloud.Orchestration;
 using TeamCloud.Serialization;
 using TeamCloud.Providers.Core.Clients;
-using TeamCloud.Providers.GitHub.Repos.Services;
 using TeamCloud.Model.Commands;
 using TeamCloud.Azure;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace TeamCloud.Providers.GitHub.Repos.Activities
 {

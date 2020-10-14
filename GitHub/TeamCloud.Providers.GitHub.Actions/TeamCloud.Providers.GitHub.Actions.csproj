@@ -7,19 +7,18 @@
     <!--<UserSecretsId></UserSecretsId>-->
   </PropertyGroup>
   <ItemGroup>
-    <!-- <PackageReference Include="BouncyCastle" Version="1.8.6.1" /> -->
-    <PackageReference Include="Portable.BouncyCastle" Version="1.8.6.7" />
     <PackageReference Include="Flurl.Http" Version="2.4.2" />
-    <PackageReference Include="jose-jwt" Version="2.5.0" />
-    <PackageReference Include="Octokit" Version="0.48.0" />
+    <PackageReference Include="jose-jwt" Version="2.6.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.9" />
     <PackageReference Include="Microsoft.Azure.KeyVault" Version="3.0.5" />
     <PackageReference Include="Microsoft.Azure.KeyVault.Core" Version="3.0.5" />
     <PackageReference Include="Microsoft.Azure.KeyVault.Extensions" Version="3.0.5" />
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.9" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.3.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask.Analyzers" Version="0.3.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.2" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.9" />
+    <PackageReference Include="Octokit" Version="0.48.0" />
+    <PackageReference Include="Portable.BouncyCastle" Version="1.8.8" />
     <PackageReference Include="System.Linq.Async" Version="4.1.1" />
   </ItemGroup>
   <ItemGroup>

@@ -20,23 +20,23 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="1.2.1">
+    <PackageReference Include="coverlet.collector" Version="1.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.9" />
   </ItemGroup>
-  
+
   <ItemGroup>
 
     <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
-    
+
     <ProjectReference Include="..\..\Shared\TeamCloud.Providers.Testing\TeamCloud.Providers.Testing.csproj">
       <!-- this references the provider testing framework - usually this is done by a package reference -->
     </ProjectReference>
@@ -49,11 +49,11 @@
       <!-- mark this project reference as a TeamCloudProvider so it can be handled by the provider testing framework -->
       <TeamCloudProvider>true</TeamCloudProvider>
     </ProjectReference>
-    
+
   </ItemGroup>
 
   <Import Project="..\..\Shared\TeamCloud.Providers.Testing\build\*" Condition="Exists('..\..\Shared\TeamCloud.Providers.Testing\build')">
     <!-- we need to import the build targets manually because we reference the provider testing framework as project and not package -->
   </Import>
-  
+
 </Project>

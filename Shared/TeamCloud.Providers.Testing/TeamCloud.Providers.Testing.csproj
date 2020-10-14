@@ -33,18 +33,18 @@
 
   <ItemGroup>
     <PackageReference Include="Flurl.Http" Version="2.4.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.9" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.WebApiCompatShim" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.2" />
     <PackageReference Include="Microsoft.Azure.Management.ResourceManager.Fluent" Version="1.34.0" />
-    <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.4.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.5" />
+    <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.0" />
+    <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.2.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.9" />
     <PackageReference Include="TeamCloud.Azure" Version="$(TeamCloudPackageVersion)" />
     <PackageReference Include="TeamCloud.Http" Version="$(TeamCloudPackageVersion)" />
     <PackageReference Include="TeamCloud.Model" Version="$(TeamCloudPackageVersion)" />
     <PackageReference Include="TeamCloud.Model.Validation" Version="$(TeamCloudPackageVersion)" />
     <PackageReference Include="TeamCloud.Orchestration" Version="$(TeamCloudPackageVersion)" />
-    <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.2.2" />
   </ItemGroup>
 
   <ItemGroup>
