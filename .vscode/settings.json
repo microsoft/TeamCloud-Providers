@@ -5,8 +5,8 @@
         "en"
     ],
     "spellright.documentTypes": [
-        "latex",
-        "plaintext"
+        "markdown",
+        "latex"
     ],
     "files.exclude": {
         "**/.vs": true,
