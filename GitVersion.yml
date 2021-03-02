@@ -1,7 +1,7 @@
-next-version: 0.1.0
+next-version: 0.3.0
 mode: Mainline
 branches:
-  master:
+  main:
     tag: ''
     increment: Patch
     prevent-increment-of-merged-branch-version: true # When release-2.0.0 is merged into master, we want master to build 2.0.0. If release-2.0.0 is merged into develop we want it to build 2.1.0, this option prevents incrementing after a versioned branch is merged
