@@ -14,7 +14,7 @@ An organization creates and deploys its own Providers or deploys Providers from 
 
 **TeamCloud and the Providers in this repository are in active development and will change.**  As the these Providers become ready for use, they will be [versioned](https://semver.org/) and released.
 
-We will do our best to conduct all development openly by [documenting](https://github.com/microsoft/TeamCloud-Providers/tree/master/docs) features and requirements, and managing the project using [issues](https://github.com/microsoft/TeamCloud-Providers/issues), [milestones](https://github.com/microsoft/TeamCloud-Providers/milestones), and [projects](https://github.com/microsoft/TeamCloud-Providers/projects).
+We will do our best to conduct all development openly by [documenting](https://github.com/microsoft/TeamCloud-Providers/tree/main/docs) features and requirements, and managing the project using [issues](https://github.com/microsoft/TeamCloud-Providers/issues), [milestones](https://github.com/microsoft/TeamCloud-Providers/milestones), and [projects](https://github.com/microsoft/TeamCloud-Providers/projects).
 
 ## Contributing
 

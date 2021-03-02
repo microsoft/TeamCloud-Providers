@@ -29,7 +29,7 @@ Deploying Azure Provider resources is as simple as clicking the associated _"Dep
 | Azure DevTest Labs         | [![Deploy to Azure][azure-deploy-button]][azure-deploy-devtestlabs] |
 
 [azure-deploy-button]:https://azuredeploy.net/deploybutton.svg
-[azure-deploy-appinsights]:https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2FTeamCloud%2DProviders%2Fmaster%2FAzure%2Fazuredeploy.appinsights.json
-[azure-deploy-devops]:https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2FTeamCloud%2DProviders%2Fmaster%2FAzure%2Fazuredeploy.devops.json
-[azure-deploy-devtestlabs]:https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2FTeamCloud%2DProviders%2Fmaster%2FAzure%2Fazuredeploy.devtestlabs.json
+[azure-deploy-appinsights]:https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2FTeamCloud%2DProviders%2Fmain%2FAzure%2Fazuredeploy.appinsights.json
+[azure-deploy-devops]:https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2FTeamCloud%2DProviders%2Fmain%2FAzure%2Fazuredeploy.devops.json
+[azure-deploy-devtestlabs]:https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2FTeamCloud%2DProviders%2Fmain%2FAzure%2Fazuredeploy.devtestlabs.json
 
