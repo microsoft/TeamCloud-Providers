@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "TeamCloud.Providers.GitHub.Repos": {
-      "commandName": "Project",
-      "commandLineArgs": "start -p 7104"
-    }
-  }
-}

@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "TeamCloud.Providers.Azure.AppInsights": {
-      "commandName": "Project",
-      "commandLineArgs": "start -p 7101"
-    }
-  }
-}
