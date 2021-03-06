@@ -1,4 +1,4 @@
-FROM markusheiliger/tcrunner:latest
+FROM teamcloud/tcrunner-core:latest
 WORKDIR /
 
 RUN apk add terraform

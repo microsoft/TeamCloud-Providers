@@ -31,7 +31,7 @@ jobs:
           context: ./core
           file: ./core/Dockerfile
           platforms: linux/amd64
-          tags: markusheiliger/tcrunner:latest
+          tags: teamcloud/tcrunner-core:latest
           push: true
 
   runner:
