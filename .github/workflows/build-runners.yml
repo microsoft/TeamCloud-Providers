@@ -2,7 +2,7 @@ name: Build TeamCloud Runners
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
 
