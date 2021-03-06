@@ -68,9 +68,7 @@ jobs:
   runner:
     name: Build Runner 
     runs-on: ubuntu-latest
-    needs: |
-      prepare
-      core
+    needs: [ prepare, core ]
     
     env:
       CONTAINER_VERSION: ${{ needs.prepare.outputs.version }}
