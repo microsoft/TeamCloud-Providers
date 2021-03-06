@@ -6,8 +6,37 @@ on:
 
 jobs:
 
-  core:
+  prepare:
+    name: Prepare container build
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.9
+        with:
+          versionSpec: '5.x'
+
+      - name: Execute GitVersion
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0.9.9
+        with:
+          useConfigFile: true
+
+    outputs:
+      version: ${{ steps.gitversion.outputs.assemblySemVer }}
+
+  core:
+    name: Build Core
+    runs-on: ubuntu-latest
+    needs: prepare
+
+    env:
+      CONTAINER_VERSION: ${{ needs.prepare.outputs.version }}
 
     steps:
       - name: Checkout
@@ -31,12 +60,21 @@ jobs:
           context: ./core
           file: ./core/Dockerfile
           platforms: linux/amd64
-          tags: teamcloud/tcrunner-core:latest
           push: true
+          tags: |
+            teamcloud/tcrunner-core:latest
+            teamcloud/tcrunner-core:${{ env.CONTAINER_VERSION }}
 
   runner:
-    needs: core
+    name: Build Runner 
     runs-on: ubuntu-latest
+    needs: |
+      prepare
+      core
+    
+    env:
+      CONTAINER_VERSION: ${{ needs.prepare.outputs.version }}
+
     strategy:
       max-parallel: 5
       matrix:
@@ -64,7 +102,9 @@ jobs:
           context: ./${{ matrix.runner }}
           file: ./${{ matrix.runner }}/Dockerfile
           platforms: linux/amd64
-          tags: teamcloud/tcrunner-${{ matrix.runner }}:latest
           push: true
+          tags: |
+            teamcloud/tcrunner-${{ matrix.runner }}:latest
+            teamcloud/tcrunner-${{ matrix.runner }}:${{ env.CONTAINER_VERSION }}
 
           
