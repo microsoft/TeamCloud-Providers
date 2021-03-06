@@ -8,6 +8,10 @@ trace() {
 
 ComponentDeploymentName="$(uuidgen)"
 ComponentDeploymentOutput=""
+
+trace "Transpiling BICEP template" 
+find . -name "*.bicep" -exec echo "- {}" \; -exec az bicep build --files {} \;
+
 ComponentTemplateFile="$(echo "$ComponentTemplateFolder/azuredeploy.json" | sed 's/^file:\/\///g')"
 ComponentTemplateUrl="$(echo "$ComponentTemplateBaseUrl/azuredeploy.json" | sed 's/^http:/https:/g')"
 ComponentTemplateParametersJson=$(echo "$ComponentTemplateParameters" | jq --compact-output '{ "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#", "contentVersion": "1.0.0.0", "parameters": (to_entries | if length == 0 then {} else (map( { (.key): { "value": .value } } ) | add) end) }' )
