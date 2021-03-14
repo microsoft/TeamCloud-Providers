@@ -1,8 +1,11 @@
 #!/bin/bash
 
 trace() {
-    echo ">>> $@ ..."
+    echo -e "\n>>> $@ ...\n"
 }
+
+trace "Terraform plans" 
+find . -name "*.tf" -exec echo -e "\n>$@\n" \; -exec cat {} \;
 
 trace "Initializing Terraform"
 terraform init -no-color
