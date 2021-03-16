@@ -15,6 +15,6 @@ trace "Initializing Terraform"
 terraform init -no-color
 
 trace "Destroying Terraform Plan"
-terraform destroy -no-color -auto-approve -state=$ComponentStateFile
+terraform destroy -no-color -auto-approve -state=$ComponentStateFile -var "ComponentResourceGroupName=$ComponentResourceGroup"
 
 # tail -f /dev/null
