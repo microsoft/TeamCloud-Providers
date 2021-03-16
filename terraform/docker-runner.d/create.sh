@@ -4,8 +4,10 @@ trace() {
     echo -e "\n>>> $@ ...\n"
 }
 
-trace "Terraform plans" 
-find . -name "*.tf" -exec echo -e "\nFile: {}\n" \; -exec cat {} | hcl2json \;
+ComponentTemplateFile="$(echo "$ComponentTemplateFolder/azuredeploy.tf" | sed 's/^file:\/\///g')"
+ComponentTemplateJson="$(cat $ComponentTemplateFile | hcl2json)"
+
+echo "$ComponentTemplateJson"
 
 trace "Initializing Terraform"
 terraform init -no-color
