@@ -1,7 +1,7 @@
 FROM teamcloud/tcrunner-core:latest
 WORKDIR /
 
-ADD https://github.com/tmccombs/hcl2json/releases/download/v0.3.2/hcl2json_darwin_amd64 /usr/local/bin/hcl2json
+ADD https://github.com/tmccombs/hcl2json/releases/download/v0.3.2/hcl2json_linux_amd64 /usr/local/bin/hcl2json
 RUN chmod +x /usr/local/bin/hcl2json && apk add terraform
 
 COPY docker-runner.d/* /docker-runner.d/
