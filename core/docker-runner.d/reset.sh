@@ -14,4 +14,4 @@ function ResolveScript () {
 }
 
 # isolate task script execution in sub shell  
-( exec "$( ResolveScript 'delete.sh' )" && exec "$( ResolveScript 'create.sh' )"; exit $? ) || exit $?
+( exec "$( ResolveScript 'delete.sh' )"; exit $? ) && ( exec "$( ResolveScript 'create.sh' )"; exit $? ) || exit $?
