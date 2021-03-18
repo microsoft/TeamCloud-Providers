@@ -4,13 +4,10 @@ trace() {
     echo -e "\n>>> $@ ...\n"
 }
 
-readonly ComponentStateFile="/mnt/storage/terraform.tfstate"
+readonly ComponentState="/mnt/storage/component.tfstate"
+readonly ComponentPlan="/mnt/storage/component.tfplan"
 
-ComponentTemplateFile="$(echo "$ComponentTemplateFolder/main.tf" | sed 's/^file:\/\///g')"
-ComponentTemplatePlan="$(echo "$ComponentTemplateFile.plan")"
-ComponentTemplateJson="$(cat $ComponentTemplateFile | hcl2json)"
-
-# echo "$ComponentTemplateJson"
+rm -f $ComponentPlan # reset terraform plan to start fresh
 
 trace "Terraform Info"
 terraform -version
@@ -18,10 +15,10 @@ terraform -version
 trace "Initializing Terraform"
 terraform init -no-color
 
-trace "Updating Terraform Plan"
-terraform plan -no-color -refresh=true -lock=true -destroy -state=$ComponentStateFile -out=$ComponentTemplatePlan -var "resourceGroupName=$ComponentResourceGroup" -var "resourceGroupLocation=$(az group show -n $ComponentResourceGroup --query location -o tsv)"
+trace "Creating Terraform Plan"
+terraform plan -no-color -destroy -refresh=true -lock=true -state=$ComponentState -out=$ComponentPlan -var "resourceGroupName=$ComponentResourceGroup"
 
 trace "Applying Terraform Plan"
-terraform apply -no-color -auto-approve -lock=true -state=$ComponentStateFile $ComponentTemplatePlan
+terraform apply -no-color -auto-approve -lock=true -state=$ComponentState $ComponentPlan
 
 # tail -f /dev/null
