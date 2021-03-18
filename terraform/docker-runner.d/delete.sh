@@ -5,9 +5,10 @@ trace() {
 }
 
 readonly ComponentState="/mnt/storage/component.tfstate"
-readonly ComponentPlan="/mnt/storage/component.tfplan"
+readonly ComponentPlan="/mnt/temporary/component.tfplan"
+readonly ComponentVars="/mnt/temporary/component.tfvars.json"
 
-rm -f $ComponentPlan # reset terraform plan to start fresh
+echo "$ComponentTemplateParameters" > $ComponentVars
 
 trace "Terraform Info"
 terraform -version
@@ -16,7 +17,7 @@ trace "Initializing Terraform"
 terraform init -no-color
 
 trace "Creating Terraform Plan"
-terraform plan -no-color -compact-warnings -destroy -refresh=true -lock=true -state=$ComponentState -out=$ComponentPlan -var "resourceGroupName=$ComponentResourceGroup"
+terraform plan -no-color -compact-warnings -destroy -refresh=true -lock=true -state=$ComponentState -out=$ComponentPlan -var-file="$ComponentVars" -var "resourceGroupName=$ComponentResourceGroup"
 
 trace "Applying Terraform Plan"
 terraform apply -no-color -compact-warnings -auto-approve -lock=true -state=$ComponentState $ComponentPlan
