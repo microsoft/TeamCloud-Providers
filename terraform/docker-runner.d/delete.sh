@@ -16,9 +16,9 @@ trace "Initializing Terraform"
 terraform init -no-color
 
 trace "Creating Terraform Plan"
-terraform plan -no-color -destroy -refresh=true -lock=true -state=$ComponentState -out=$ComponentPlan -var "resourceGroupName=$ComponentResourceGroup"
+terraform plan -no-color -compact-warnings -destroy -refresh=true -lock=true -state=$ComponentState -out=$ComponentPlan -var "resourceGroupName=$ComponentResourceGroup"
 
 trace "Applying Terraform Plan"
-terraform apply -no-color -auto-approve -lock=true -state=$ComponentState $ComponentPlan
+terraform apply -no-color -compact-warnings -auto-approve -lock=true -state=$ComponentState $ComponentPlan
 
 # tail -f /dev/null
