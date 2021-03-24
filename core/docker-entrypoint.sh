@@ -18,7 +18,7 @@ error() {
     echo "Error: $@" 1>&2
 }
 
-readonly LOG_FILE="/mnt/storage/$TaskId.log"
+readonly LOG_FILE="/mnt/storage/.output/$TaskId"
 readonly DMP_FILE="/mnt/storage/value.json"
 
 touch $LOG_FILE     # ensure the log file exists
