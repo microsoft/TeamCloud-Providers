@@ -21,9 +21,10 @@ error() {
 readonly LOG_FILE="/mnt/storage/.output/$TaskId"
 readonly DMP_FILE="/mnt/storage/value.json"
 
-touch $LOG_FILE     # ensure the log file exists
-exec 1>$LOG_FILE    # forward stdout to log file
-exec 2>&1           # redirect stderr to stdout
+mkdir -p "$(dirname "$LOG_FILE")"   # ensure the log folder exists
+touch $LOG_FILE                     # ensure the log file exists
+exec 1>$LOG_FILE                    # forward stdout to log file
+exec 2>&1                           # redirect stderr to stdout
 
 if [[ ! -z "$TaskHost" ]]; then
 
