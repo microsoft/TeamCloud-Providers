@@ -34,5 +34,8 @@ COPY config/default.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80 443
 STOPSIGNAL SIGTERM
 
+# Stop nginx from being noisy
+ENV NGINX_ENTRYPOINT_QUIET_LOGS=1
+
 CMD [ "" ]
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
