@@ -110,4 +110,4 @@ else
 fi
 
 trace "Shutting down task runner"
-kill -QUIT $( cat /usr/local/nginx/logs/nginx.pid )
+kill -QUIT $( cat /run/nginx.pid )
