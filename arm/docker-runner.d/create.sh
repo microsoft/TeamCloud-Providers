@@ -99,6 +99,8 @@ else
 
 fi
 
+echo "here we are #1 !!!"
+
 if [ ! -z "$ComponentDeploymentOutput" ]; then
 
     if [ $(echo "$ComponentDeploymentOutput" | jq empty > /dev/null 2>&1; echo $?) -eq 0 ]; then
@@ -112,4 +114,4 @@ if [ ! -z "$ComponentDeploymentOutput" ]; then
 
 fi
 
-echo "here we are !!!"
+echo "here we are #2 !!!"
