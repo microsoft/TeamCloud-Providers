@@ -101,10 +101,9 @@ else
     error "Script '$script' does not exist" && exit 1
 fi
 
+trace "Update component value"
 if [ -z "$ComponentResourceGroup" ]; then
-    trace "Update component value (subscription)"
     az resource list --subscription $ComponentSubscription > $DMP_FILE
 else
-    trace "Update component value (resource group)"
     az resource list --subscription $ComponentSubscription -g $ComponentResourceGroup > $DMP_FILE
 fi

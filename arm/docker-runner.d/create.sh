@@ -28,6 +28,7 @@ while read p; do
 done < <( echo "$( cat "$ComponentTemplateFile" | jq --raw-output '.parameters | to_entries[] | select( .key | startswith("_artifactsLocation")) | .key' )" )
 
 trace "Deploying ARM template"
+
 if [ -z "$ComponentResourceGroup" ]; then
 
     ComponentDeploymentOutput=$(az deployment sub create --subscription $ComponentSubscription \
@@ -39,7 +40,6 @@ if [ -z "$ComponentResourceGroup" ]; then
                                                 "${ComponentTemplateParametersOpts[@]}" 2>&1)
 
     if [ $? -eq 0 ]; then # deployment successfully created
-
         while true; do
 
             sleep 1
@@ -74,7 +74,6 @@ else
                                                     "${ComponentTemplateParametersOpts[@]}" 2>&1)
 
     if [ $? -eq 0 ]; then # deployment successfully created
-
         while true; do
 
             sleep 1
@@ -97,12 +96,19 @@ else
 
         done
     fi
+
 fi
 
 if [ ! -z "$ComponentDeploymentOutput" ]; then
+
     if [ $(echo "$ComponentDeploymentOutput" | jq empty > /dev/null 2>&1; echo $?) -eq 0 ]; then
+        # the component deployment output was identified as JSON - lets extract some error information to return a more meaningful output
         ComponentDeploymentOutput="$( echo $ComponentDeploymentOutput | jq --raw-output '.. | .message? | select(. != null) | "Error: \(.)\n"' | sed 's/\\n/\n/g'  )"
     fi
-    echo "$ComponentDeploymentOutput" && exit 1 # our script failed to enqueue a new deployment - we return a none zero exit code to inidicate this
+    
+    # our script failed to enqueue a new deployment -
+    # we return a none zero exit code to inidicate this
+    echo "$ComponentDeploymentOutput" && exit 1 
+
 fi
 
