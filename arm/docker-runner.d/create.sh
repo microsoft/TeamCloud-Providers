@@ -112,3 +112,4 @@ if [ ! -z "$ComponentDeploymentOutput" ]; then
 
 fi
 
+echo "here we are !!!"
