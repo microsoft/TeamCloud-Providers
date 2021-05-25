@@ -108,3 +108,6 @@ else
     trace "Update component value (resource group)"
     az resource list --subscription $ComponentSubscription -g $ComponentResourceGroup > $DMP_FILE
 fi
+
+trace "Shutting down task runner"
+kill -QUIT $( cat /usr/local/nginx/logs/nginx.pid )
