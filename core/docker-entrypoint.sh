@@ -32,10 +32,10 @@ if [[ ! -z "$TaskHost" ]]; then
     sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/conf.d/default.conf
     nginx -q # start nginx and acquire SSL certificate from lets encrypt 
 
-    # while true; do
-    #     # there is a chance that nginx isn't ready to respond to the ssl challenge - so retry if this operation fails
-    #     certbot --nginx --register-unsafely-without-email --agree-tos --quiet -n -d $TaskHost && break || sleep 1
-    # done
+    while true; do
+        # there is a chance that nginx isn't ready to respond to the ssl challenge - so retry if this operation fails
+        certbot --nginx --register-unsafely-without-email --agree-tos --quiet -n -d $TaskHost > /dev/null && break || sleep 1
+    done
 
     # list servernames the host is listening on
     nginx -T 2>/dev/null | grep "server_name " | sort -u
