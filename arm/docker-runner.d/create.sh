@@ -9,8 +9,10 @@ trace() {
 ComponentDeploymentName="$(uuidgen)"
 ComponentDeploymentOutput=""
 
-trace "Transpiling BICEP template" 
-find . -name "*.bicep" -exec echo "- {}" \; -exec az bicep build --files {} \;
+if [ find . -name "*.bicep" ]; then
+    trace "Transpiling BICEP template" 
+    find . -name "*.bicep" -exec echo "- {}" \; -exec az bicep build --files {} \;
+fi
 
 ComponentTemplateFile="$(echo "$ComponentTemplateFolder/azuredeploy.json" | sed 's/^file:\/\///g')"
 ComponentTemplateUrl="$(echo "$ComponentTemplateBaseUrl/azuredeploy.json" | sed 's/^http:/https:/g')"
