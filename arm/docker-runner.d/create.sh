@@ -102,33 +102,16 @@ fi
 # trim spaces from output to avoid issues in the following (generic) error section
 ComponentDeploymentOutput=$(echo "$ComponentDeploymentOutput" | sed -e 's/^[[:space:]]*//')
 
-echo "here we are #1 !!!"
-echo "==>>> '$ComponentDeploymentOutput'"
-echo "here we are #2 !!!"
-
 if [ ! -z "$ComponentDeploymentOutput" ]; then
 
-    echo "here we are #3 !!!"
-
-    if [ jq -e . >/dev/null 2>&1 <<<"$ComponentDeploymentOutput" ]; then
+    if [ $(echo "$ComponentDeploymentOutput" | jq empty > /dev/null 2>&1; echo $?) -eq 0 ]; then
         # the component deployment output was identified as JSON - lets extract some error information to return a more meaningful output
         ComponentDeploymentOutput="$( echo $ComponentDeploymentOutput | jq --raw-output '.. | .message? | select(. != null) | "Error: \(.)\n"' | sed 's/\\n/\n/g'  )"
     fi
-
-    echo "here we are #4 !!!"
-
-    # if [ $(echo "$ComponentDeploymentOutput" | jq empty > /dev/null 2>&1; echo $?) -eq 0 ]; then
-    #     # the component deployment output was identified as JSON - lets extract some error information to return a more meaningful output
-    #     ComponentDeploymentOutput="$( echo $ComponentDeploymentOutput | jq --raw-output '.. | .message? | select(. != null) | "Error: \(.)\n"' | sed 's/\\n/\n/g'  )"
-    # fi
     
     # our script failed to enqueue a new deployment -
     # we return a none zero exit code to inidicate this
     echo "$ComponentDeploymentOutput" && exit 1 
 
-    echo "here we are #5 !!!"
-
 fi
-
-    echo "here we are #6 !!!"
     
