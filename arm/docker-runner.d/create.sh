@@ -103,10 +103,17 @@ echo "here we are #1 !!!"
 
 if [ ! -z "$ComponentDeploymentOutput" ]; then
 
-    if [ $(echo "$ComponentDeploymentOutput" | jq empty > /dev/null 2>&1; echo $?) -eq 0 ]; then
+    echo "$ComponentDeploymentOutput"
+    
+    if [ jq -e . >/dev/null 2>&1 <<<"$ComponentDeploymentOutput" ]; then
         # the component deployment output was identified as JSON - lets extract some error information to return a more meaningful output
         ComponentDeploymentOutput="$( echo $ComponentDeploymentOutput | jq --raw-output '.. | .message? | select(. != null) | "Error: \(.)\n"' | sed 's/\\n/\n/g'  )"
     fi
+
+    # if [ $(echo "$ComponentDeploymentOutput" | jq empty > /dev/null 2>&1; echo $?) -eq 0 ]; then
+    #     # the component deployment output was identified as JSON - lets extract some error information to return a more meaningful output
+    #     ComponentDeploymentOutput="$( echo $ComponentDeploymentOutput | jq --raw-output '.. | .message? | select(. != null) | "Error: \(.)\n"' | sed 's/\\n/\n/g'  )"
+    # fi
     
     # our script failed to enqueue a new deployment -
     # we return a none zero exit code to inidicate this
