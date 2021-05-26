@@ -108,5 +108,5 @@ else
     az resource list --subscription $ComponentSubscription -g $ComponentResourceGroup > $DMP_FILE
 fi
 
-trace "Shutdown task runner"
+trace "Shutting down task runner"
 nginx -s stop 2>/dev/null && echo "done"
