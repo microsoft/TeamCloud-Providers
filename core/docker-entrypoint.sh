@@ -107,3 +107,6 @@ if [ -z "$ComponentResourceGroup" ]; then
 else
     az resource list --subscription $ComponentSubscription -g $ComponentResourceGroup > $DMP_FILE
 fi
+
+tace "Shutdown task runner"
+nginx -s stop && echo "done"
