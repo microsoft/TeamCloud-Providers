@@ -1,7 +1,7 @@
 FROM teamcloud/tcrunner-core:latest
 WORKDIR /
 
-RUN apk add terraform --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+RUN apk add --no-cache terraform --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
 
 ADD https://github.com/tmccombs/hcl2json/releases/download/v0.3.2/hcl2json_linux_amd64 /usr/local/bin/hcl2json
 RUN chmod +x /usr/local/bin/hcl2json 
