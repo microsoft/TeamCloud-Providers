@@ -27,11 +27,11 @@ RUN chmod +x /docker-entrypoint.sh \
 # Replace nginx configuration files
 COPY config/default.conf /etc/nginx/conf.d/default.conf
 
-# expose HTTP and HTTPS
+# Expose HTTP and HTTPS
 EXPOSE 80 443
 
-# terminate container on stop
-STOPSIGNAL SIGTERM
+# Kill container on stop
+STOPSIGNAL SIGKILL
 
 # Stop nginx from being noisy
 ENV NGINX_ENTRYPOINT_QUIET_LOGS=1
