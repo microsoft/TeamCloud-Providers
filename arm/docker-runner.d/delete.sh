@@ -26,8 +26,7 @@ deleteResourceGroup() {
             trackDeployment "$ProvisioningDetails"
             
             if [[ "CANCELED|FAILED|SUCCEEDED" == *"${ProvisioningState^^}"* ]]; then
-
-                echo "Deployment $EnvironmentDeploymentName: $ProvisioningState"
+                echo -e "\nDeployment $EnvironmentDeploymentName: $ProvisioningState"
                 break
             fi
 
