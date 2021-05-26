@@ -99,6 +99,9 @@ else
 
 fi
 
+# trim spaces from output to avoid issues in the following (generic) error section
+ComponentDeploymentOutput=$(echo "$ComponentDeploymentOutput" | sed -e 's/^[[:space:]]*//')
+
 echo "here we are #1 !!!"
 echo "==>>> '$ComponentDeploymentOutput'"
 echo "here we are #2 !!!"
