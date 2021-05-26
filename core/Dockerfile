@@ -30,8 +30,8 @@ COPY config/default.conf /etc/nginx/conf.d/default.conf
 # Expose HTTP and HTTPS
 EXPOSE 80 443
 
-# Kill container on stop
-STOPSIGNAL SIGKILL
+# Terminate container on stop
+STOPSIGNAL SIGTERM
 
 # Stop nginx from being noisy
 ENV NGINX_ENTRYPOINT_QUIET_LOGS=1
