@@ -38,6 +38,10 @@ if [[ ! -z "$TaskHost" ]]; then
     nginx -T 2>/dev/null | grep "server_name " | sort -u
 fi
 
+# Redirecting STDOUT and STDERR to our task log must be set
+# now and not earlier in the script as NGINX is a littel bit
+# picky when it comes to running it in quite mode.
+
 exec 1>$LOG_FILE                    # forward stdout to log file
 exec 2>&1                           # redirect stderr to stdout
 
@@ -57,10 +61,11 @@ if [[ ! -z "$ComponentSubscription" ]]; then
     while true; do
         # managed identity isn't available directly 
         # we need to do retry after a short nap
-        az login --identity --only-show-errors && {
+        az login --identity --allow-no-subscriptions --only-show-errors --output none && {
             export ARM_USE_MSI=true
             export ARM_MSI_ENDPOINT='http://169.254.169.254/metadata/identity/oauth2/token'
             export ARM_SUBSCRIPTION_ID=$ComponentSubscription
+            echo "done"
             break
         } || sleep 5    
     done
