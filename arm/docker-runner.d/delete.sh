@@ -34,6 +34,9 @@ deleteResourceGroup() {
         done
     fi
 
+    # trim spaces from output to avoid issues in the following (generic) error section
+    DeploymentOutput=$(echo "$DeploymentOutput" | sed -e 's/^[[:space:]]*//')
+
     if [ ! -z "$DeploymentOutput" ]; then
 
         if [ $(echo "$DeploymentOutput" | jq empty > /dev/null 2>&1; echo $?) -eq 0 ]; then
