@@ -16,16 +16,13 @@ RUN apk add --no-cache certbot certbot-nginx bash jq python3 py-pip util-linux \
     && rm /docker-entrypoint.sh \
     && rm /docker-entrypoint.d/*
 
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
 COPY docker-entrypoint.d/* /docker-entrypoint.d/
-RUN mkdir -p /docker-entrypoint.d \
-    && find /docker-entrypoint.d/ -type f -iname "*.sh" -exec chmod +x {} \;
-
+COPY docker-entrypoint.sh /docker-entrypoint.sh
 COPY docker-runner.d/* /docker-runner.d/
-RUN mkdir -p /docker-runner.d \
-    && find /docker-runner.d/ -type f -iname "*.sh" -exec chmod +x {} \;
+
+RUN chmod +x /docker-entrypoint.sh \
+    && mkdir -p /docker-entrypoint.d && find /docker-entrypoint.d/ -type f -iname "*.sh" -exec chmod +x {} \; \
+    && mkdir -p /docker-runner.d && find /docker-runner.d/ -type f -iname "*.sh" -exec chmod +x {} \;
 
 # Replace nginx configuration files
 COPY config/default.conf /etc/nginx/conf.d/default.conf
