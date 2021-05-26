@@ -9,7 +9,7 @@ trace() {
 ComponentDeploymentName="$(uuidgen)"
 ComponentDeploymentOutput=""
 
-if [ find . -name "*.bicep" ]; then
+if find . -name "*.bicep" ; then
     trace "Transpiling BICEP template" 
     find . -name "*.bicep" -exec echo "- {}" \; -exec az bicep build --files {} \;
 fi
