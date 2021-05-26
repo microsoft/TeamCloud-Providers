@@ -99,12 +99,13 @@ else
 
 fi
 
+echo "$ComponentDeploymentOutput"
 echo "here we are #1 !!!"
 
 if [ ! -z "$ComponentDeploymentOutput" ]; then
 
     echo "$ComponentDeploymentOutput"
-    
+
     if [ jq -e . >/dev/null 2>&1 <<<"$ComponentDeploymentOutput" ]; then
         # the component deployment output was identified as JSON - lets extract some error information to return a more meaningful output
         ComponentDeploymentOutput="$( echo $ComponentDeploymentOutput | jq --raw-output '.. | .message? | select(. != null) | "Error: \(.)\n"' | sed 's/\\n/\n/g'  )"
