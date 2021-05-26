@@ -55,25 +55,23 @@ if [[ ! -z "$ComponentTemplateFolder" ]]; then
     cd $(echo "$ComponentTemplateFolder" | sed 's/^file:\/\///') && echo $PWD
 fi
 
+trace "Connecting Azure"
+while true; do
+    # managed identity isn't available directly 
+    # we need to do retry after a short nap
+    az login --identity --allow-no-subscriptions --only-show-errors --output none && {
+        export ARM_USE_MSI=true
+        export ARM_MSI_ENDPOINT='http://169.254.169.254/metadata/identity/oauth2/token'
+        export ARM_SUBSCRIPTION_ID=$ComponentSubscription
+        echo "done"
+        break
+    } || sleep 5    
+done
+
 if [[ ! -z "$ComponentSubscription" ]]; then
-
-    trace "Connecting Azure"
-    while true; do
-        # managed identity isn't available directly 
-        # we need to do retry after a short nap
-        az login --identity --allow-no-subscriptions --only-show-errors --output none && {
-            export ARM_USE_MSI=true
-            export ARM_MSI_ENDPOINT='http://169.254.169.254/metadata/identity/oauth2/token'
-            export ARM_SUBSCRIPTION_ID=$ComponentSubscription
-            echo "done"
-            break
-        } || sleep 5    
-    done
-
     trace "Selecting Subscription"
     az account set --subscription $ComponentSubscription
     echo "$(az account show -o json | jq --raw-output '"\(.name) (\(.id))"')"
-
 fi
 
 # the script to execute is defined by the following options - the first option
@@ -112,6 +110,3 @@ if [ -z "$ComponentResourceGroup" ]; then
 else
     az resource list --subscription $ComponentSubscription -g $ComponentResourceGroup > $DMP_FILE
 fi
-
-trace "Shutting down task runner"
-nginx -s stop 2>/dev/null && echo "done"
