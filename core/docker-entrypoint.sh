@@ -109,4 +109,4 @@ else
 fi
 
 trace "Shutdown task runner"
-nginx -s stop && echo "done"
+nginx -s stop 2>/dev/null && echo "done"
