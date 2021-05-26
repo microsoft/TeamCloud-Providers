@@ -50,11 +50,6 @@ find "/docker-entrypoint.d/" -follow -type f -iname "*.sh" -print | sort -n | wh
     if [ -x "$f" ]; then trace "Running '$f'"; "$f"; fi
 done
 
-if [[ ! -z "$ComponentTemplateFolder" ]]; then
-    trace "Selecting template directory"
-    cd $(echo "$ComponentTemplateFolder" | sed 's/^file:\/\///') && echo $PWD
-fi
-
 trace "Connecting Azure"
 while true; do
     # managed identity isn't available directly 
@@ -74,8 +69,13 @@ if [[ ! -z "$ComponentSubscription" ]]; then
     echo "$(az account show -o json | jq --raw-output '"\(.name) (\(.id))"')"
 fi
 
-# the script to execute is defined by the following options - the first option
-# matching an executable script file wins. 
+if [[ ! -z "$ComponentTemplateFolder" ]]; then
+    trace "Selecting template directory"
+    cd $(echo "$ComponentTemplateFolder" | sed 's/^file:\/\///') && echo $PWD
+fi
+
+# the script to execute is defined by the following options
+# (the first option matching an executable script file wins)
 #
 # Option 1: a script path is provided as docker CMD command
 # Option 2: a script file following the pattern [TaskType].sh exists in the 
