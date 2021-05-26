@@ -110,3 +110,6 @@ if [ -z "$ComponentResourceGroup" ]; then
 else
     az resource list --subscription $ComponentSubscription -g $ComponentResourceGroup > $DMP_FILE
 fi
+if [ -f "$DMP_FILE" ]; then
+    echo "$DMP_FILE ($(stat -c%s "$DMP_FILE") bytes)"
+fi
