@@ -14,6 +14,8 @@ deleteResourceGroup() {
                                                     --no-prompt true --no-wait --mode Complete \
                                                     --template-file "$DIR/empty.json" 2>&1)
 
+    echo $DeploymentOutput
+    
     if [ $? -eq 0 ]; then # deployment successfully created
         while true; do
 
