@@ -24,6 +24,13 @@ readonly DMP_FILE="/mnt/storage/value.json"
 mkdir -p "$(dirname "$LOG_FILE")"   # ensure the log folder exists
 touch $LOG_FILE                     # ensure the log file exists
 
+# Redirecting STDOUT and STDERR to our task log must be set
+# now and not earlier in the script as NGINX is a littel bit
+# picky when it comes to running it in quite mode.
+
+exec 1>$LOG_FILE                    # forward stdout to log file
+exec 2>&1                           # redirect stderr to stdout
+
 if [[ ! -z "$TaskHost" ]]; then
 
     sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/conf.d/default.conf
@@ -36,14 +43,10 @@ if [[ ! -z "$TaskHost" ]]; then
 
     # list servernames the host is listening on
     nginx -T 2>/dev/null | grep "server_name " | sort -u
+
+    # show nginx status
+    systemctl status nginx
 fi
-
-# Redirecting STDOUT and STDERR to our task log must be set
-# now and not earlier in the script as NGINX is a littel bit
-# picky when it comes to running it in quite mode.
-
-exec 1>$LOG_FILE                    # forward stdout to log file
-exec 2>&1                           # redirect stderr to stdout
 
 find "/docker-entrypoint.d/" -follow -type f -iname "*.sh" -print | sort -n | while read -r f; do
     # execute each shell script found enabled for execution
