@@ -3,7 +3,7 @@
 FROM nginx:stable-alpine 
 WORKDIR /
 
-RUN apk add --no-cache certbot certbot-nginx bash jq python3 py-pip util-linux \
+RUN apk add --no-cache certbot certbot-nginx bash jq python3 py-pip util-linux tree \
     # Build and install Azure CLI
     && apk add --no-cache --virtual azbuild gcc libffi-dev musl-dev openssl-dev python3-dev make \
     && pip3 --no-cache-dir install --upgrade pip \    
