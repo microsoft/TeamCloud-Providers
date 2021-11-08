@@ -38,8 +38,7 @@ if [[ ! -z "$TaskHost" ]]; then
 
     while true; do
         # there is a chance that nginx isn't ready to respond to the ssl challenge - so retry if this operation fails
-        # certbot --nginx --register-unsafely-without-email --agree-tos --quiet -n -d $TaskHost > /dev/null && break || sleep 1
-        certbot --nginx --register-unsafely-without-email --agree-tos -n -d $TaskHost && break || sleep 1
+        certbot --nginx --register-unsafely-without-email --agree-tos --quiet -n -d $TaskHost > /dev/null && break || sleep 1
     done
 
     # list servernames the host is listening on
@@ -71,8 +70,13 @@ if [[ ! -z "$ComponentSubscription" ]]; then
 fi
 
 if [[ ! -z "$ComponentTemplateFolder" ]]; then
+
+    trace "Template directory inventory"
+    tree /mnt/templates
+    
     trace "Selecting template directory"
     cd $(echo "$ComponentTemplateFolder" | sed 's/^file:\/\///') && echo $PWD
+
 fi
 
 # the script to execute is defined by the following options
