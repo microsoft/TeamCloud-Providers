@@ -28,9 +28,6 @@ touch $LOG_FILE                     # ensure the log file exists
 # now and not earlier in the script as NGINX is a littel bit
 # picky when it comes to running it in quite mode.
 
-exec 1>$LOG_FILE                    # forward stdout to log file
-exec 2>&1                           # redirect stderr to stdout
-
 if [[ ! -z "$TaskHost" ]]; then
 
     sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/conf.d/default.conf
@@ -44,6 +41,9 @@ if [[ ! -z "$TaskHost" ]]; then
     # list servernames the host is listening on
     nginx -T 2>/dev/null | grep "server_name " | sort -u
 fi
+
+exec 1>$LOG_FILE                    # forward stdout to log file
+exec 2>&1                           # redirect stderr to stdout
 
 find "/docker-entrypoint.d/" -follow -type f -iname "*.sh" -print | sort -n | while read -r f; do
     # execute each shell script found enabled for execution
@@ -73,7 +73,7 @@ if [[ ! -z "$ComponentTemplateFolder" ]]; then
 
     trace "Template directory inventory"
     tree /mnt/templates
-    
+
     trace "Selecting template directory"
     cd $(echo "$ComponentTemplateFolder" | sed 's/^file:\/\///') && echo $PWD
 
