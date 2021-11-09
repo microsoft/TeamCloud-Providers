@@ -24,9 +24,7 @@ readonly DMP_FILE="/mnt/storage/value.json"
 mkdir -p "$(dirname "$LOG_FILE")"   # ensure the log folder exists
 touch $LOG_FILE                     # ensure the log file exists
 
-# Redirecting STDOUT and STDERR to our task log must be set
-# now and not earlier in the script as NGINX is a littel bit
-# picky when it comes to running it in quite mode.
+
 
 if [[ ! -z "$TaskHost" ]]; then
 
@@ -41,6 +39,10 @@ if [[ ! -z "$TaskHost" ]]; then
     # list servernames the host is listening on
     nginx -T 2>/dev/null | grep "server_name " | sort -u
 fi
+
+# Redirecting STDOUT and STDERR to our task log must be set
+# now and not earlier in the script as NGINX is a littel bit
+# picky when it comes to running it in quite mode.
 
 exec 1>$LOG_FILE                    # forward stdout to log file
 exec 2>&1                           # redirect stderr to stdout
