@@ -24,8 +24,6 @@ readonly DMP_FILE="/mnt/storage/value.json"
 mkdir -p "$(dirname "$LOG_FILE")"   # ensure the log folder exists
 touch $LOG_FILE                     # ensure the log file exists
 
-
-
 if [[ ! -z "$TaskHost" ]]; then
 
     sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/conf.d/default.conf
