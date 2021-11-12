@@ -67,3 +67,5 @@ else
     deleteResourceGroup "$ComponentResourceGroup"
 
 fi
+
+updateComponentValue

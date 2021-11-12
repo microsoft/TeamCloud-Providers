@@ -1,5 +1,8 @@
 #!/bin/bash
 
+DIR=$(dirname "$0")
+. $DIR/_common.sh
+
 trace() {
     echo -e "\n>>> $@ ...\n"
 }
@@ -45,6 +48,8 @@ if [ -f "$ComponentState" ]; then
 	trace "Applying Terraform Plan"
 	terraform apply -no-color -compact-warnings -auto-approve -lock=true -state=$ComponentState $ComponentPlan
 
+	updateComponentValue
+	
 else
 
 	# isolate task script execution in sub shell  
