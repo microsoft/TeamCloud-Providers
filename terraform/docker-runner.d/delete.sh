@@ -1,5 +1,8 @@
 #!/bin/bash
 
+DIR=$(dirname "$0")
+. $DIR/_common.sh
+
 trace() {
     echo -e "\n>>> $@ ...\n"
 }
@@ -21,5 +24,7 @@ terraform plan -no-color -compact-warnings -destroy -refresh=true -lock=true -st
 
 trace "Applying Terraform Plan"
 terraform apply -no-color -compact-warnings -auto-approve -lock=true -state=$ComponentState $ComponentPlan
+
+updateComponentValue
 
 # tail -f /dev/null

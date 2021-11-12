@@ -1,4 +1,5 @@
 #!/bin/bash
+
 DIR=$(dirname "$0")
 . $DIR/_common.sh
 
@@ -117,3 +118,4 @@ if [ ! -z "$ComponentDeploymentOutput" ]; then
 
 fi
     
+updateComponentValue

@@ -19,7 +19,6 @@ error() {
 }
 
 readonly LOG_FILE="/mnt/storage/.output/$TaskId"
-readonly DMP_FILE="/mnt/storage/value.json"
 
 mkdir -p "$(dirname "$LOG_FILE")"   # ensure the log folder exists
 touch $LOG_FILE                     # ensure the log file exists
@@ -107,14 +106,4 @@ elif [[ -f "$script" ]]; then
     error "Script '$script' is not marked as executable" && exit 1
 else
     error "Script '$script' does not exist" && exit 1
-fi
-
-trace "Update component value"
-if [ -z "$ComponentResourceGroup" ]; then
-    az resource list --subscription $ComponentSubscription > $DMP_FILE
-else
-    az resource list --subscription $ComponentSubscription -g $ComponentResourceGroup > $DMP_FILE
-fi
-if [ -f "$DMP_FILE" ]; then
-    echo "$DMP_FILE ($(stat -c%s "$DMP_FILE") bytes)"
 fi
