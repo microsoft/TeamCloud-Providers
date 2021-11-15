@@ -2,4 +2,4 @@
 
 KUBECONFIG="/mnt/credentials/password"
 
-[ -f "$KUBECONFIG" ] && cp $KUBECONFIG ~/.kube/config
+[ -f "$KUBECONFIG" ] && mkdir -p ~/.kube && cp $KUBECONFIG ~/.kube/config
