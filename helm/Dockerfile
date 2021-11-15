@@ -10,5 +10,8 @@ RUN curl -sLO "https://dl.k8s.io/release/$(curl -sL https://dl.k8s.io/release/st
 RUN apk add --update --no-cache curl ca-certificates bash git openssl && \
     curl -s https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
+COPY docker-entrypoint.d/* /docker-entrypoint.d/
+RUN find /docker-entrypoint.d/ -type f -iname "*.sh" -exec chmod +x {} \;
+
 COPY docker-runner.d/* /docker-runner.d/
 RUN find /docker-runner.d/ -type f -iname "*.sh" -exec chmod +x {} \;

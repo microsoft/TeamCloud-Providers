@@ -16,8 +16,8 @@ RUN apk add --no-cache certbot certbot-nginx bash jq python3 py-pip util-linux t
     && rm /docker-entrypoint.sh \
     && rm /docker-entrypoint.d/*
 
-COPY docker-entrypoint.d/* /docker-entrypoint.d/
 COPY docker-entrypoint.sh /docker-entrypoint.sh
+COPY docker-entrypoint.d/* /docker-entrypoint.d/
 COPY docker-runner.d/* /docker-runner.d/
 
 RUN chmod +x /docker-entrypoint.sh \
