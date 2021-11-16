@@ -69,13 +69,8 @@ if [[ ! -z "$ComponentSubscription" ]]; then
 fi
 
 if [[ ! -z "$ComponentTemplateFolder" ]]; then
-
-    trace "Template directory inventory"
-    tree /mnt/templates
-
     trace "Selecting template directory"
     cd $(echo "$ComponentTemplateFolder" | sed 's/^file:\/\///') && echo $PWD
-
 fi
 
 # the script to execute is defined by the following options
