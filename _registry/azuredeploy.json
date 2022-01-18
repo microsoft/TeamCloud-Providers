@@ -42,19 +42,6 @@
 				"count": "[length(variables('registryLocationsAll'))]"
 			},
 			"properties": {}
-		},
-		{
-			"type": "Microsoft.Authorization/locks",
-			"apiVersion": "2016-09-01",
-			"name": "[concat(parameters('registryName'), '-lock')]",
-			"scope": "[concat('Microsoft.ContainerRegistry/registries/', parameters('registryName'))]",
-			"dependsOn": [
-				"[resourceId('Microsoft.ContainerRegistry/registries', parameters('registryName'))]"
-			],
-			"properties": {
-				"level": "CanNotDelete",
-				"notes": "Registry should not be deleted."
-			}
 		}
 	],
 	"outputs": {
