@@ -35,6 +35,8 @@ jobs:
         with:
           azcliversion: 2.32.0
           inlineScript: |
+            # ensure required tools to be installed
+            apt-get install uuid-runtime
 
             # select the target subscription
             az account set --subscription ${{ env.TARGET_SUBSCRIPTION }}
