@@ -49,7 +49,12 @@ jobs:
             fi
 
             # deploy resources to resource group
-            ARM_OUTPUT=$(az deployment group create -g ${{ env.TARGET_RESOURCEGROUP }} -n ${{ steps.generate-uuid.outputs.uuid }} --mode Incremental --template-file $GITHUB_WORKSPACE/_registry/azuredeploy.json --parameter registryLocations="['eastus', 'westus', 'westeurope']")
+            ARM_OUTPUT=$(az deployment group create -g ${{ env.TARGET_RESOURCEGROUP }} \
+              -n ${{ steps.generate-uuid.outputs.uuid }} \
+              --mode Complete \
+              --template-file $GITHUB_WORKSPACE/_registry/azuredeploy.json \
+              --parameter registryName="TeamCloud" \
+              --parameter registryLocations="['eastus', 'westus', 'westeurope']")
 
             # populate deployment output
             echo "::set-output name=registryUrl::$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.registryUrl.value')"
@@ -89,9 +94,6 @@ jobs:
       CONTAINER_VERSION: ${{ needs.prepare.outputs.version }}
 
     steps:
-
-      - name: TEST
-        run: echo "${{ needs.registry.outputs.registryUrl }}"
 
       - name: Checkout
         uses: actions/checkout@v2
