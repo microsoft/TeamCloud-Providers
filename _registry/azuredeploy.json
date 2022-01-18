@@ -1,0 +1,75 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"registryName": {
+			"type": "string",
+			"defaultValue": "[uniqueString(resourceGroup().id)]"
+		},
+		"registryLocations": {
+			"type": "array",
+			"defaultValue": []
+		}
+	},
+	"functions": [],
+	"variables": {
+		"registryLocationsAll": "[if(contains(parameters('registryLocations'), resourceGroup().location), parameters('registryLocations'), concat(createArray(resourceGroup().location), intersection(createArray(resourceGroup().location), parameters('registryLocations'))))]"
+	},
+	"resources": [
+		{
+			"type": "Microsoft.ContainerRegistry/registries",
+			"apiVersion": "2019-12-01-preview",
+			"name": "[parameters('registryName')]",
+			"location": "[resourceGroup().location]",
+			"sku": {
+				"name": "Premium"
+			},
+			"properties": {
+				"adminUserEnabled": true
+			}
+		},
+		{
+			"condition": "[not(equals(toLower(resourceGroup().location), toLower(variables('registryLocationsAll')[copyIndex()])))]",
+			"type": "Microsoft.ContainerRegistry/registries/replications",
+			"apiVersion": "2019-12-01-preview",
+			"name": "[concat(parameters('registryName'), '/', variables('registryLocationsAll')[copyIndex()])]",
+			"location": "[variables('registryLocationsAll')[copyIndex()]]",
+			"dependsOn": [
+				"[resourceId('Microsoft.ContainerRegistry/registries', parameters('registryName'))]"
+			],
+			"copy": {
+				"name": "registryLocationCopy",
+				"count": "[length(variables('registryLocationsAll'))]"
+			},
+			"properties": {}
+		},
+		{
+			"type": "Microsoft.Authorization/locks",
+			"apiVersion": "2016-09-01",
+			"name": "[concat(parameters('registryName'), '-lock')]",
+			"scope": "[concat('Microsoft.ContainerRegistry/registries/', parameters('registryName'))]",
+			"dependsOn": [
+				"[resourceId('Microsoft.ContainerRegistry/registries', parameters('registryName'))]"
+			],
+			"properties": {
+				"level": "CanNotDelete",
+				"notes": "Registry should not be deleted."
+			}
+		}
+	],
+	"outputs": {
+		"registryUrl": {
+			"type": "string",
+			"value": "[reference(resourceId('Microsoft.ContainerRegistry/registries', parameters('registryName')), '2019-05-01').loginServer]"
+		},
+		"registryUsername": {
+			"type": "string",
+			"value": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('registryName')), '2019-05-01').username]"
+		},
+		"registryPassword": {
+			"type": "string",
+			"value": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('registryName')), '2019-05-01').passwords[0].value]"
+		}
+
+	}
+}

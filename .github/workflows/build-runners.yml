@@ -6,6 +6,54 @@ on:
 
 jobs:
 
+  registry:
+    name: Ensure container registry
+    runs-on: ubuntu-latest
+
+    outputs:
+      registryUrl: ${{ steps.deploy.outputs.registryUrl }}
+      registryUsername: ${{ steps.deploy.outputs.registryUsername }}
+      registryPassword: ${{ steps.deploy.outputs.registryPassword }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - id: deploy
+        name: Azure Deploy
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.32.0
+          inlineScript: |
+
+            TARGET_SUBSCRIPTION="12223725-70b0-45a6-96c4-a13c344fdc57"
+            TARGET_RESOURCEGROUP="TeamCloud-Registry"
+            TARGET_RESOURCEGROUPLOCATION="eastus"
+
+            # select the target subscription
+            echo "Selecting subscription $TARGET_SUBSCRIPTION ..."
+            az account set --subscription $TARGET_SUBSCRIPTION
+
+            # prepare resource group
+            if [ "$(az group exists -g $TARGET_RESOURCEGROUP)" == "false" ]; then
+              echo "Creating resource group $TARGET_RESOURCEGROUP ..."
+              az group create -n $TARGET_RESOURCEGROUP -l $TARGET_RESOURCEGROUPLOCATION
+            fi
+
+            # deploy resources to resource group
+            echo "Deploying resources ..."
+            ARM_OUTPUT=$(az deployment group create -g $TARGET_RESOURCEGROUP -n $(uuidgen) --mode Incremental --template-file $GITHUB_WORKSPACE/_registry/azuredeploy.json --parameter registryLocations="['eastus', 'westus', 'westeurope']")
+
+            # populate deployment output
+            echo "::set-output registryUrl=$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.registryUrl.value')"
+            echo "::set-output registryUsername=$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.registryUsername.value')"
+            echo "::set-output registryPassword=$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.registryPassword.value')"
+
   prepare:
     name: Prepare container build
     runs-on: ubuntu-latest
@@ -33,7 +81,7 @@ jobs:
   core:
     name: Build Core
     runs-on: ubuntu-latest
-    needs: prepare
+    needs: [prepare, registry]
 
     env:
       CONTAINER_VERSION: ${{ needs.prepare.outputs.version }}
@@ -48,11 +96,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      # - name: Docker Login
+      #   uses: docker/login-action@v1.6.0
+      #   with:
+      #     username: ${{ secrets.DOCKER_USR }}
+      #     password: ${{ secrets.DOCKER_PWD }}
+
       - name: Docker Login
         uses: docker/login-action@v1.6.0
         with:
-          username: ${{ secrets.DOCKER_USR }}
-          password: ${{ secrets.DOCKER_PWD }}
+          login-server: ${{ needs.registry.outputs.registryUrl }}
+          username: ${{ needs.registry.outputs.registryUsername }}
+          password: ${{ needs.registry.outputs.registryPassword }}
 
       - name: Build and push Docker image - runner
         uses: docker/build-push-action@v2.1.0
@@ -88,11 +143,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      # - name: Docker Login
+      #   uses: docker/login-action@v1.6.0
+      #   with:
+      #     username: ${{ secrets.DOCKER_USR }}
+      #     password: ${{ secrets.DOCKER_PWD }}
+
       - name: Docker Login
         uses: docker/login-action@v1.6.0
         with:
-          username: ${{ secrets.DOCKER_USR }}
-          password: ${{ secrets.DOCKER_PWD }}
+          login-server: ${{ needs.registry.outputs.registryUrl }}
+          username: ${{ needs.registry.outputs.registryUsername }}
+          password: ${{ needs.registry.outputs.registryPassword }}
 
       - name: Build and push Docker image - ${{ matrix.runner }}
         uses: docker/build-push-action@v2.1.0
