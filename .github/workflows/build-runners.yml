@@ -39,18 +39,14 @@ jobs:
         with:
           azcliversion: 2.32.0
           inlineScript: |
-
             # select the target subscription
             az account set --subscription ${{ env.TARGET_SUBSCRIPTION }}
-
             # prepare resource group
             if [ "$(az group exists -g ${{ env.TARGET_RESOURCEGROUP }})" == "false" ]; then
               az group create -n ${{ env.TARGET_RESOURCEGROUP }} -l ${{ env.TARGET_RESOURCEGROUPLOCATION }}
             fi
-
             # deploy resources to resource group
             ARM_OUTPUT=$(az deployment group create -g ${{ env.TARGET_RESOURCEGROUP }} -n ${{ steps.generate-uuid.outputs.uuid }} --mode Complete --template-file $GITHUB_WORKSPACE/_registry/azuredeploy.json --parameter registryName="TeamCloud" --parameter registryLocations="['eastus', 'westus', 'westeurope']")
-
             # populate deployment output
             echo "::set-output name=registryUrl::$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.registryUrl.value')"
             echo "::set-output name=registryUsername::$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.registryUsername.value')"
