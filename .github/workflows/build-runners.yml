@@ -88,10 +88,13 @@ jobs:
   core:
     name: Build Core
     runs-on: ubuntu-latest
-    needs: [prepare, registry]
+    needs: [registry, prepare]
 
     env:
       CONTAINER_VERSION: ${{ needs.prepare.outputs.version }}
+      REGISTRY_URL: ${{ needs.registry.outputs.registryUrl }}
+      REGISTRY_USERNAME: ${{ needs.registry.outputs.registryUsername }}
+      REGISTRY_PASSWORD: ${{ needs.registry.outputs.registryPassword }}
 
     steps:
 
@@ -113,9 +116,9 @@ jobs:
       - name: Docker Login (TeamCloud)
         uses: docker/login-action@v1.6.0
         with:
-          registry: ${{ needs.registry.outputs.registryUrl }}
-          username: ${{ needs.registry.outputs.registryUsername }}
-          password: ${{ needs.registry.outputs.registryPassword }}
+          registry: ${{ env.REGISTRY_URL }}
+          username: ${{ env.REGISTRY_USERNAME }}
+          password: ${{ env.REGISTRY_PASSWORD }}
 
       - name: Build and push Docker image - runner
         uses: docker/build-push-action@v2.1.0
@@ -127,8 +130,8 @@ jobs:
           tags: |
             teamcloud/tcrunner-core:latest
             teamcloud/tcrunner-core:${{ env.CONTAINER_VERSION }}
-            ${{ needs.registry.outputs.registryUrl }}/teamcloud/tcrunner-core:latest
-            ${{ needs.registry.outputs.registryUrl }}/teamcloud/tcrunner-core:${{ env.CONTAINER_VERSION }}
+            ${{ env.REGISTRY_URL }}/teamcloud/tcrunner-core:latest
+            ${{ env.REGISTRY_URL }}/teamcloud/tcrunner-core:${{ env.CONTAINER_VERSION }}
 
   runner:
     name: Build Runner 
@@ -137,6 +140,9 @@ jobs:
     
     env:
       CONTAINER_VERSION: ${{ needs.prepare.outputs.version }}
+      REGISTRY_URL: ${{ needs.registry.outputs.registryUrl }}
+      REGISTRY_USERNAME: ${{ needs.registry.outputs.registryUsername }}
+      REGISTRY_PASSWORD: ${{ needs.registry.outputs.registryPassword }}
 
     strategy:
       max-parallel: 5
@@ -162,9 +168,9 @@ jobs:
       - name: Docker Login (TeamCloud)
         uses: docker/login-action@v1.6.0
         with:
-          registry: ${{ needs.registry.outputs.registryUrl }}
-          username: ${{ needs.registry.outputs.registryUsername }}
-          password: ${{ needs.registry.outputs.registryPassword }}
+          registry: ${{ env.REGISTRY_URL }}
+          username: ${{ env.REGISTRY_USERNAME }}
+          password: ${{ env.REGISTRY_PASSWORD }}
 
       - name: Build and push Docker image - ${{ matrix.runner }}
         uses: docker/build-push-action@v2.1.0
@@ -176,7 +182,7 @@ jobs:
           tags: |
             teamcloud/tcrunner-${{ matrix.runner }}:latest
             teamcloud/tcrunner-${{ matrix.runner }}:${{ env.CONTAINER_VERSION }}
-            ${{ needs.registry.outputs.registryUrl }}/teamcloud/tcrunner-${{ matrix.runner }}:latest
-            ${{ needs.registry.outputs.registryUrl }}/teamcloud/tcrunner-${{ matrix.runner }}:${{ env.CONTAINER_VERSION }}
+            ${{ env.REGISTRY_URL }}/teamcloud/tcrunner-${{ matrix.runner }}:latest
+            ${{ env.REGISTRY_URL }}/teamcloud/tcrunner-${{ matrix.runner }}:${{ env.CONTAINER_VERSION }}
 
           
