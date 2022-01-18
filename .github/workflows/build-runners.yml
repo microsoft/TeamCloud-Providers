@@ -24,6 +24,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
+      - name: Get UUID
+        id: generate-uuid
+        uses: filipstefansson/uuid-action@v1
+
       - name: Azure Login
         uses: azure/login@v1
         with:
@@ -35,9 +39,6 @@ jobs:
         with:
           azcliversion: 2.32.0
           inlineScript: |
-            # ensure required tools to be installed
-            apt-get install uuid-runtime
-
             # select the target subscription
             az account set --subscription ${{ env.TARGET_SUBSCRIPTION }}
 
@@ -47,7 +48,7 @@ jobs:
             fi
 
             # deploy resources to resource group
-            ARM_OUTPUT=$(az deployment group create -g ${{ env.TARGET_RESOURCEGROUP }} -n $(uuidgen) --mode Incremental --template-file $GITHUB_WORKSPACE/_registry/azuredeploy.json --parameter registryLocations="['eastus', 'westus', 'westeurope']")
+            ARM_OUTPUT=$(az deployment group create -g ${{ env.TARGET_RESOURCEGROUP }} -n ${{ steps.generate-uuid.outputs.uuid }} --mode Incremental --template-file $GITHUB_WORKSPACE/_registry/azuredeploy.json --parameter registryLocations="['eastus', 'westus', 'westeurope']")
 
             # populate deployment output
             echo "::set-output registryUrl=$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.registryUrl.value')"
