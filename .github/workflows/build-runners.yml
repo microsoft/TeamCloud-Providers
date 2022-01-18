@@ -51,9 +51,9 @@ jobs:
             ARM_OUTPUT=$(az deployment group create -g ${{ env.TARGET_RESOURCEGROUP }} -n ${{ steps.generate-uuid.outputs.uuid }} --mode Incremental --template-file $GITHUB_WORKSPACE/_registry/azuredeploy.json --parameter registryLocations="['eastus', 'westus', 'westeurope']")
 
             # populate deployment output
-            echo "::set-output registryUrl=$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.registryUrl.value')"
-            echo "::set-output registryUsername=$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.registryUsername.value')"
-            echo "::set-output registryPassword=$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.registryPassword.value')"
+            echo "::set-output name=registryUrl::$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.registryUrl.value')"
+            echo "::set-output name=registryUsername::$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.registryUsername.value')"
+            echo "::set-output name=registryPassword::$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.registryPassword.value')"
 
   prepare:
     name: Prepare container build
