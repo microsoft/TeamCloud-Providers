@@ -10,6 +10,11 @@ jobs:
     name: Ensure container registry
     runs-on: ubuntu-latest
 
+    env:
+      TARGET_SUBSCRIPTION: 12223725-70b0-45a6-96c4-a13c344fdc57
+      TARGET_RESOURCEGROUP: TeamCloud-Registry
+      TARGET_RESOURCEGROUPLOCATION: eastus
+
     outputs:
       registryUrl: ${{ steps.deploy.outputs.registryUrl }}
       registryUsername: ${{ steps.deploy.outputs.registryUsername }}
@@ -31,23 +36,16 @@ jobs:
           azcliversion: 2.32.0
           inlineScript: |
 
-            TARGET_SUBSCRIPTION="12223725-70b0-45a6-96c4-a13c344fdc57"
-            TARGET_RESOURCEGROUP="TeamCloud-Registry"
-            TARGET_RESOURCEGROUPLOCATION="eastus"
-
             # select the target subscription
-            echo "Selecting subscription $TARGET_SUBSCRIPTION ..."
-            az account set --subscription $TARGET_SUBSCRIPTION
+            az account set --subscription ${{ env.TARGET_SUBSCRIPTION }}
 
             # prepare resource group
-            if [ "$(az group exists -g $TARGET_RESOURCEGROUP)" == "false" ]; then
-              echo "Creating resource group $TARGET_RESOURCEGROUP ..."
-              az group create -n $TARGET_RESOURCEGROUP -l $TARGET_RESOURCEGROUPLOCATION
+            if [ "$(az group exists -g ${{ env.TARGET_RESOURCEGROUP }})" == "false" ]; then
+              az group create -n ${{ env.TARGET_RESOURCEGROUP }} -l ${{ env.TARGET_RESOURCEGROUPLOCATION }}
             fi
 
             # deploy resources to resource group
-            echo "Deploying resources ..."
-            ARM_OUTPUT=$(az deployment group create -g $TARGET_RESOURCEGROUP -n $(uuidgen) --mode Incremental --template-file $GITHUB_WORKSPACE/_registry/azuredeploy.json --parameter registryLocations="['eastus', 'westus', 'westeurope']")
+            ARM_OUTPUT=$(az deployment group create -g ${{ env.TARGET_RESOURCEGROUP }} -n $(uuidgen) --mode Incremental --template-file $GITHUB_WORKSPACE/_registry/azuredeploy.json --parameter registryLocations="['eastus', 'westus', 'westeurope']")
 
             # populate deployment output
             echo "::set-output registryUrl=$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.registryUrl.value')"
