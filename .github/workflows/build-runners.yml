@@ -39,6 +39,7 @@ jobs:
         with:
           azcliversion: 2.32.0
           inlineScript: |
+
             # select the target subscription
             az account set --subscription ${{ env.TARGET_SUBSCRIPTION }}
 
@@ -88,6 +89,10 @@ jobs:
       CONTAINER_VERSION: ${{ needs.prepare.outputs.version }}
 
     steps:
+
+      - name: TEST
+        run: echo "${{ needs.registry.outputs.registryUrl }}"
+        
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -124,7 +129,7 @@ jobs:
   runner:
     name: Build Runner 
     runs-on: ubuntu-latest
-    needs: [ prepare, core ]
+    needs: [ registry, prepare, core ]
     
     env:
       CONTAINER_VERSION: ${{ needs.prepare.outputs.version }}
