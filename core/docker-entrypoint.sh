@@ -18,60 +18,63 @@ error() {
     echo "Error: $@" 1>&2
 }
 
+# check for mandatory environment data
+[[ -z "$TaskId" ]] && error "Missing 'TaskId' environment variable" && exit 1
+[[ -z "$TaskHost" ]] && error "Missing 'TaskHost' environment variable" && exit 1
+
 readonly LOG_FILE="/mnt/storage/.output/$TaskId"
 
 mkdir -p "$(dirname "$LOG_FILE")"   # ensure the log folder exists
 touch $LOG_FILE                     # ensure the log file exists
 
-if [[ ! -z "$TaskHost" ]]; then
+trace "Initialize runner"
 
-    sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/conf.d/default.conf
-    nginx -q # start nginx and acquire SSL certificate from lets encrypt 
+# patch nginx configuration with the task host name
+sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/http.d/default.conf
 
-    while true; do
-        # there is a chance that nginx isn't ready to respond to the ssl challenge - so retry if this operation fails
-        certbot --nginx --register-unsafely-without-email --agree-tos --quiet -n -d $TaskHost > /dev/null && break || sleep 1
-    done
+# start nginx in quite mode
+echo "Starting web server ..." && nginx -q 
 
-    # list servernames the host is listening on
-    nginx -T 2>/dev/null | grep "server_name " | sort -u
+if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
+
+    # acquire a ssl certificate to use for web access
+    # as certbot is sometimes a little bit picky we
+    # covert the SSL request process in a loop covered
+    # by a timeout of 5 minutes (worst case scenario)
+
+    echo "Acquire SSL certificate ..." \
+        && timeout 300 bash -c -- "while true; do certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost 2> /dev/null && break || sleep 5; done" \
+        || ( error "Failed to acquire SSL certificate for host '$TaskHost'" && exit 1 )
+
 fi
+
+# list servernames the host is listening on
+echo "Start listening on host: $(nginx -T 2>/dev/null | grep -o "server_name.*" | sed 's/;//' | cut -d ' ' -f2 | sort -u)"
 
 # Redirecting STDOUT and STDERR to our task log must be set
 # now and not earlier in the script as NGINX is a littel bit
 # picky when it comes to running it in quite mode.
 
-exec 1>$LOG_FILE                    # forward stdout to log file
-exec 2>&1                           # redirect stderr to stdout
+exec > >(tee -a $LOG_FILE) 2>&1
+
+# find entrypoint scripts in alphabetical order to initialize
+# the current container instance before we execute the command itself
 
 find "/docker-entrypoint.d/" -follow -type f -iname "*.sh" -print | sort -n | while read -r f; do
-    # execute each shell script found enabled for execution
-    if [ -x "$f" ]; then trace "Running '$f'"; "$f"; fi
+    if [ -x "$f" ]; then 
+		. $f # execute each shell script found enabled for execution
+	fi 
 done
 
-trace "Connecting Azure"
-while true; do
-    # managed identity isn't available directly 
-    # we need to do retry after a short nap
-    az login --identity --allow-no-subscriptions --only-show-errors --output none && {
-        export ARM_USE_MSI=true
-        export ARM_MSI_ENDPOINT='http://169.254.169.254/metadata/identity/oauth2/token'
-        export ARM_SUBSCRIPTION_ID=$ComponentSubscription
-        echo "done"
-        break
-    } || sleep 5    
-done
+# select the directory used as execution context for task command scripts
+# this should usually be the directory of the current component if it exists
 
-if [[ ! -z "$ComponentSubscription" ]]; then
-    trace "Selecting Subscription"
-    az account set --subscription $ComponentSubscription
-    echo "$(az account show -o json | jq --raw-output '"\(.name) (\(.id))"')"
-fi
+if [ ! -z "$ComponentTemplateFolder" ] && [ -d "$(echo "$ComponentTemplateFolder" | sed 's/^file:\/\///')" ]; then
 
-if [[ ! -z "$ComponentTemplateFolder" ]]; then
-    trace "Selecting template directory"
-    cd $(echo "$ComponentTemplateFolder" | sed 's/^file:\/\///') && echo $PWD
-fi
+	trace "Selecting template directory"
+	cd $(echo "$ComponentTemplateFolder" | sed 's/^file:\/\///') && echo $PWD
+	
+fi	
 
 # the script to execute is defined by the following options
 # (the first option matching an executable script file wins)
@@ -82,23 +85,48 @@ fi
 # Option 3: a script file following the pattern [TaskType].sh exists in the 
 #           /docker-runner.d directory (docker task script directory)
 
-script="$@" 
+command="$@" 
 
-if [[ -z "$script" ]]; then
-    script="$(find $PWD -maxdepth 1 -iname "$TaskType.sh")"
-    if [[ -z "$script" ]]; then 
-        script="$(find /docker-runner.d -maxdepth 1 -iname "$TaskType.sh")"
-    fi
-    if [[ -z "$script" ]]; then 
-        error "Deployment type $TaskType is not supported." && exit 1
-    fi
+if [[ -z "$command" ]]; then
+
+	# fall back to task type script
+	# if no script was explicitely
+	# defined by the CMD parameter
+
+	command="$TaskType.sh"
+
 fi
 
-if [[ -f "$script" && -x "$script" ]]; then
-    # lets execute the task script - isolate execution in sub shell 
-    trace "Executing script ($script)"; ( exec "$script"; exit $? ) || exit $?
-elif [[ -f "$script" ]]; then
-    error "Script '$script' is not marked as executable" && exit 1
+# try to find a matching task script in the template directory
+commandScript="$(find $PWD -maxdepth 1 -iname "$command")"
+
+if [[ -z "$commandScript" ]]; then 
+
+	# try to find a matching task script in the default runner directory
+	commandScript="$(find /docker-runner.d -maxdepth 1 -iname "$command")"
+
 else
-    error "Script '$script' does not exist" && exit 1
+
+	# add missing directory context
+	commandScript="$PWD/$commandScript"
+
 fi
+
+if [[ ! -z "$commandScript" ]]; then
+
+    # use the found script as command to execute
+	trace "Executing '$commandScript'"; ( exec "$commandScript"; exit $? ) || exit $?
+
+elif [[ ! -z "$command" ]]; then
+
+    # execute the command provided for the container instance
+    trace "Executing '$command'"; ( exec "$command"; exit $? ) || exit $?
+
+else
+
+    # raise an error as there is no command to execute
+	error "Script '$script' does not exist" && exit 1
+
+fi
+
+

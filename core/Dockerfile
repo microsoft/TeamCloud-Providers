@@ -1,20 +1,17 @@
 # Base Container Definition: https://github.com/nginxinc/docker-nginx/tree/master/stable/alpine
 
-FROM nginx:stable-alpine 
+FROM mcr.microsoft.com/azure-cli
 WORKDIR /
 
-RUN apk add --no-cache certbot certbot-nginx bash jq python3 py-pip util-linux tree \
-    # Build and install Azure CLI
-    && apk add --no-cache --virtual azbuild gcc libffi-dev musl-dev openssl-dev python3-dev make \
-    && pip3 --no-cache-dir install --upgrade pip \    
-    && pip3 --no-cache-dir install wheel azure-cli \
-    && apk del --purge azbuild \
-    # Reset nginx log and error forwarding
-    && ln -n /var/log/nginx/access.log \
-    && ln -n /var/log/nginx/error.log \
-    # Reset entrypoint and extension script
-    && rm /docker-entrypoint.sh \
-    && rm /docker-entrypoint.d/*
+RUN set -x \
+    # Install APK packages
+    && apk update \
+    && apk add --no-cache nginx bash jq git util-linux py3-pip \
+    # Install PIP packages
+    && pip3 install --upgrade pip \
+    && pip install certbot certbot-nginx \
+    # Finalize RUN command
+    && true
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 COPY docker-entrypoint.d/* /docker-entrypoint.d/
@@ -25,16 +22,14 @@ RUN chmod +x /docker-entrypoint.sh \
     && mkdir -p /docker-runner.d && find /docker-runner.d/ -type f -iname "*.sh" -exec chmod +x {} \;
 
 # Replace nginx configuration files
-COPY config/default.conf /etc/nginx/conf.d/default.conf
+# COPY config/default.conf /etc/nginx/conf.d/default.conf
+COPY config/default.conf /etc/nginx/http.d/default.conf
 
 # Expose HTTP and HTTPS
 EXPOSE 80 443
 
-# Terminate container on stop
-STOPSIGNAL SIGTERM
-
-# Stop nginx from being noisy
-ENV NGINX_ENTRYPOINT_QUIET_LOGS=1
-
+# Block default command set by base image
 CMD [ "" ]
+
+# Ensure our custom entrypoint is used
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
