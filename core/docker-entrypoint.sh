@@ -37,6 +37,10 @@ echo "Starting web server ..." && nginx -q
 
 if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
 
+    echo "Waiting for web server ..."
+        && timeout 300 bash -c -- "while true; do [ '200' == '$(curl -s -o /dev/null -I -L -w "%{http_code}" http://$TaskHost)' ] && break || sleep 5; done" \
+        || ( error "Web server failed to host '$TaskHost'" && exit 1 )
+
     # acquire a ssl certificate to use for web access
     # as certbot is sometimes a little bit picky we
     # covert the SSL request process in a loop covered
@@ -60,11 +64,11 @@ exec > >(tee -a $LOG_FILE) 2>&1
 # find entrypoint scripts in alphabetical order to initialize
 # the current container instance before we execute the command itself
 
-find "/docker-entrypoint.d/" -follow -type f -iname "*.sh" -print | sort -n | while read -r f; do
+while read -r f; do
     if [ -x "$f" ]; then 
 		. $f # execute each shell script found enabled for execution
 	fi 
-done
+done < <(find "/docker-entrypoint.d/" -follow -type f -iname "*.sh" -print | sort -n)
 
 # select the directory used as execution context for task command scripts
 # this should usually be the directory of the current component if it exists
