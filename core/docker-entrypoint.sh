@@ -32,12 +32,11 @@ trace "Initialize runner"
 # patch nginx configuration with the task host name
 sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/http.d/default.conf
 
-# start nginx in quite mode
-echo "Starting web server ..." && nginx -q 
 
 if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
 
-    echo "Waiting for web server ..."
+    echo "Starting web server ..." 
+        && nginx -q
         && timeout 300 bash -c -- "while true; do [ '200' == '$(curl -s -o /dev/null -I -L -w "%{http_code}" http://$TaskHost)' ] && break || sleep 5; done" \
         || ( error "Web server failed to host '$TaskHost'" && exit 1 )
 
