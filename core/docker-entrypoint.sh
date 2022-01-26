@@ -35,8 +35,8 @@ sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/http.d/default.conf
 if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
 
     echo "Starting web server ..." \
-        && nginx -q
-        && sleep 5
+        && nginx -q && timeout 300 bash -c -- "while true; do [ '200' == '$(curl -s -o /dev/null -I -L -w '%{http_code}' http://$TaskHost)' ] && break || sleep 5; done" \
+        || ( error "Web server failed to host '$TaskHost'" && exit 1 )
 
     # acquire a ssl certificate to use for web access
     # as certbot is sometimes a little bit picky we
