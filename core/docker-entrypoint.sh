@@ -25,8 +25,9 @@ error() {
 
 waitForHttp() {
     echo -n "Waiting for http://$TaskHost ."
-    until $(curl --output /dev/null --silent --head --fail http://$TaskHost); do
-        echo -n '.' && sleep 1
+    until $(curl --output /dev/null --max-time 1 --silent --head --fail http://$TaskHost); do
+        echo -n '.'
+        sleep 1
     done
     echo ' done'
 }
@@ -35,8 +36,9 @@ export -f waitForHttp
 
 waitForHttps() {
     echo -n "Waiting for https://$TaskHost ."
-    until $(curl --output /dev/null --silent --head --fail https://$TaskHost); do
-        echo -n '.' && sleep 1
+    until $(curl --output /dev/null --max-time 1 --silent --head --fail https://$TaskHost); do
+        echo -n '.' 
+        sleep 1
     done
     echo ' done'
 }
