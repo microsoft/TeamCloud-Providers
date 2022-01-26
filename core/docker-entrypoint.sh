@@ -56,14 +56,14 @@ if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
         # && timeout 60 bash -c "waitForHttp" \
         && echo " done" || { echo " failed" && exit 1; }
 
-    curl --max-time 1 --silent --head --fail http://$TaskHost
+    # curl --max-time 1 --silent --head --fail http://$TaskHost
 
     echo "Acquire SSL certificate ..." \
         && for i in $(seq 1 10); do certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost && { echo "done" && break; } || sleep 5; done \
         # && timeout 60 bash -c "waitForHttps" \
         && echo " done" || { echo " failed" && exit 1; }
 
-    curl --max-time 1 --silent --head --fail https://$TaskHost
+    # curl --max-time 1 --silent --head --fail https://$TaskHost
 fi
 
 # list servernames the host is listening on
