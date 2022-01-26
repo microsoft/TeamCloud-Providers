@@ -36,18 +36,14 @@ if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
 
     echo "Starting web server ..." && nginx -q
 
-    # echo "Starting web server ..." \
-    #     && nginx -q && timeout 300 bash -c -- "while true; do [ '200' == '$(curl -s -o /dev/null -I -L -w "%{http_code}" http://$TaskHost)' ] && break || sleep 5; done" \
-    #     || ( error "Web server failed to host '$TaskHost'" && exit 1 )
-
     # acquire a ssl certificate to use for web access
     # as certbot is sometimes a little bit picky we
     # covert the SSL request process in a loop covered
     # by a timeout of 5 minutes (worst case scenario)
 
-    echo "Acquire SSL certificate ..." \
-        && timeout 300 bash -c -- "while true; do certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost 2> /dev/null && break || sleep 5; done" \
-        || ( error "Failed to acquire SSL certificate for host '$TaskHost'" && exit 1 )
+    echo "Acquire SSL certificate ..." && while true; do 
+        certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost 2> /dev/null && break || sleep 5
+    done
 
 fi
 
