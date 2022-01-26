@@ -43,8 +43,8 @@ if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
         && nginx -q
 
     echo "Acquire SSL certificate ..." \
-        && certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost 
-    
+        && while true; do certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost && break || sleep 5; done
+
 fi
 
 # list servernames the host is listening on
