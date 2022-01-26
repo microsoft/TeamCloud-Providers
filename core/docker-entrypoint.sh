@@ -60,19 +60,13 @@ if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
         && nginx -q && echo "done"
 
     timeout 60 bash -c "waitForHttp" \
-        || { echo " failed" && exit 1 }
+        || { echo " failed" && exit 1; }
 
     echo "Acquire SSL certificate ..." \
         && for i in $(seq 1 10); do certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost && { echo "done" && break; } || sleep 5; done
 
     timeout 60 bash -c "waitForHttps" \
-        || { echo " failed" && exit 1 }
-
-    # echo "Probing http://$TaskHost ..." \
-    #     && curl -s -o /dev/null -I -w "%{http_code}" http://$TaskHost
-
-    # echo "Probing https://$TaskHost ..." \
-    #     && curl -s -o /dev/null -I -w "%{http_code}" https://$TaskHost
+        || { echo " failed" && exit 1; }
 
 fi
 
