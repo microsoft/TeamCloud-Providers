@@ -50,18 +50,26 @@ trace "Initialize runner"
 
 if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
 
-    echo -n "Starting web server ..." \
-        && sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/http.d/default.conf \
-        && nginx -q \
-        # && timeout 60 bash -c "waitForHttp" \
-        && echo " done" || { echo " failed" && exit 1; }
+    sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/http.d/default.conf
+
+    echo "Starting web server ..." \
+        && nginx -q 
+
+    # echo -n "Starting web server ..." \
+    #     && sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/http.d/default.conf \
+    #     && nginx -q \
+    #     # && timeout 60 bash -c "waitForHttp" \
+    #     && echo " done" || { echo " failed" && exit 1; }
 
     # curl --max-time 1 --silent --head --fail http://$TaskHost
 
     echo "Acquire SSL certificate ..." \
-        && for i in $(seq 1 10); do certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost && { echo "done" && break; } || sleep 5; done \
-        # && timeout 60 bash -c "waitForHttps" \
-        && echo " done" || { echo " failed" && exit 1; }
+        && for i in $(seq 1 10); do certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost && { echo "done" && break; } || sleep 5; done 
+
+    # echo "Acquire SSL certificate ..." \
+    #     && for i in $(seq 1 10); do certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost && { echo "done" && break; } || sleep 5; done \
+    #     # && timeout 60 bash -c "waitForHttps" \
+    #     && echo " done" || { echo " failed" && exit 1; }
 
     # curl --max-time 1 --silent --head --fail https://$TaskHost
 fi
