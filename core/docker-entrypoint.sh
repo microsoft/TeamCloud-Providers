@@ -24,9 +24,9 @@ error() {
 
 readonly LOG_FILE="/mnt/storage/.output/$TaskId"
 
-mkdir -p "$(dirname "$LOG_FILE")"   # ensure the log folder exists
-touch $LOG_FILE                     # ensure the log file exists
-script -q -f $LOG_FILE              # start logging 
+mkdir -p "$(dirname "$LOG_FILE")"                   # ensure the log folder exists
+touch $LOG_FILE                                     # ensure the log file exists
+exec > >(stdbuf -i0 -oL -eL tee -a $LOG_FILE) 2>&1  # mirror console out to log file
 
 trace "Initialize runner"
 
@@ -56,12 +56,6 @@ fi
 
 # list servernames the host is listening on
 echo "Start listening on host: $(nginx -T 2>/dev/null | grep -o "server_name.*" | sed 's/;//' | cut -d ' ' -f2 | sort -u)"
-
-# Redirecting STDOUT and STDERR to our task log must be set
-# now and not earlier in the script as NGINX is a littel bit
-# picky when it comes to running it in quite mode.
-
-# exec > >(tee -a $LOG_FILE) 2>&1
 
 # find entrypoint scripts in alphabetical order to initialize
 # the current container instance before we execute the command itself
