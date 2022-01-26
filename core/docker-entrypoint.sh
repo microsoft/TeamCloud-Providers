@@ -58,8 +58,11 @@ sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/http.d/default.conf
 
 if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
 
-    echo "Starting web server ..." \
-        && nginx -q && echo "done"
+    echo -n "Starting web server ... " \
+        && nginx -q && echo " done"
+
+    nginx -t
+    ps aux
 
     timeout 60 bash -c "waitForHttp" \
         || { echo " failed" && exit 1; }
