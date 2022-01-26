@@ -18,9 +18,30 @@ error() {
     echo "Error: $@" 1>&2
 }
 
+
 # check for mandatory environment data
 [[ -z "$TaskId" ]] && error "Missing 'TaskId' environment variable" && exit 1
 [[ -z "$TaskHost" ]] && error "Missing 'TaskHost' environment variable" && exit 1
+
+waitForHttp() {
+    echo -n "Waiting for http://$TaskHost ."
+    until $(curl --output /dev/null --silent --head --fail http://$TaskHost); do
+        echo -n '.' && sleep 1
+    done
+    echo ' done'
+}
+
+export -f waitForHttp
+
+waitForHttps() {
+    echo -n "Waiting for https://$TaskHost ."
+    until $(curl --output /dev/null --silent --head --fail https://$TaskHost); do
+        echo -n '.' && sleep 1
+    done
+    echo ' done'
+}
+
+export -f waitForHttps
 
 readonly LOG_FILE="/mnt/storage/.output/$TaskId"
 
@@ -43,14 +64,20 @@ if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
     echo "Starting web server ..." \
         && nginx -q
 
+    timeout 60 bash -c "waitForHttp" \
+        || { error -e " failed" && exit 1 }
+
     echo "Acquire SSL certificate ..." \
         && for i in $(seq 1 10); do certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost && break || sleep 5; done
 
-    echo "Probing http://$TaskHost ..." \
-        && curl -s -o /dev/null -I -w "%{http_code}" http://$TaskHost
+    timeout 60 bash -c "waitForHttps" \
+        || { error -e " failed" && exit 1 }
 
-    echo "Probing https://$TaskHost ..." \
-        && curl -s -o /dev/null -I -w "%{http_code}" https://$TaskHost
+    # echo "Probing http://$TaskHost ..." \
+    #     && curl -s -o /dev/null -I -w "%{http_code}" http://$TaskHost
+
+    # echo "Probing https://$TaskHost ..." \
+    #     && curl -s -o /dev/null -I -w "%{http_code}" https://$TaskHost
 
 fi
 
