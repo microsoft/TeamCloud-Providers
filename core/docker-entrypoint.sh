@@ -47,7 +47,7 @@ readonly LOG_FILE="/mnt/storage/.output/$TaskId"
 
 mkdir -p "$(dirname "$LOG_FILE")"                   # ensure the log folder exists
 touch $LOG_FILE                                     # ensure the log file exists
-exec > >(stdbuf -i0 -oL -eL tee -a $LOG_FILE) 2>&1  # mirror console out to log file
+exec > >(stdbuf -i0 -oL -eL tee -a $LOG_FILE) 2>&1  # mirror STDOUT to log file (with buffering disabled)
 
 trace "Initialize runner"
 
@@ -56,22 +56,17 @@ sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/http.d/default.conf
 
 if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
 
-    # acquire a ssl certificate to use for web access
-    # as certbot is sometimes a little bit picky we
-    # covert the SSL request process in a loop covered
-    # by a timeout of 5 minutes (worst case scenario)
-
     echo "Starting web server ..." \
-        && nginx -q
+        && nginx -q && echo "done"
 
     timeout 60 bash -c "waitForHttp" \
-        || { error -e " failed" && exit 1 }
+        || { echo " failed" && exit 1 }
 
     echo "Acquire SSL certificate ..." \
-        && for i in $(seq 1 10); do certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost && break || sleep 5; done
+        && for i in $(seq 1 10); do certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost && { echo "done" && break } || sleep 5; done
 
     timeout 60 bash -c "waitForHttps" \
-        || { error -e " failed" && exit 1 }
+        || { echo " failed" && exit 1 }
 
     # echo "Probing http://$TaskHost ..." \
     #     && curl -s -o /dev/null -I -w "%{http_code}" http://$TaskHost
