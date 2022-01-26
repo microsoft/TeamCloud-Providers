@@ -27,7 +27,6 @@ waitForHttp() {
         echo -n '.'
         sleep 1
     done
-    echo ' done'
 }
 
 export -f waitForHttp
@@ -37,7 +36,6 @@ waitForHttps() {
         echo -n '.' 
         sleep 1
     done
-    echo ' done'
 }
 
 export -f waitForHttps
@@ -52,16 +50,16 @@ trace "Initialize runner"
 
 if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
 
-    echo -n "Starting web server ... " \
+    echo -n "Starting web server ." \
         && sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/http.d/default.conf \
         && nginx -q \
         && timeout 60 bash -c "waitForHttp" \
-        || { echo " failed" && exit 1; }
+        && echo " done" || { echo " failed" && exit 1; }
 
-    echo "Acquire SSL certificate ..." \
+    echo "Acquire SSL certificate ." \
         && for i in $(seq 1 10); do certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost && { echo "done" && break; } || sleep 5; done \
         && timeout 60 bash -c "waitForHttps" \
-        || { echo " failed" && exit 1; }
+        && echo " done" || { echo " failed" && exit 1; }
 
 fi
 
