@@ -6,7 +6,7 @@ WORKDIR /
 RUN set -x \
     # Install APK packages
     && apk update \
-    && apk add --no-cache nginx bash jq git util-linux py3-pip \
+    && apk add --no-cache nginx bash jq git util-linux coreutils py3-pip \
     # Install PIP packages
     && pip3 install --upgrade pip \
     && pip install certbot certbot-nginx \
