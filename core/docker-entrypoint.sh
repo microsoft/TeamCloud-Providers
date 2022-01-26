@@ -43,7 +43,13 @@ if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
         && nginx -q
 
     echo "Acquire SSL certificate ..." \
-        && while true; do certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost && break || sleep 5; done
+        && for i in $(seq 1 10); do certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost && break || sleep 5; done
+
+    echo "Probing http://$TaskHost ..." \
+        && curl -s -o /dev/null -I -w "%{http_code}" http://$TaskHost
+
+    echo "Probing https://$TaskHost ..." \
+        && curl -s -o /dev/null -I -w "%{http_code}" https://$TaskHost
 
 fi
 
