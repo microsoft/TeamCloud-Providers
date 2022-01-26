@@ -18,21 +18,9 @@ error() {
     echo "Error: $@" 1>&2
 }
 
-
 # check for mandatory environment data
 [[ -z "$TaskId" ]] && error "Missing 'TaskId' environment variable" && exit 1
 [[ -z "$TaskHost" ]] && error "Missing 'TaskHost' environment variable" && exit 1
-
-waitForLocalhost() {
-    echo -n "Waiting for http://localhost ."
-    until [ $(curl --output /dev/null --max-time 1 --silent --head --fail http://localhost) ]; do
-        echo -n '.'
-        sleep 1
-    done
-    echo ' done'
-}
-
-export -f waitForLocalhost
 
 waitForHttp() {
     echo -n "Waiting for http://$TaskHost ."
@@ -64,24 +52,17 @@ exec > >(stdbuf -i0 -oL -eL tee -a $LOG_FILE) 2>&1  # mirror STDOUT to log file 
 
 trace "Initialize runner"
 
-# patch nginx configuration with the task host name
-sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/http.d/default.conf
-
 if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
 
-    nginx -T
-
     echo -n "Starting web server ... " \
+        && sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/http.d/default.conf
         && nginx -q && echo " done"
-
-    timeout 60 bash -c "waitForLocalhost" \
-        || { echo " failed" && exit 1; }
-
-    timeout 60 bash -c "waitForHttp" \
-        || { echo " failed" && exit 1; }
 
     echo "Acquire SSL certificate ..." \
         && for i in $(seq 1 10); do certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost && { echo "done" && break; } || sleep 5; done
+
+    # timeout 60 bash -c "waitForHttp" \
+    #     || { echo " failed" && exit 1; }
 
     timeout 60 bash -c "waitForHttps" \
         || { echo " failed" && exit 1; }
