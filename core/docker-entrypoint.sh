@@ -34,15 +34,17 @@ sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/http.d/default.conf
 
 if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
 
-    echo "Starting web server ..." && nginx -q
-
     # acquire a ssl certificate to use for web access
     # as certbot is sometimes a little bit picky we
     # covert the SSL request process in a loop covered
     # by a timeout of 5 minutes (worst case scenario)
 
-    echo "Acquire SSL certificate ..." && while true; do 
-        certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost 2> /dev/null && break || sleep 5
+    echo "Starting web server ..." && nginx -q
+    echo "Acquire SSL certificate ..." && sleep 5
+    
+    while true; do 
+        # certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost 2> /dev/null && break || sleep 5
+        certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost && break || sleep 5
     done
 
 fi
