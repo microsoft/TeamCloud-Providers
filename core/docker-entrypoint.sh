@@ -23,6 +23,17 @@ error() {
 [[ -z "$TaskId" ]] && error "Missing 'TaskId' environment variable" && exit 1
 [[ -z "$TaskHost" ]] && error "Missing 'TaskHost' environment variable" && exit 1
 
+waitForLocalhost() {
+    echo -n "Waiting for http://localhost ."
+    until [ $(curl --output /dev/null --max-time 1 --silent --head --fail http://localhost) ]; do
+        echo -n '.'
+        sleep 1
+    done
+    echo ' done'
+}
+
+export -f waitForLocalhost
+
 waitForHttp() {
     echo -n "Waiting for http://$TaskHost ."
     until [ $(curl --output /dev/null --max-time 1 --silent --head --fail http://$TaskHost) ]; do
@@ -58,11 +69,13 @@ sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/http.d/default.conf
 
 if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
 
+    nginx -T
+
     echo -n "Starting web server ... " \
         && nginx -q && echo " done"
 
-    nginx -t
-    ps aux
+    timeout 60 bash -c "waitForLocalhost" \
+        || { echo " failed" && exit 1; }
 
     timeout 60 bash -c "waitForHttp" \
         || { echo " failed" && exit 1; }
