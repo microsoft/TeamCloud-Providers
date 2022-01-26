@@ -39,14 +39,12 @@ if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
     # covert the SSL request process in a loop covered
     # by a timeout of 5 minutes (worst case scenario)
 
-    echo "Starting web server ..." && nginx -q
-    echo "Acquire SSL certificate ..." && sleep 5
-    
-    while true; do 
-        # certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost 2> /dev/null && break || sleep 5
-        certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost && break || sleep 5
-    done
+    echo "Starting web server ..." \
+        && nginx -q
 
+    echo "Acquire SSL certificate ..." \
+        && certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost 
+    
 fi
 
 # list servernames the host is listening on
