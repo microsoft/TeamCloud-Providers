@@ -3,6 +3,11 @@ WORKDIR /
 
 RUN az bicep install
 
+# to support ARM linked templates 
+# we need to enable the webserver 
+# running on the container instance
+ENV EnableWebServer=1
+
 COPY docker-entrypoint.d/* /docker-entrypoint.d/
 RUN find /docker-entrypoint.d/ -type f -iname "*.sh" -exec chmod +x {} \;
 
