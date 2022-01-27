@@ -23,10 +23,10 @@ echod() {
 }
 
 # check for mandatory mounted volumes
-[[ -d "/mnt/templates" ]] && error "Missing volume '/mnt/templates'" && exit 1
-[[ -d "/mnt/storage" ]] && error "Missing volume '/mnt/storage'" && exit 1
-[[ -d "/mnt/secrets" ]] && error "Missing volume '/mnt/secrets'" && exit 1
-[[ -d "/mnt/credentials" ]] && error "Missing volume '/mnt/credentials'" && exit 1
+[[ ! -d "/mnt/templates" ]] && error "Missing volume '/mnt/templates'" && exit 1
+[[ ! -d "/mnt/storage" ]] && error "Missing volume '/mnt/storage'" && exit 1
+[[ ! -d "/mnt/secrets" ]] && error "Missing volume '/mnt/secrets'" && exit 1
+[[ ! -d "/mnt/credentials" ]] && error "Missing volume '/mnt/credentials'" && exit 1
 
 # check for mandatory environment variables
 [[ -z "$TaskId" ]] && error "Missing 'TaskId' environment variable" && exit 1
