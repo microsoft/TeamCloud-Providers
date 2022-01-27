@@ -22,11 +22,13 @@ RUN chmod +x /docker-entrypoint.sh \
     && mkdir -p /docker-runner.d && find /docker-runner.d/ -type f -iname "*.sh" -exec chmod +x {} \;
 
 # Replace nginx configuration files
-# COPY config/default.conf /etc/nginx/conf.d/default.conf
 COPY config/default.conf /etc/nginx/http.d/default.conf
 
 # Expose HTTP and HTTPS
 EXPOSE 80 443
+
+# Disable the container webserver by default
+ENV EnableWebServer=0
 
 # Block default command set by base image
 CMD [ "" ]
