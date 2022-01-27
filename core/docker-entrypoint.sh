@@ -18,70 +18,31 @@ error() {
     echo "Error: $@" 1>&2
 }
 
-# check for mandatory environment data
+echod() {
+    if [ "$DebugMode" == "1" ]; then echo $@; fi
+}
+
+# check for mandatory mounted volumes
+[[ -d "/mnt/templates" ]] && error "Missing volume '/mnt/templates'" && exit 1
+[[ -d "/mnt/storage" ]] && error "Missing volume '/mnt/storage'" && exit 1
+[[ -d "/mnt/secrets" ]] && error "Missing volume '/mnt/secrets'" && exit 1
+[[ -d "/mnt/credentials" ]] && error "Missing volume '/mnt/credentials'" && exit 1
+
+# check for mandatory environment variables
 [[ -z "$TaskId" ]] && error "Missing 'TaskId' environment variable" && exit 1
 [[ -z "$TaskHost" ]] && error "Missing 'TaskHost' environment variable" && exit 1
 
-waitForHttp() {
-    until [ $(curl --output /dev/null --max-time 1 --silent --head --fail http://$TaskHost) ]; do
-        echo -n '.'
-        sleep 1
-    done
-}
-
-export -f waitForHttp
-
-waitForHttps() {
-    until [ $(curl --output /dev/null --max-time 1 --silent --head --fail https://$TaskHost) ]; do
-        echo -n '.' 
-        sleep 1
-    done
-}
-
-export -f waitForHttps
-
 readonly LOG_FILE="/mnt/storage/.output/$TaskId"
 
-mkdir -p "$(dirname "$LOG_FILE")"                   # ensure the log folder exists
-touch $LOG_FILE                                     # ensure the log file exists
-exec > >(stdbuf -i0 -oL -eL tee -a $LOG_FILE) 2>&1  # mirror STDOUT to log file (with buffering disabled)
-
-trace "Initialize runner"
-
-if [[ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ]]; then
-
-    sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/http.d/default.conf
-
-    echo "Starting web server ..." \
-        && nginx -q 
-
-    # echo -n "Starting web server ..." \
-    #     && sed -i "s/server_name.*/server_name $TaskHost;/g" /etc/nginx/http.d/default.conf \
-    #     && nginx -q \
-    #     # && timeout 60 bash -c "waitForHttp" \
-    #     && echo " done" || { echo " failed" && exit 1; }
-
-    # curl --max-time 1 --silent --head --fail http://$TaskHost
-
-    echo "Acquire SSL certificate ..." \
-        && for i in $(seq 1 10); do certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost && { echo "done" && break; } || sleep 5; done 
-
-    # echo "Acquire SSL certificate ..." \
-    #     && for i in $(seq 1 10); do certbot --nginx --register-unsafely-without-email --hsts --agree-tos --quiet -n -d $TaskHost && { echo "done" && break; } || sleep 5; done \
-    #     # && timeout 60 bash -c "waitForHttps" \
-    #     && echo " done" || { echo " failed" && exit 1; }
-
-    # curl --max-time 1 --silent --head --fail https://$TaskHost
-fi
-
-# list servernames the host is listening on
-echo "Start listening on host: $(nginx -T 2>/dev/null | grep -o "server_name.*" | sed 's/;//' | cut -d ' ' -f2 | sort -u)"
+mkdir -p "$(dirname "$LOG_FILE")" && touch $LOG_FILE # ensure the log folder and file exists
+exec > >(stdbuf -i0 -oL -eL tee -a $LOG_FILE) 2>&1   # mirror STDOUT to log file (with buffering disabled)
 
 # find entrypoint scripts in alphabetical order to initialize
 # the current container instance before we execute the command itself
 
 while read -r f; do
     if [ -x "$f" ]; then 
+        echod "Executing entrypoint script: $f"
 		. $f # execute each shell script found enabled for execution
 	fi 
 done < <(find "/docker-entrypoint.d/" -follow -type f -iname "*.sh" -print | sort -n)
