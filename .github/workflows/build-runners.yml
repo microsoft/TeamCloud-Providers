@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      TARGET_SUBSCRIPTION: 12223725-70b0-45a6-96c4-a13c344fdc57
+      TARGET_SUBSCRIPTION: 7b28720b-eb4b-46f6-a764-60a9ef9f3399
       TARGET_RESOURCEGROUP: TeamCloud-Registry
       TARGET_RESOURCEGROUPLOCATION: eastus
 
