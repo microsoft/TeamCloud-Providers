@@ -33,8 +33,6 @@ updateComponentValue() {
 
     local DMP_FILE="/mnt/storage/value.json"
 
-    trace "Update component value"
-    
     if [ -z "$ComponentResourceGroup" ]; then
         az resource list --subscription $ComponentSubscription > $DMP_FILE
     else
