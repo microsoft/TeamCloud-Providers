@@ -34,8 +34,9 @@ echod() {
 
 readonly LOG_FILE="/mnt/storage/.output/$TaskId"
 
-mkdir -p "$(dirname "$LOG_FILE")" && touch $LOG_FILE # ensure the log folder and file exists
-exec > >(stdbuf -i0 -oL -eL tee -a $LOG_FILE) 2>&1   # mirror STDOUT to log file (with buffering disabled)
+mkdir -p "$(dirname "$LOG_FILE")" && touch $LOG_FILE 	# ensure the log folder and file exists
+exec > $LOG_FILE 2>&1   								# mirror STDOUT to log file (with buffering disabled)
+# exec > >(stdbuf -i0 -oL -eL tee -a $LOG_FILE) 2>&1   	# mirror STDOUT to log file (with buffering disabled)
 
 # find entrypoint scripts in alphabetical order to initialize
 # the current container instance before we execute the command itself
