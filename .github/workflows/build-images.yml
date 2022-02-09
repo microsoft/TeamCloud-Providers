@@ -1,12 +1,12 @@
 name: Build TeamCloud Images
 
-env:
-  RUNNER_IMAGES: "['arm', 'terraform', 'helm']"
-  SIDECAR_IMAGES: "['webserver']"
-
 on:
   push:
     branches: [main]
+
+env:
+  RUNNER_IMAGES: "['arm', 'terraform', 'helm']"
+  SIDECAR_IMAGES: "['webserver']"
 
 jobs:
   registry:
@@ -150,7 +150,7 @@ jobs:
     strategy:
       max-parallel: 5
       matrix:
-        image: ${{ fromJSON(env.RUNNER_IMAGES) }}
+        image: ${{ fromJson(env.RUNNER_IMAGES) }}
 
     steps:
       - name: Checkout
