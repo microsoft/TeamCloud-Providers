@@ -1,4 +1,4 @@
-name: Build TeamCloud Runners
+name: Build TeamCloud Images
 
 env:
   RUNNER_IMAGES: "['arm', 'terraform', 'helm']"

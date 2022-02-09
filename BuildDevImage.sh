@@ -3,25 +3,32 @@
 set -e # exit on error
 clear && csd=$(dirname "$0")
 
-if [ -z "$1" ]; then
-	echo "Provide the name of a image folder as parameter"
-	exit 1
-fi
-
 header() {
 	echo -e "\n========================================================================================================================="
 	echo -e $1
 	echo -e "-------------------------------------------------------------------------------------------------------------------------\n"
 }
 
-pushd $csd/$1 > /dev/null
+if [ -z "$1" ]; then
+	echo "Provide the name of a image folder as parameter"
+	exit 1
+fi
+
+path=$(find . -type d -iname "$1" -print 2>/dev/null)
+
+if [ -z "$path" ]; then
+	echo "Could not find folder by name '$1'"
+	exit 1
+fi
+
+pushd $csd/$path > /dev/null
 
 TIMESTAMP="$(date +%s)"
 
 TEAMCLOUD_REGISTRY_SUBSCRIPTION="b6de8d3f-8477-45fe-8d60-f30c6db2cb06"
 TEAMCLOUD_REGISTRY_NAME="TeamCloud"
 TEAMCLOUD_REGISTRY_LOGINSERVER=$(az acr show --subscription $TEAMCLOUD_REGISTRY_SUBSCRIPTION --name $TEAMCLOUD_REGISTRY_NAME --query loginServer -o tsv)
-TEAMCLOUD_IMAGE_TAGPREFIX="$TEAMCLOUD_REGISTRY_LOGINSERVER/teamcloud-dev/tcrunner-$(basename "$PWD" | tr '[:upper:]' '[:lower:]')-$(whoami)"
+TEAMCLOUD_IMAGE_TAGPREFIX="$TEAMCLOUD_REGISTRY_LOGINSERVER/teamcloud-dev/tc$(basename "$(dirname "$PWD")" | tr '[:upper:]' '[:lower:]')-$(basename "$PWD" | tr '[:upper:]' '[:lower:]')-$(whoami)"
 TEAMCLOUD_IMAGE_TAGLATEST="$TEAMCLOUD_IMAGE_TAGPREFIX:latest"
 TEAMCLOUD_IMAGE_TAGTIMESTAMP="$TEAMCLOUD_IMAGE_TAGPREFIX:$TIMESTAMP"
 
