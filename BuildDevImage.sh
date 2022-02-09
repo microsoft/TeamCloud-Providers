@@ -18,7 +18,7 @@ pushd $csd/$1 > /dev/null
 
 TIMESTAMP="$(date +%s)"
 
-TEAMCLOUD_REGISTRY_SUBSCRIPTION="12223725-70b0-45a6-96c4-a13c344fdc57"
+TEAMCLOUD_REGISTRY_SUBSCRIPTION="b6de8d3f-8477-45fe-8d60-f30c6db2cb06"
 TEAMCLOUD_REGISTRY_NAME="TeamCloud"
 TEAMCLOUD_REGISTRY_LOGINSERVER=$(az acr show --subscription $TEAMCLOUD_REGISTRY_SUBSCRIPTION --name $TEAMCLOUD_REGISTRY_NAME --query loginServer -o tsv)
 TEAMCLOUD_IMAGE_TAGPREFIX="$TEAMCLOUD_REGISTRY_LOGINSERVER/teamcloud-dev/tcrunner-$(basename "$PWD" | tr '[:upper:]' '[:lower:]')-$(whoami)"
@@ -53,18 +53,7 @@ docker images $TEAMCLOUD_IMAGE_TAGPREFIX
 
 popd > /dev/null
 
-ENV_TASKID=$(uuidgen)
-
 header "Deleting existing containers ..."
-docker container rm -f $(docker container ls -a -q) || true
+docker container rm -f $(docker container ls -a -q) 2> /dev/null || true
 
-header "Run new docker image ..."
-(set -x; docker run \
-	-it -P \
-	--mount type=tmpfs,destination=/mnt/templates \
-	--mount type=tmpfs,destination=/mnt/storage \
-	--env TaskId=$ENV_TASKID \
-	--env TaskHost=localhost \
-	--env ComponentTemplateRepository="https://github.com/markusheiliger/TeamCloud-Project-Sample.git" \
-	$TEAMCLOUD_IMAGE_TAGLATEST \
-	"debug.sh")
+# baSH

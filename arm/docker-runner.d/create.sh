@@ -25,7 +25,7 @@ while read p; do
             ComponentTemplateParametersOpts+=( --parameters _artifactsLocation="$(dirname $ComponentTemplateUrl)" )
             ;;
         _artifactsLocationSasToken)
-            ComponentTemplateParametersOpts+=( --parameters _artifactsLocationSasToken="?code=$ComponentTemplateUrlToken" )
+            ComponentTemplateParametersOpts+=( --parameters _artifactsLocationSasToken="?code=$TaskToken" )
             ;;
     esac
 done < <( echo "$( cat "$ComponentTemplateFile" | jq --raw-output '.parameters | to_entries[] | select( .key | startswith("_artifactsLocation")) | .key' )" )
@@ -39,6 +39,7 @@ if [ -z "$ComponentResourceGroup" ]; then
                                                 --name "$ComponentDeploymentName" \
                                                 --no-prompt true --no-wait \
                                                 --template-uri "$ComponentTemplateUrl" \
+                                                --query-string "code=$TaskToken"
                                                 --parameters "$ComponentTemplateParametersJson" \
                                                 "${ComponentTemplateParametersOpts[@]}" 2>&1)
 
@@ -73,6 +74,7 @@ else
                                                     --name "$ComponentDeploymentName" \
                                                     --no-prompt true --no-wait --mode Complete \
                                                     --template-uri "$ComponentTemplateUrl" \
+                                                    --query-string "code=$TaskToken"
                                                     --parameters "$ComponentTemplateParametersJson" \
                                                     "${ComponentTemplateParametersOpts[@]}" 2>&1)
 

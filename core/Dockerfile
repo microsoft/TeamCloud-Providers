@@ -1,15 +1,13 @@
 # Base Container Definition: https://github.com/nginxinc/docker-nginx/tree/master/stable/alpine
 
+# FROM mcr.microsoft.com/azure-cli:2.0.80
 FROM mcr.microsoft.com/azure-cli
 WORKDIR /
 
 RUN set -x \
     # Install APK packages
     && apk update \
-    && apk add --no-cache nginx bash jq git util-linux coreutils py3-pip \
-    # Install PIP packages
-    && pip3 install --upgrade pip \
-    && pip install certbot certbot-nginx \
+    && apk add --no-cache bash util-linux bind-tools coreutils \
     # Finalize RUN command
     && true
 
@@ -20,12 +18,6 @@ COPY docker-runner.d/* /docker-runner.d/
 RUN chmod +x /docker-entrypoint.sh \
     && mkdir -p /docker-entrypoint.d && find /docker-entrypoint.d/ -type f -iname "*.sh" -exec chmod +x {} \; \
     && mkdir -p /docker-runner.d && find /docker-runner.d/ -type f -iname "*.sh" -exec chmod +x {} \;
-
-# Replace nginx configuration files
-COPY config/default.conf /etc/nginx/http.d/default.conf
-
-# Expose HTTP and HTTPS
-EXPOSE 80 443
 
 # Disable the container webserver by default
 ENV EnableWebServer=0
