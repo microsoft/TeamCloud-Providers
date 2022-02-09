@@ -88,6 +88,8 @@ jobs:
 
     outputs:
       version: ${{ steps.gitversion.outputs.assemblySemVer }}
+      runners: ${{ fromJson(env.RUNNER_IMAGES) }}
+      sidecars: ${{ fromJson(env.SIDECAR_IMAGES) }}
 
   core:
     name: Build Core
@@ -150,7 +152,7 @@ jobs:
     strategy:
       max-parallel: 5
       matrix:
-        image: ${{ fromJson(env.RUNNER_IMAGES) }}
+        image: ${{ needs.prepare.outputs.runners }}
 
     steps:
       - name: Checkout
@@ -202,7 +204,7 @@ jobs:
     strategy:
       max-parallel: 5
       matrix:
-        image: ${{ fromJSON(env.SIDECAR_IMAGES) }}
+        image: ${{ needs.prepare.outputs.sidecars }}
 
     steps:
       - name: Checkout
