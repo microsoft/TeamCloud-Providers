@@ -6,16 +6,15 @@ env:
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-
   registry:
     name: Ensure container registry
     runs-on: ubuntu-latest
 
     env:
-      TARGET_SUBSCRIPTION: 12223725-70b0-45a6-96c4-a13c344fdc57
+      TARGET_SUBSCRIPTION: b6de8d3f-8477-45fe-8d60-f30c6db2cb06
       TARGET_RESOURCEGROUP: TeamCloud-Registry
       TARGET_RESOURCEGROUPLOCATION: eastus
 
@@ -36,6 +35,7 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+          allow-no-subscriptions: true
 
       - id: deploy
         name: Azure Deploy
@@ -46,24 +46,24 @@ jobs:
 
             # select the target subscription
             az account set --subscription ${{ env.TARGET_SUBSCRIPTION }}
-          
+
             # prepare resource group
             if [ "$(az group exists -g ${{ env.TARGET_RESOURCEGROUP }})" == "false" ]; then
               az group create -n ${{ env.TARGET_RESOURCEGROUP }} -l ${{ env.TARGET_RESOURCEGROUPLOCATION }}
             fi
-          
+
             # deploy resources to resource group
             ARM_OUTPUT=$(az deployment group create \
               -g ${{ env.TARGET_RESOURCEGROUP }} \
               -n ${{ steps.generate-uuid.outputs.uuid }} \
-              --template-file $GITHUB_WORKSPACE/_registry/azuredeploy.json \
-              --parameter registryName="TeamCloud" \
-              --parameter registryLocations="['eastus', 'westus', 'westeurope']")
-          
+              --template-file $GITHUB_WORKSPACE/_registry/registry.bicep \
+              --parameter name="TeamCloud" \
+              --parameter locations="['eastus', 'westus', 'westeurope']")
+
             # populate deployment output
-            echo "::set-output name=registryUrl::$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.registryUrl.value')"
-            echo "::set-output name=registryUsername::$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.registryUsername.value')"
-            echo "::set-output name=registryPassword::$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.registryPassword.value')"
+            echo "::set-output name=registryUrl::$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.url.value')"
+            echo "::set-output name=registryUsername::$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.username.value')"
+            echo "::set-output name=registryPassword::$(echo $ARM_OUTPUT | jq --raw-output '.properties.outputs.password.value')"
 
   prepare:
     name: Prepare container build
@@ -101,7 +101,6 @@ jobs:
       REGISTRY_PASSWORD: ${{ needs.registry.outputs.registryPassword }}
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -127,8 +126,8 @@ jobs:
       - name: Build and push Docker image - runner
         uses: docker/build-push-action@v2.1.0
         with:
-          context: ./core
-          file: ./core/Dockerfile
+          context: ./runner/core
+          file: ./runner/core/Dockerfile
           platforms: linux/amd64
           push: true
           tags: |
@@ -138,10 +137,10 @@ jobs:
             ${{ env.REGISTRY_URL }}/teamcloud/tcrunner-core:${{ env.CONTAINER_VERSION }}
 
   runner:
-    name: Build Runner 
+    name: Build Runner
     runs-on: ubuntu-latest
-    needs: [ registry, prepare, core ]
-    
+    needs: [registry, prepare, core]
+
     env:
       CONTAINER_VERSION: ${{ needs.prepare.outputs.version }}
       REGISTRY_URL: ${{ needs.registry.outputs.registryUrl }}
@@ -179,8 +178,8 @@ jobs:
       - name: Build and push Docker image - ${{ matrix.image }}
         uses: docker/build-push-action@v2.1.0
         with:
-          context: ./${{ matrix.image }}
-          file: ./${{ matrix.image }}/Dockerfile
+          context: ./runner/${{ matrix.image }}
+          file: ./runner/${{ matrix.image }}/Dockerfile
           platforms: linux/amd64
           push: true
           tags: |
@@ -231,8 +230,8 @@ jobs:
       - name: Build and push Docker image - ${{ matrix.image }}
         uses: docker/build-push-action@v2.1.0
         with:
-          context: ./${{ matrix.image }}
-          file: ./${{ matrix.image }}/Dockerfile
+          context: ./sidecar/${{ matrix.image }}
+          file: ./sidecar/${{ matrix.image }}/Dockerfile
           platforms: linux/amd64
           push: true
           tags: |

@@ -17,4 +17,4 @@ fi
 
 # deploy resources to resource group
 echo "Deploying resources ..."
-az deployment group create -g $TARGET_RESOURCEGROUP -n $(uuidgen) --mode Incremental --template-file $csd/azuredeploy.json --parameter registryLocations="['eastus', 'westus', 'westeurope']"
+az deployment group create -g $TARGET_RESOURCEGROUP -n $(uuidgen) --mode Incremental --template-file $csd/registry.bicep --parameter locations="['eastus', 'westus', 'westeurope']"
