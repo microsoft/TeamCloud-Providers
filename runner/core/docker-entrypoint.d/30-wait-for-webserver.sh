@@ -20,6 +20,6 @@ if [ "$WebServerEnabled" == "1" ]; then
 		&& trace "Waiting for web server '$TaskHost'" \
 		&& timeout 300 bash -c "waitForWebServer" \
 		&& echo "Waiting for web server '$TaskHost' took $SECONDS seconds" \
-		|| exit 1
+		|| exit $?
 
 fi

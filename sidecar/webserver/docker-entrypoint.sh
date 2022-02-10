@@ -93,12 +93,12 @@ header "Starting host '$TaskHost' ..." \
 	&& nginx -q \
 	&& timeout 300 bash -c "waitForNginx" \
 	&& echo "Starting host '$TaskHost' took $SECONDS seconds" \
-	|| exit 1
+	|| exit $?
 
 header "Acquire SSL certificate for host '$TaskHost' ..." \
 	&& timeout 120 bash -c "waitForCertbot" \
 	&& echo "Acquire SSL certificate for host '$TaskHost' took $SECONDS seconds" \
-	|| exit 1
+	|| exit $?
 
 LOCATION_BLOCK="$( { cat | sed -z 's/\n/\\n/g' | sed -E 's/\{/\\\{/g' | sed -E 's/\}/\\\}/g' | sed -E 's/\//\\\//g' | sed -E 's/\t/    /g'; } <<EOF
 
