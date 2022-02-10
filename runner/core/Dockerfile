@@ -7,7 +7,7 @@ WORKDIR /
 RUN set -x \
     # Install APK packages
     && apk update \
-    && apk add --no-cache bash util-linux bind-tools coreutils \
+    && apk add --no-cache bash util-linux bind-tools coreutils expect \
     # Finalize RUN command
     && true
 
