@@ -20,7 +20,7 @@ RUN chmod +x /docker-entrypoint.sh \
     && mkdir -p /docker-runner.d && find /docker-runner.d/ -type f -iname "*.sh" -exec chmod +x {} \;
 
 # Disable the container webserver by default
-ENV EnableWebServer=0
+ENV WebServerEnabled=0
 
 # Block default command set by base image
 CMD [ "" ]
