@@ -95,6 +95,8 @@ header "Starting host '$TaskHost' ..." \
 	&& echo "Starting host '$TaskHost' took $SECONDS seconds" \
 	|| exit $?
 
+SECONDS=0 
+
 header "Acquire SSL certificate for host '$TaskHost' ..." \
 	&& timeout 120 bash -c "waitForCertbot" \
 	&& echo "Acquire SSL certificate for host '$TaskHost' took $SECONDS seconds" \

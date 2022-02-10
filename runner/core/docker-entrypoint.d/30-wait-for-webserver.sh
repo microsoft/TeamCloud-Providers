@@ -15,7 +15,9 @@ export -f waitForWebServer
 
 if [ "$WebServerEnabled" == "1" ]; then
 
-    [ ! -z "$TaskHost" ] \
+	SECONDS=0
+    
+	[ ! -z "$TaskHost" ] \
 		&& [ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ] \
 		&& trace "Waiting for web server '$TaskHost'" \
 		&& timeout 300 bash -c "waitForWebServer" \
