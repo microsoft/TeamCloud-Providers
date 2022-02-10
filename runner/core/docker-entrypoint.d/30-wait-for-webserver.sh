@@ -13,8 +13,13 @@ waitForWebServer() {
 
 export -f waitForWebServer
 
-[ "$WebServerEnabled" == "1" ] \
-    && [ ! -z "$TaskHost" ] \
-    && [ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ] \
-	&& trace "Waiting for web server" \
-    && timeout 300 bash -c "waitForWebServer" 
+if [ "$WebServerEnabled" == "1" ]; then
+
+    [ ! -z "$TaskHost" ] \
+		&& [ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ] \
+		&& trace "Waiting for web server '$TaskHost'" \
+		&& timeout 300 bash -c "waitForWebServer" \
+		&& echo "Waiting for web server '$TaskHost' took $SECONDS seconds" \
+		|| exit 1
+
+fi
