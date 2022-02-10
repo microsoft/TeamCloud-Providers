@@ -34,14 +34,28 @@ trace "Deploying ARM template"
 
 if [ -z "$ComponentResourceGroup" ]; then
 
-    ComponentDeploymentOutput=$(az deployment sub create --subscription $ComponentSubscription \
-                                                --location "$ComponentLocation" \
-                                                --name "$ComponentDeploymentName" \
-                                                --no-prompt true --no-wait \
-                                                --template-uri "$ComponentTemplateUrl" \
-                                                --query-string "code=$TaskToken"
-                                                --parameters "$ComponentTemplateParametersJson" \
-                                                "${ComponentTemplateParametersOpts[@]}" 2>&1)
+    if [ "$WebServerEnabled" == "1" ]; then
+
+        ComponentDeploymentOutput=$(az deployment sub create --subscription $ComponentSubscription \
+                                                    --location "$ComponentLocation" \
+                                                    --name "$ComponentDeploymentName" \
+                                                    --no-prompt true --no-wait \
+                                                    --template-uri "$ComponentTemplateUrl" \
+                                                    --query-string "code=$TaskToken" \
+                                                    --parameters "$ComponentTemplateParametersJson" \
+                                                    "${ComponentTemplateParametersOpts[@]}" 2>&1)
+    
+    else
+
+        ComponentDeploymentOutput=$(az deployment sub create --subscription $ComponentSubscription \
+                                                    --location "$ComponentLocation" \
+                                                    --name "$ComponentDeploymentName" \
+                                                    --no-prompt true --no-wait \
+                                                    --template-file "$ComponentTemplateFile" \
+                                                    --parameters "$ComponentTemplateParametersJson" \
+                                                    "${ComponentTemplateParametersOpts[@]}" 2>&1)
+
+    fi
 
     if [ $? -eq 0 ]; then # deployment successfully created
         while true; do
@@ -69,14 +83,28 @@ if [ -z "$ComponentResourceGroup" ]; then
 
 else
 
-    ComponentDeploymentOutput=$(az deployment group create --subscription $ComponentSubscription \
-                                                    --resource-group "$ComponentResourceGroup" \
-                                                    --name "$ComponentDeploymentName" \
-                                                    --no-prompt true --no-wait --mode Complete \
-                                                    --template-uri "$ComponentTemplateUrl" \
-                                                    --query-string "code=$TaskToken"
-                                                    --parameters "$ComponentTemplateParametersJson" \
-                                                    "${ComponentTemplateParametersOpts[@]}" 2>&1)
+    if [ "$WebServerEnabled" == "1" ]; then
+
+        ComponentDeploymentOutput=$(az deployment group create --subscription $ComponentSubscription \
+                                                               --resource-group "$ComponentResourceGroup" \
+                                                               --name "$ComponentDeploymentName" \
+                                                               --no-prompt true --no-wait --mode Complete \
+                                                               --template-uri "$ComponentTemplateUrl" \
+                                                               --query-string "code=$TaskToken" \
+                                                               --parameters "$ComponentTemplateParametersJson" \
+                                                               "${ComponentTemplateParametersOpts[@]}" 2>&1)
+
+    else
+
+        ComponentDeploymentOutput=$(az deployment group create --subscription $ComponentSubscription \
+                                                               --resource-group "$ComponentResourceGroup" \
+                                                               --name "$ComponentDeploymentName" \
+                                                               --no-prompt true --no-wait --mode Complete \
+                                                               --template-file "$ComponentTemplateFile" \
+                                                               --parameters "$ComponentTemplateParametersJson" \
+                                                               "${ComponentTemplateParametersOpts[@]}" 2>&1)
+
+    fi
 
     if [ $? -eq 0 ]; then # deployment successfully created
         while true; do
