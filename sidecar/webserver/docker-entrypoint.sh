@@ -21,7 +21,8 @@ waitForNginx() {
 		&& exit 1
 	
 	while true; do
-		[ "000" != "$(curl -s -o /dev/null -I -L -m 2 -f -w '%{http_code}' http://$TaskHost --resolve $TaskHost:80:127.0.0.1)" ] && break || true
+		STATUS_CODE="$(curl -s -o /dev/null -I -L -m 2 -f -w '%{http_code}' http://$TaskHost --resolve $TaskHost:80:127.0.0.1)"
+		[ "200" == "$STATUS_CODE" ] && echo "http://$TaskHost (127.0.0.1) returned $STATUS_CODE - done" && break || echo "http://$TaskHost (127.0.0.1) returned $STATUS_CODE - retry"
 	done 
 
 	if [ "localhost" != "$(echo "$TaskHost" | tr '[:upper:]' '[:lower:]')" ]; then
@@ -39,8 +40,6 @@ waitForNginx() {
 				
 			done < <(dig ns +short $(echo $TaskHost | cut -d "." -f 2-) | sed 's/\.$//')
 
-			STATUS_CODE=""
-
 			if [ -z "$PUBLIC_IP" ]; then
 				echo "Unable to resolve IP for $TaskHost - use default DNS resolution as fallback"
 				STATUS_CODE="$(curl -s -o /dev/null -I -L -m 5 -f -w '%{http_code}' http://$TaskHost)"
@@ -49,7 +48,7 @@ waitForNginx() {
 				STATUS_CODE="$(curl -s -o /dev/null -I -L -m 5 -f -w '%{http_code}' http://$TaskHost --resolve $TaskHost:80:$PUBLIC_IP)"
 			fi
 
- 			[ "200" == "$STATUS_CODE" ] && echo "done ($STATUS_CODE)" && break || echo "retry ($STATUS_CODE)"
+ 			[ "200" == "$STATUS_CODE" ] && echo "http://$TaskHost ($PUBLIC_IP) returned $STATUS_CODE - done" && break || echo "http://$TaskHost ($PUBLIC_IP) returned $STATUS_CODE - retry"
 		done 
 	fi
 }
