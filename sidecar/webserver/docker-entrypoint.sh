@@ -22,7 +22,7 @@ waitForNginx() {
 	
 	while true; do
 		STATUS_CODE="$(curl -s -o /dev/null -I -L -m 2 -f -w '%{http_code}' http://$TaskHost --resolve $TaskHost:80:127.0.0.1)"
-		[ "200" == "$STATUS_CODE" ] && echo "http://$TaskHost (127.0.0.1) returned $STATUS_CODE - done" && break || echo "http://$TaskHost (127.0.0.1) returned $STATUS_CODE - retry"
+		[ "200" == "$STATUS_CODE" ] && echo "http://$TaskHost (127.0.0.1) returned $STATUS_CODE - done" && break || echo "http://$TaskHost (127.0.0.1) returned $STATUS_CODE - retry" && sleep 1
 	done 
 
 	if [ "localhost" != "$(echo "$TaskHost" | tr '[:upper:]' '[:lower:]')" ]; then
@@ -48,7 +48,7 @@ waitForNginx() {
 				STATUS_CODE="$(curl -s -o /dev/null -I -L -m 5 -f -w '%{http_code}' http://$TaskHost --resolve $TaskHost:80:$PUBLIC_IP)"
 			fi
 
- 			[ "200" == "$STATUS_CODE" ] && echo "http://$TaskHost ($PUBLIC_IP) returned $STATUS_CODE - done" && break || echo "http://$TaskHost ($PUBLIC_IP) returned $STATUS_CODE - retry"
+ 			[ "200" == "$STATUS_CODE" ] && echo "http://$TaskHost ($PUBLIC_IP) returned $STATUS_CODE - done" && break || echo "http://$TaskHost ($PUBLIC_IP) returned $STATUS_CODE - retry" && sleep 1
 		done 
 	fi
 }
