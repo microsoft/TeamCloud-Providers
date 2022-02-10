@@ -76,13 +76,13 @@ jobs:
           fetch-depth: 0
 
       - name: Setup GitVersion
-        uses: gittools/actions/gitversion/setup@v0.9.9
+        uses: gittools/actions/gitversion/setup@v0.9.11
         with:
           versionSpec: '5.x'
 
       - name: Execute GitVersion
         id: gitversion
-        uses: gittools/actions/gitversion/execute@v0.9.9
+        uses: gittools/actions/gitversion/execute@v0.9.11
         with:
           useConfigFile: true
 
@@ -191,10 +191,10 @@ jobs:
             ${{ env.REGISTRY_URL }}/teamcloud/tcrunner-${{ matrix.image }}:${{ env.CONTAINER_VERSION }}
 
   sidecar:
-    name: Build Sidecar 
+    name: Build Sidecar
     runs-on: ubuntu-latest
-    needs: [ registry, prepare ]
-    
+    needs: [registry, prepare]
+
     env:
       CONTAINER_VERSION: ${{ needs.prepare.outputs.version }}
       REGISTRY_URL: ${{ needs.registry.outputs.registryUrl }}
@@ -240,4 +240,4 @@ jobs:
             teamcloud/tcsidecar-${{ matrix.image }}:latest
             teamcloud/tcsidecar-${{ matrix.image }}:${{ env.CONTAINER_VERSION }}
             ${{ env.REGISTRY_URL }}/teamcloud/tcsidecar-${{ matrix.image }}:latest
-            ${{ env.REGISTRY_URL }}/teamcloud/tcsidecar-${{ matrix.image }}:${{ env.CONTAINER_VERSION }}          
+            ${{ env.REGISTRY_URL }}/teamcloud/tcsidecar-${{ matrix.image }}:${{ env.CONTAINER_VERSION }}
