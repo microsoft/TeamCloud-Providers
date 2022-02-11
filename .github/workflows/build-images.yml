@@ -133,7 +133,7 @@ jobs:
           platforms: linux/amd64
           push: true
           build-args: |
-            TCRUNNER_BRANCH=${{ github.head_ref }}
+            TCRUNNER_BRANCH=${{ github.ref }}
             TCRUNNER_COMMIT=${{ github.sha }}
             TCRUNNER_VERSION=${{ env.CONTAINER_VERSION }}
           tags: |
@@ -189,7 +189,7 @@ jobs:
           platforms: linux/amd64
           push: true
           build-args: |
-            TCRUNNER_BRANCH=${{ github.head_ref }}
+            TCRUNNER_BRANCH=${{ github.ref }}
             TCRUNNER_COMMIT=${{ github.sha }}
             TCRUNNER_VERSION=${{ env.CONTAINER_VERSION }}
           tags: |
@@ -245,7 +245,7 @@ jobs:
           platforms: linux/amd64
           push: true
           build-args: |
-            TCRUNNER_BRANCH=${{ github.head_ref }}
+            TCRUNNER_BRANCH=${{ github.ref }}
             TCRUNNER_COMMIT=${{ github.sha }}
             TCRUNNER_VERSION=${{ env.CONTAINER_VERSION }}
           tags: |
