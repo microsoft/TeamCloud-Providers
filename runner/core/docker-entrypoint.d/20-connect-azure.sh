@@ -16,7 +16,7 @@ export -f waitForAzureConnection
 [ ! -z "$ComponentSubscription" ] \
 	&& trace "Connecting Azure" \
 	&& timeout 300 bash -c "waitForAzureConnection" \
-	# && az ad signed-in-user show \
+	&& echo "done" \
 	&& trace "Selecting Subscription" \
 	&& az account set --subscription $ComponentSubscription \
 	&& echo "$(az account show -o json | jq --raw-output '"\(.name) (\(.id))"')"
