@@ -132,7 +132,7 @@ jobs:
           file: ./runner/core/Dockerfile
           platforms: linux/amd64
           push: true
-          args: |
+          build-args: |
             TCRUNNER_BRANCH=${{ github.head_ref }}
             TCRUNNER_COMMIT=${{ github.sha }}
             TCRUNNER_VERSION=${{ env.CONTAINER_VERSION }}
@@ -188,7 +188,7 @@ jobs:
           file: ./runner/${{ matrix.image }}/Dockerfile
           platforms: linux/amd64
           push: true
-          args: |
+          build-args: |
             TCRUNNER_BRANCH=${{ github.head_ref }}
             TCRUNNER_COMMIT=${{ github.sha }}
             TCRUNNER_VERSION=${{ env.CONTAINER_VERSION }}
@@ -244,7 +244,7 @@ jobs:
           file: ./sidecar/${{ matrix.image }}/Dockerfile
           platforms: linux/amd64
           push: true
-          args: |
+          build-args: |
             TCRUNNER_BRANCH=${{ github.head_ref }}
             TCRUNNER_COMMIT=${{ github.sha }}
             TCRUNNER_VERSION=${{ env.CONTAINER_VERSION }}
