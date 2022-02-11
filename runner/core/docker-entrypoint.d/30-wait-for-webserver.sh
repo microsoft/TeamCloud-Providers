@@ -21,7 +21,7 @@ if [ "$WebServerEnabled" == "1" ]; then
 		&& [ "$(echo $TaskHost | tr '[:upper:]' '[:lower:]')" != "localhost" ] \
 		&& trace "Waiting for web server '$TaskHost'" \
 		&& timeout 300 bash -c "waitForWebServer" \
-		&& echo "Waiting for web server '$TaskHost' took $SECONDS seconds" \
+		&& echo -e "\nWaiting for web server '$TaskHost' took $SECONDS seconds" \
 		|| exit $?
 
 fi
