@@ -132,6 +132,10 @@ jobs:
           file: ./runner/core/Dockerfile
           platforms: linux/amd64
           push: true
+          args: |
+            TCRUNNER_BRANCH=${{ github.head_ref }}
+            TCRUNNER_COMMIT=${{ github.sha }}
+            TCRUNNER_VERSION=${{ env.CONTAINER_VERSION }}
           tags: |
             teamcloud/tcrunner-core:latest
             teamcloud/tcrunner-core:${{ env.CONTAINER_VERSION }}
@@ -184,6 +188,10 @@ jobs:
           file: ./runner/${{ matrix.image }}/Dockerfile
           platforms: linux/amd64
           push: true
+          args: |
+            TCRUNNER_BRANCH=${{ github.head_ref }}
+            TCRUNNER_COMMIT=${{ github.sha }}
+            TCRUNNER_VERSION=${{ env.CONTAINER_VERSION }}
           tags: |
             teamcloud/tcrunner-${{ matrix.image }}:latest
             teamcloud/tcrunner-${{ matrix.image }}:${{ env.CONTAINER_VERSION }}
@@ -236,6 +244,10 @@ jobs:
           file: ./sidecar/${{ matrix.image }}/Dockerfile
           platforms: linux/amd64
           push: true
+          args: |
+            TCRUNNER_BRANCH=${{ github.head_ref }}
+            TCRUNNER_COMMIT=${{ github.sha }}
+            TCRUNNER_VERSION=${{ env.CONTAINER_VERSION }}
           tags: |
             teamcloud/tcsidecar-${{ matrix.image }}:latest
             teamcloud/tcsidecar-${{ matrix.image }}:${{ env.CONTAINER_VERSION }}

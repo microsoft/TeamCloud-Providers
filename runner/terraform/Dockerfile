@@ -1,6 +1,15 @@
 FROM teamcloud/tcrunner-core:latest
 WORKDIR /
 
+ARG TCRUNNER_BRANCH=undefined
+ENV TCRUNNER_BRANCH=$TCRUNNER_BRANCH
+
+ARG TCRUNNER_COMMIT=undefined
+ENV TCRUNNER_COMMIT=$TCRUNNER_COMMIT
+
+ARG TCRUNNER_VERSION=undefined
+ENV TCRUNNER_VERSION=$TCRUNNER_VERSION
+
 COPY docker-entrypoint.d/* /docker-entrypoint.d/
 COPY docker-runner.d/* /docker-runner.d/
 

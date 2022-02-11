@@ -1,8 +1,14 @@
-# Base Container Definition: https://github.com/nginxinc/docker-nginx/tree/master/stable/alpine
-
-# FROM mcr.microsoft.com/azure-cli:2.0.80
 FROM mcr.microsoft.com/azure-cli
 WORKDIR /
+
+ARG TCRUNNER_BRANCH=undefined
+ENV TCRUNNER_BRANCH=$TCRUNNER_BRANCH
+
+ARG TCRUNNER_COMMIT=undefined
+ENV TCRUNNER_COMMIT=$TCRUNNER_COMMIT
+
+ARG TCRUNNER_VERSION=undefined
+ENV TCRUNNER_VERSION=$TCRUNNER_VERSION
 
 RUN set -x \
     # Install APK packages
