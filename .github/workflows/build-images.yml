@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 env:
-  RUNNER_IMAGES: "['arm', 'terraform', 'helm']"
+  RUNNER_IMAGES: "['arm', 'terraform', 'helm', 'github']"
   SIDECAR_IMAGES: "['webserver']"
 
 jobs:
